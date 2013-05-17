@@ -8,32 +8,27 @@ var DT_2 			 	= DT * DT;					//DT * DT			Delta time squared
 var PI					= Math.PI					//					Pi	
 var PI_2	 			= 2 * Math.PI;				//2 * PI			Twice pi
 													//
-var G 					= 20;						//10				Gravitational constant 
+var G 					= 20;						//20				Gravitational constant 
 var G_DROPOFF			= 0.001;					//0.001				Gravitational dropoff
 													//					
 var GLOB_MASS			= 1;						//1 				Particle mass
 var GLOB_CR				= 1.0;						//1.0				Coefficient of restitution
-var GLOB_RADIUS			= 5;						//3					Particle radius
+var GLOB_RADIUS			= 5;						//5					Particle radius
 var GLOB_MAX_SPEED 		= 350;						//350				Maxiumum particle velocity
 var GLOB_DAMPING		= 1.0						//1.0				Glob velocity damping
 													//
 var MAX_ALPHA_THRESHOLD	= 200;						//200				Maximum alpha threshold
 var MIN_ALPHA_THRESHOLD	= 150;						//150				Minimum alpha threshold
-var GRADIENT_RADIUS 	= GLOB_RADIUS * 3;			//4					Gradient radius multiplier
+var GRADIENT_RADIUS 	= GLOB_RADIUS * 3;			//GLOB_RADIUS * 3	Gradient radius multiplier
 var GRADIENT_STOP0		= "rgba(80, 80, 80, 1)";	//					Gradient color stop 0
 var GRADIENT_STOP1		= "rgba(80, 80, 80, 0)";	//
-													//
-var CANVAS 				= null;						//null				Canvas
-var CTX 				= null;						//null				2D context
-var TMP_CANVAS		 	= null;						//null				Temporary canvas
-var TMP_CTX			 	= null;						//null				Temporary 2D context
 													//
 var GLOBS	 			= [];						//[]				Array of particles
 var NUM_GLOBS			= 20;						//20				Number of Particles	
 													//
 var BULLETS				= [];						//[]				Bullets
 var NUM_BULLETS 		= 0;						//0					Number of bullets
-var BULLET_SPEED		= 650;						//850				Bullet speed
+var BULLET_SPEED		= 650;						//650				Bullet speed
 var BULLET_LIFETIME		= 20;						//20				Number of milliseconds bullet is alive
 var BULLET_RADIUS		= 2;						//2					Bullet radius
 var BULLET_COLOR		= "#000000";				//"#000000"			Bullet color
@@ -42,28 +37,34 @@ var EXPLOSIONS			= [];						//[]				Array of explosions
 var EXPLOSION_MAGNITUDE	= 250;						//200				Explosion magnitude (particle max velocity)
 var EXPLOSION_DAMPING	= 0.9						//0.9				Particle velocity damping
 var EXPLOSION_COLOR		= "#999999";				//"#999999"			Explosion color
-var NUM_PARTICLES		= 15;						//					Particle radius
-var PARTICLE_RADIUS		= 2;						//					Particle radius
+var NUM_PARTICLES		= 15;						//15				Particle radius
+var PARTICLE_RADIUS		= 2;						//2					Particle radius
 var PARTICLE_LIFETIME   = 8;						//10				Particle lifetime
+													//
+var SHIP				= null;						//null				Ship object
+var SHIP_MAX_SPEED		= 400;						//400				Max ship speed
+var SHIP_ACCELERATION	= 275;						//275				Ship acceleration magnitude
+var SHIP_TURN_RATE		= PI_2 / (FPS * 0.04);		//
+													//
+var SHIP_MODEL			= [];						//[]				Ship model (array of vectors)
+var SHIP_SIZE			= 20;						//20				Ship size
+var SHIP_INTERIOR_COLOR = "#FFFFFF";				//"#FFFFFF"			Ship interior color
+var SHIP_BORDER_COLOR	= "#000000";				//"#000000"			Ship border color
+													//
+var CANVAS 				= null;						//null				Canvas
+var CTX 				= null;						//null				2D context
+var TMP_CANVAS		 	= null;						//null				Temporary canvas
+var TMP_CTX			 	= null;						//null				Temporary 2D context
+													//
+var KEY_DOWN_EVENT_HANDLERS	= [];					//					Key down event handlers
+var KEY_UP_EVENT_HANDLERS	= [];					//					Key up event handlers													
+													//
+var KEY_UP_ARROW 		= 38;						//					Up arrow key code
+var KEY_DOWN_ARROW 		= 40;						//					Down arrow key code
+var KEY_LEFT_ARROW		= 37;						//					Left arrow key code
+var KEY_RIGHT_ARROW		= 39;						//					Right arrow key code
+var KEY_SPACE_BAR		= 32;						//					Space bar key code
 
-var SHIP				= null;
-var SHIP_MAX_SPEED		= 400;
-var SHIP_ACCELERATION	= 275;
-var SHIP_TURN_RATE		= PI_2 / (FPS * 0.04);
-
-var SHIP_MODEL			= [];
-var SHIP_SIZE			= 20;
-var SHIP_INTERIOR_COLOR = "#FFFFFF";
-var SHIP_BORDER_COLOR	= "#000000";
-
-var KEY_UP_ARROW 		= 38;
-var KEY_DOWN_ARROW 		= 40;
-var KEY_LEFT_ARROW		= 37;
-var KEY_RIGHT_ARROW		= 39;
-var KEY_SPACE_BAR		= 32;
-
-var KEY_DOWN_EVENT_HANDLERS	= [];
-var KEY_UP_EVENT_HANDLERS	= [];
 
 /*
  * KeyEvent class
@@ -159,18 +160,6 @@ Vector.prototype.toString = function () {
 function distance(v1, v2) {
 	return v1.sub(v2).norm();
 }
-
-/*
- * Matrix class
- */
-/*function Matrix(elements) {
-	this.elements = elements;
-}
-
-Matrix.prototype.mult = fuction (vector) {
-		
-}*/
- 
  
 /*
  * Particle class
@@ -211,7 +200,7 @@ Particle.prototype.addImpulse = function (impulse) {
 }
 
 /*
- * Particle-particle collision contact
+ * Particle collision contact
  */
 function ParticleContact(particle1, particle2) {
 	this.particle1 = particle1;
