@@ -4,22 +4,22 @@
 var FPS 				= 30;						//30				Frames per second			
 var DT 					= 1 / FPS;					//1 / FPS 			Delta time		
 var DT_2 			 	= DT * DT;					//DT * DT			Delta time squared
-													//	
+													//
+var PI					= Math.PI					//					Pi	
 var PI_2	 			= 2 * Math.PI;				//2 * PI			Twice pi
 													//
-var G 					= 17.5;						//10				Gravitational constant 
+var G 					= 20;						//10				Gravitational constant 
 var G_DROPOFF			= 0.001;					//0.001				Gravitational dropoff
 													//					
-var VELOCITY_DAMPING	= 0.99;						//					Velocity damping coefficient
-													//
 var GLOB_MASS			= 1;						//1 				Particle mass
 var GLOB_CR				= 1.0;						//1.0				Coefficient of restitution
-var GLOB_RADIUS			= 4;						//3					Particle radius
-var GLOB_MAX_VELOCITY 	= 350;						//350				Maxiumum particle velocity
+var GLOB_RADIUS			= 5;						//3					Particle radius
+var GLOB_MAX_SPEED 		= 350;						//350				Maxiumum particle velocity
+var GLOB_DAMPING		= 1.0						//1.0				Glob velocity damping
 													//
 var MAX_ALPHA_THRESHOLD	= 200;						//200				Maximum alpha threshold
 var MIN_ALPHA_THRESHOLD	= 150;						//150				Minimum alpha threshold
-var GRADIENT_RADIUS 	= GLOB_RADIUS;				//4					Gradient radius multiplier
+var GRADIENT_RADIUS 	= GLOB_RADIUS * 3;			//4					Gradient radius multiplier
 var GRADIENT_STOP0		= "rgba(80, 80, 80, 1)";	//					Gradient color stop 0
 var GRADIENT_STOP1		= "rgba(80, 80, 80, 0)";	//
 													//
@@ -39,11 +39,71 @@ var BULLET_RADIUS		= 2;						//2					Bullet radius
 var BULLET_COLOR		= "#000000";				//"#000000"			Bullet color
 													//
 var EXPLOSIONS			= [];						//[]				Array of explosions
-var EXPLOSION_MAGNITUDE	= 250;						//200				Explosion magnitude
+var EXPLOSION_MAGNITUDE	= 250;						//200				Explosion magnitude (particle max velocity)
+var EXPLOSION_DAMPING	= 0.9						//0.9				Particle velocity damping
 var EXPLOSION_COLOR		= "#999999";				//"#999999"			Explosion color
 var NUM_PARTICLES		= 15;						//					Particle radius
 var PARTICLE_RADIUS		= 2;						//					Particle radius
 var PARTICLE_LIFETIME   = 8;						//10				Particle lifetime
+
+var SHIP				= null;
+var SHIP_MAX_SPEED		= 400;
+var SHIP_ACCELERATION	= 275;
+var SHIP_TURN_RATE		= PI_2 / (FPS * 0.04);
+
+var SHIP_MODEL			= [];
+var SHIP_SIZE			= 20;
+var SHIP_INTERIOR_COLOR = "#FFFFFF";
+var SHIP_BORDER_COLOR	= "#000000";
+
+var KEY_UP_ARROW 		= 38;
+var KEY_DOWN_ARROW 		= 40;
+var KEY_LEFT_ARROW		= 37;
+var KEY_RIGHT_ARROW		= 39;
+var KEY_SPACE_BAR		= 32;
+
+var KEY_DOWN_EVENT_HANDLERS	= [];
+var KEY_UP_EVENT_HANDLERS	= [];
+
+/*
+ * KeyEvent class
+ */
+function KeyEventHandler(key, action) {
+	this.key = key;
+	this.action = action;
+}
+
+function addKeyDownHandler(handler) {
+	this.KEY_DOWN_EVENT_HANDLERS.push(handler);
+}
+
+function addKeyUpHandler(handler) {
+	this.KEY_UP_EVENT_HANDLERS.push(handler);
+}
+
+function handleKeyDownEvent(event) {
+	for (var i = 0; i < KEY_DOWN_EVENT_HANDLERS.length; i++) {
+		var handler = KEY_DOWN_EVENT_HANDLERS[i];
+		
+		if (handler.key == event.which) {
+			handler.action();	
+		}
+	}
+	
+	event.preventDefault();
+}
+
+function handleKeyUpEvent(event) {
+	for (var i = 0; i < KEY_UP_EVENT_HANDLERS.length; i++) {
+		var handler = KEY_UP_EVENT_HANDLERS[i];
+		
+		if (handler.key == event.which) {
+			handler.action();	
+		}
+	}
+
+	event.preventDefault();
+}
 
 /*
  * Vector class
@@ -100,6 +160,18 @@ function distance(v1, v2) {
 	return v1.sub(v2).norm();
 }
 
+/*
+ * Matrix class
+ */
+/*function Matrix(elements) {
+	this.elements = elements;
+}
+
+Matrix.prototype.mult = fuction (vector) {
+		
+}*/
+ 
+ 
 /*
  * Particle class
  */
@@ -208,6 +280,21 @@ function Explosion(position, magnitude, numParticles, lifetime) {
 }
 
 /*
+ * Ship class
+ */
+function Ship(position, maxSpeed, acceleration, turnRate) {
+	this.position = position;
+	this.orientation = 0;				//angle
+	this.velocity = new Vector(0, 0);
+	this.maxSpeed = maxSpeed;
+	this.damping = 1.0;
+	this.acceleration = acceleration;	//acceleration magnitude
+	this.turnRate = turnRate;			//radians per frame
+	this.turning = 0;					//turning coefficient
+	this.accelerating = 0;				//acceleration coefficient
+}
+
+/*
  * Physics
  */
 function clamp(c, min, max) {
@@ -219,7 +306,7 @@ function clamp(c, min, max) {
 		return c;
 }
 
-function updateParticles(particles, maxVelocity, collisions) {
+function updateParticles(particles, maxSpeed, velocityDamping, collisions) {
 	var width = CANVAS.width - 1;
 	var height = CANVAS.height - 1;
 	var contacts = [];
@@ -235,8 +322,8 @@ function updateParticles(particles, maxVelocity, collisions) {
 		particle.clearForces();
 		
 		//update position/velocity
-		particle.velocity = particle.velocity.scale(Math.pow(VELOCITY_DAMPING, DT)).add(particle.acceleration.scale(DT));	
-		particle.velocity = particle.velocity.normalize().scale(clamp(particle.velocity.norm(), 0, maxVelocity));
+		particle.velocity = particle.velocity.scale(Math.pow(velocityDamping, DT)).add(particle.acceleration.scale(DT));	
+		particle.velocity = particle.velocity.normalize().scale(clamp(particle.velocity.norm(), 0, maxSpeed));
 		particle.position = particle.position.add(particle.velocity.scale(DT)).add(particle.acceleration.scale(DT_2));
 		
 		//bounds check
@@ -288,7 +375,7 @@ function updateBullets(bullets) {
 	for (var i = 0; i < bullets.length; i++) {
 		var bullet = bullets[i];
 		
-		//increase bullet age and destroy bullet if old
+		//increase bullet age and destroy bullet if past lifetime
 		bullet.age++;
 		
 		if (bullet.lifetime > 0 && bullet.age > bullet.lifetime) {
@@ -317,6 +404,16 @@ function updateBullets(bullets) {
 				bullet.position.x = clamp(width - bullet.position.x, 0, width);
 			}
 		}
+		
+		for (var j = 0; j < GLOBS.length; j++) {
+			var glob = GLOBS[j];
+			
+			if (distance(bullet.position, glob.position) < glob.radius + GRADIENT_RADIUS / 2 + BULLET_RADIUS) {
+				bullets.splice(i, 1);
+				GLOBS.splice(j, 1);
+				EXPLOSIONS.push(new Explosion(glob.position, EXPLOSION_MAGNITUDE, NUM_PARTICLES, PARTICLE_LIFETIME));
+			}
+		}
 	}
 }
 
@@ -324,15 +421,48 @@ function updateExplosions(explosions) {
 	for (var i = 0; i < explosions.length; i++) {
 		var explosion = explosions[i];
 		
-		//increase bullet age and destroy bullet if old
+		//increase explosion age and destroy explosion if past lifetime
 		explosion.age++;
 		
 		if (explosion.lifetime > 0 && explosion.age > explosion.lifetime) {
 			explosions.particles = [];
 			explosions.splice(i, 1);
 		} else {
-			updateParticles(explosion.particles, EXPLOSION_MAGNITUDE, false);
+			updateParticles(explosion.particles, EXPLOSION_MAGNITUDE, EXPLOSION_DAMPING, false);
 		}
+	}
+}
+
+function updateShip(ship) {
+	var width = CANVAS.width - 1;
+	var height = CANVAS.height - 1;
+	
+	var acceleration = PolarVector(ship.orientation, 1).scale(ship.accelerating * ship.acceleration);
+	
+	ship.velocity = ship.velocity.scale(Math.pow(ship.damping, DT)).add(acceleration.scale(DT));
+	ship.velocity = ship.velocity.normalize().scale(clamp(ship.velocity.norm(), 0, ship.maxSpeed));
+	ship.position = ship.position.add(ship.velocity.scale(DT)).add(acceleration.scale(DT_2));
+	ship.orientation += ship.turning * ship.turnRate * DT;
+	
+	//bounds check
+	if (ship.position.x > width) {
+		ship.position.x = 0;
+		ship.position.y = clamp(height - ship.position.y, 0, height);
+	}
+	
+	if (ship.position.x < 0) {
+		ship.position.x = width;
+		ship.position.y = clamp(height - ship.position.y, 0, height);
+	}
+	
+	if (ship.position.y > height) {
+		ship.position.y = 0;
+		ship.position.x = clamp(width - ship.position.x, 0, width);
+	}
+	
+	if (ship.position.y < 0) {
+		ship.position.y = height;
+		ship.position.x = clamp(width - ship.position.x, 0, width);
 	}
 }
 
@@ -355,11 +485,11 @@ function drawGreyGoo(particles) {
 		particle = particles[i];
 		
 		TMP_CTX.beginPath();
-		var gradient = TMP_CTX.createRadialGradient(particle.position.x, particle.position.y, particle.radius, particle.position.x, particle.position.y, particle.radius * GRADIENT_RADIUS);
+		var gradient = TMP_CTX.createRadialGradient(particle.position.x, particle.position.y, particle.radius, particle.position.x, particle.position.y, GRADIENT_RADIUS);
 		gradient.addColorStop(0, GRADIENT_STOP0);
 		gradient.addColorStop(1, GRADIENT_STOP1);
 		TMP_CTX.fillStyle = gradient;
-		TMP_CTX.arc(particle.position.x, particle.position.y, particle.radius * GRADIENT_RADIUS, 0, PI_2);
+		TMP_CTX.arc(particle.position.x, particle.position.y, particle.radius + GRADIENT_RADIUS, 0, PI_2);
 		TMP_CTX.fill();
 	}
 	
@@ -390,26 +520,45 @@ function drawBullets(bullets) {
 }
 
 function drawParticles(particles, color) {
-	//console.log("particles: " + particles.length);
-	//console.log("color: " + color);
-	
 	for (var i = 0; i < particles.length; i++) {
 		drawCircle(particles[i].position, particles[i].radius, color);
 	}
 }
 
-function drawExplosions(explosions) {
-	//console.log("explosions: " + explosions.length);
-	
+function drawExplosions(explosions) {	
 	for (var i = 0; i < explosions.length; i++) {
 		drawParticles(explosions[i].particles, EXPLOSION_COLOR);	
 	}
 }
 
-
+function drawShip(ship, model, interiorColor, borderColor) {
+	CTX.save();
+	
+	CTX.translate(ship.position.x, ship.position.y);
+	CTX.rotate(ship.orientation - PI / 2);
+	
+	CTX.beginPath();
+	
+	CTX.moveTo(model[0].x, model[0].y);
+	
+	for (var i = 1; i < model.length; i++) {
+		CTX.lineTo(model[i].x, model[i].y);
+	}
+	
+	CTX.lineTo(model[0].x, model[0].y);
+	
+	CTX.closePath();
+	CTX.lineWidth = 3;
+	CTX.fillStyle = interiorColor;
+	CTX.fill();
+	CTX.strokeStyle = borderColor;
+	CTX.stroke();	
+	
+	CTX.restore();
+}
 
 /*
- * Main loop
+ * Gravitational force
  */
 function gravForce(particle1, particle2, dropoff) {
 	var r = distance(particle1.position, particle2.position);
@@ -432,16 +581,63 @@ function addGravity(particles) {
 		}
 	}
 }
- 
+
+/*
+ * Ship model generation (equilateral triangle)
+ */
+function generateShipModel(size) {
+	var center = PolarVector(PI / 6, size / (2 * Math.cos(PI / 6)));
+	var v1 = new Vector(0, 0).sub(center);
+	var v2 = PolarVector(PI / 3, size).sub(center); 
+	var v3 = PolarVector(0, size).sub(center);
+	return [ v1, v2, v3 ];
+}
+
+/*
+ * Event Handlers
+ */
+function upArrowDown() {
+	SHIP.accelerating = 1;
+}
+
+function upArrowUp() {
+	SHIP.accelerating = 0;
+}
+
+function leftArrowDown() {
+	SHIP.turning = -1;
+}
+
+function leftArrowUp() {
+	SHIP.turning = 0;
+}
+
+function rightArrowDown() {
+	SHIP.turning = 1;
+}
+
+function rightArrowUp() {
+	SHIP.turning = 0;
+}
+
+function spaceBarDown() {
+	BULLETS.push(new Bullet(SHIP.position, SHIP.orientation, BULLET_SPEED, BULLET_LIFETIME));
+}
+
+/*
+ * Main loop
+ */
 function mainLoop() {
 	CTX.clearRect(0, 0, CANVAS.width, CANVAS.height);
 	addGravity(GLOBS);
 	
 	updateBullets(BULLETS);
-	updateParticles(GLOBS, GLOB_MAX_VELOCITY, true);
+	updateParticles(GLOBS, GLOB_MAX_SPEED, GLOB_DAMPING, true);
+	updateShip(SHIP);
 	updateExplosions(EXPLOSIONS);
 	
 	drawGreyGoo(GLOBS);
+	drawShip(SHIP, SHIP_MODEL, SHIP_INTERIOR_COLOR, SHIP_BORDER_COLOR);
 	drawBullets(BULLETS);
 	drawExplosions(EXPLOSIONS);
 }
@@ -449,8 +645,9 @@ function mainLoop() {
  /*
   * Init
   */
- $(document).ready(function () {
-	CANVAS = document.getElementById("canvas");
+ $(document).ready(function () {	 
+ 	//setup canvas	 
+ 	CANVAS = document.getElementById("canvas");
 	CTX = CANVAS.getContext("2d");
 	
 	TMP_CANVAS = document.createElement("canvas");
@@ -458,13 +655,36 @@ function mainLoop() {
 	TMP_CANVAS.height = CANVAS.height;
 	TMP_CTX = TMP_CANVAS.getContext("2d");	
 	
+	//setup game
 	var canvasCenter = new Vector(CANVAS.width / 2, CANVAS.height / 2);
 	
 	GLOBS = explosion(canvasCenter, EXPLOSION_MAGNITUDE, GLOB_MASS, GLOB_RADIUS, NUM_GLOBS, 0, true);
+	SHIP_MODEL = generateShipModel(SHIP_SIZE);
 	
-	BULLETS.push(new Bullet(canvasCenter, 0, BULLET_SPEED, BULLET_LIFETIME));
+	SHIP = new Ship(canvasCenter, SHIP_MAX_SPEED, SHIP_ACCELERATION, SHIP_TURN_RATE);
 	
-	EXPLOSIONS.push(new Explosion(canvasCenter, EXPLOSION_MAGNITUDE, NUM_PARTICLES, PARTICLE_LIFETIME));
+	//setup events	
+	$("body").focus();
 	
+	$("body").keydown(function (event) {
+			handleKeyDownEvent(event);
+	});
+	
+	$("body").keyup(function (event) {
+			handleKeyUpEvent(event);
+	});
+	
+	addKeyDownHandler(new KeyEventHandler(KEY_UP_ARROW, upArrowDown));
+	addKeyUpHandler(new KeyEventHandler(KEY_UP_ARROW, upArrowUp));
+
+	addKeyDownHandler(new KeyEventHandler(KEY_LEFT_ARROW, leftArrowDown));
+	addKeyUpHandler(new KeyEventHandler(KEY_LEFT_ARROW, leftArrowUp));
+
+	addKeyDownHandler(new KeyEventHandler(KEY_RIGHT_ARROW, rightArrowDown));
+	addKeyUpHandler(new KeyEventHandler(KEY_RIGHT_ARROW, rightArrowUp));
+	
+	addKeyDownHandler(new KeyEventHandler(KEY_SPACE_BAR, spaceBarDown));
+	
+	//run main loop
 	setInterval(mainLoop, 1000 / FPS);
 });
