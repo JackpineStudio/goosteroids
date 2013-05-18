@@ -65,12 +65,12 @@ ParticleContact.prototype.resolveVelocity = function() {
 	var deltaSeparatingVelocity = newSeparatingVelocity - separatingVelocity;
 	
 	var totalInverseMass = this.particle1.inverseMass() + this.particle2.inverseMass();
-	var impulse = deltaSeparatingVelocity / totalInverseMass;
+	var impulseMagnitude = deltaSeparatingVelocity / totalInverseMass;
 	
-	var impulseVelocity = this.contactNormal.scale(impulse);
+	var impulse = this.contactNormal.scale(impulseMagnitude);
 	
-	this.particle1.addImpulse(impulseVelocity.scale(-1.0));
-	this.particle2.addImpulse(impulseVelocity);
+	this.particle1.addImpulse(impulse.scale(-1.0));
+	this.particle2.addImpulse(impulse);
 }
 
 
@@ -138,6 +138,6 @@ function updateParticles(particles, maxSpeed, velocityDamping, collisions) {
 
 function drawParticles(particles, color) {
 	for (var i = 0; i < particles.length; i++) {
-		drawCircle(particles[i].position, particles[i].radius, color);
+		drawCircle(CTX, particles[i].position, particles[i].radius, color);
 	}
 }

@@ -8,14 +8,14 @@ var DT_2 			 	= DT * DT;					//DT * DT			Delta time squared
 var PI					= Math.PI					//					Pi	
 var PI_2	 			= 2 * Math.PI;				//2 * PI			Twice pi
 													//
-var G 					= 20;						//20				Gravitational constant 
+var G 					= 25;						//20				Gravitational constant 
 var G_DROPOFF			= 0.001;					//0.001				Gravitational dropoff
 													//					
 var GLOB_MASS			= 1;						//1 				Particle mass
 var GLOB_CR				= 0.75;						//1.0				Coefficient of restitution
 var GLOB_RADIUS			= 5;						//5					Particle radius
-var GLOB_MAX_SPEED 		= 350;						//350				Maxiumum particle velocity
-var GLOB_DAMPING		= 1.0						//1.0				Glob velocity damping
+var GLOB_MAX_SPEED 		= 400;						//350				Maxiumum particle velocity
+var GLOB_DAMPING		= 1.0;						//1.0				Glob velocity damping
 													//
 var MAX_ALPHA_THRESHOLD	= 200;						//200				Maximum alpha threshold
 var MIN_ALPHA_THRESHOLD	= 150;						//150				Minimum alpha threshold
@@ -36,7 +36,7 @@ var BULLET_COLOR		= "#000000";				//"#000000"			Bullet color
 var EXPLOSIONS			= [];						//[]				Array of explosions
 var EXPLOSION_MAGNITUDE	= 250;						//200				Explosion magnitude (particle max velocity)
 var EXPLOSION_RADIUS	= 20;						//20				Radius of effect
-var BLAST_MAGNITUDE		= 300;						//300				Impulse to apply to globs in the radius of effect
+var BLAST_MAGNITUDE		= 500;						//300				Impulse to apply to globs in the radius of effect
 var EXPLOSION_DAMPING	= 0.9						//0.9				Particle velocity damping
 var EXPLOSION_COLOR		= "#999999";				//"#999999"			Explosion color
 var NUM_PARTICLES		= 15;						//15				Particle radius
@@ -50,7 +50,7 @@ var SHIP_TURN_RATE		= PI_2 / (FPS * 0.04);		//
 var SHIP_DAMPING		= 0.5;						//					Ship velocity damping
 													//
 var SHIP_MODEL			= [];						//[]				Ship model (array of vectors)
-var SHIP_MODEL_SIZE			= 20;						//20				Ship size
+var SHIP_MODEL_SIZE		= 20;						//20				Ship size
 var SHIP_INTERIOR_COLOR = "#FFFFFF";				//"#FFFFFF"			Ship interior color
 var SHIP_BORDER_COLOR	= "#000000";				//"#000000"			Ship border color
 													//
@@ -71,29 +71,6 @@ var KEY_LEFT_ARROW		= 37;						//					Left arrow key code
 var KEY_RIGHT_ARROW		= 39;						//					Right arrow key code
 var KEY_SPACE_BAR		= 32;						//					Space bar key code
 var KEY_SHIFT			= 16;						//					Shift key						
-
-/*
- * Utility functions
- */
-function clamp(c, min, max) {
-	if (c < min)
-		return min;
-	else if (c > max)
-		return max
-	else
-		return c;
-}
-
-/*
- * Graphics
- */
-function drawCircle(position, radius, color) {
-	CTX.beginPath();
-	CTX.fillStyle = color;
-	CTX.arc(position.x, position.y, radius, 0, PI_2);
-	CTX.closePath();
-	CTX.fill();
-}
 
 /*
  * Main loop

@@ -49,7 +49,7 @@ function updateBullets(bullets) {
 		for (var j = 0; j < GLOBS.length; j++) {
 			var glob = GLOBS[j];
 			
-			if (distance(bullet.position, glob.position) < glob.radius + GRADIENT_RADIUS / 2 + BULLET_RADIUS) {
+			if (distance(bullet.position, glob.position) < glob.radius + BULLET_RADIUS + GRADIENT_RADIUS / 2) {
 				bullets.splice(i, 1);
 				GLOBS.splice(j, 1);
 				EXPLOSIONS.push(new Explosion(glob.position, EXPLOSION_MAGNITUDE, NUM_PARTICLES, PARTICLE_LIFETIME));
@@ -71,6 +71,6 @@ function updateBullets(bullets) {
 
 function drawBullets(bullets) {
 	for (var i = 0; i < bullets.length; i++) {
-		drawCircle(bullets[i].position, BULLET_RADIUS, BULLET_COLOR);	
+		drawCircle(CTX, bullets[i].position, BULLET_RADIUS, BULLET_COLOR);	
 	}
 }
