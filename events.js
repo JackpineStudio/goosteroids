@@ -64,13 +64,17 @@ function rightArrowUp() {
 }
 
 function spaceBarDown() {
-	BULLETS.push(new Bullet(SHIP.position, SHIP.orientation, BULLET_SPEED, BULLET_LIFETIME));
+	var shipBow = SHIP_MODEL[1];
+	shipBow = PolarVector(shipBow.angle() + SHIP.orientation - PI/2, shipBow.norm());
+	shipBow = shipBow.add(SHIP.position);
+	BULLETS.push(new Bullet(shipBow, SHIP.orientation, BULLET_SPEED, BULLET_LIFETIME));
 }
 
 function shiftDown() {
-	SHIP.acceleration = TURBO_ACCELERATION;	
+	SHIP.ab = true;	
 }
 
 function shiftUp() {
-	SHIP.acceleration = SHIP_ACCELERATION;	
+	SHIP.ab = false;
+	SHIP.abCooldown = AB_COOLDOWN;
 }

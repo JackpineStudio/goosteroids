@@ -13,11 +13,12 @@ function explosion(position, magnitude, particleMass, particleRadius, numParticl
 	return particles;
 }
 
-function Explosion(position, magnitude, numParticles, lifetime) {
+function Explosion(position, magnitude, numParticles, lifetime, color) {
 	this.position = position;
-	this.particles = explosion(position, magnitude, 1.0, PARTICLE_RADIUS, numParticles, false);
+	this.particles = explosion(position, magnitude, 1.0, EXPLOSION_PARTICLE_RADIUS, numParticles, false);
 	this.age = 0;
 	this.lifetime = lifetime;
+	this.color = color;
 }
 
 function updateExplosions(explosions) {
@@ -31,13 +32,13 @@ function updateExplosions(explosions) {
 			explosions.particles = [];
 			explosions.splice(i, 1);
 		} else {
-			updateParticles(explosion.particles, EXPLOSION_MAGNITUDE, EXPLOSION_DAMPING, false);
+			updateParticles(explosion.particles, GLOB_EXPLOSION_MAGNITUDE, EXPLOSION_DAMPING, false);
 		}
 	}
 }
 
-function drawExplosions(explosions) {	
+function drawExplosions(ctx, explosions) {	
 	for (var i = 0; i < explosions.length; i++) {
-		drawParticles(explosions[i].particles, EXPLOSION_COLOR);	
+		drawParticles(ctx, explosions[i].particles, explosions[i].color);	
 	}
 }

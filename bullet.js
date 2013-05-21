@@ -52,15 +52,16 @@ function updateBullets(bullets) {
 			if (distance(bullet.position, glob.position) < glob.radius + BULLET_RADIUS + GRADIENT_RADIUS / 2) {
 				bullets.splice(i, 1);
 				GLOBS.splice(j, 1);
-				EXPLOSIONS.push(new Explosion(glob.position, EXPLOSION_MAGNITUDE, NUM_PARTICLES, PARTICLE_LIFETIME));
+				EXPLOSIONS.push(new Explosion(glob.position, GLOB_EXPLOSION_MAGNITUDE, EXPLOSION_NUM_PARTICLES, EXPLOSION_PARTICLE_LIFETIME, GLOB_EXPLOSION_COLOR));
+				SCORE += 10; 
 				
 				//apply impuses to surrounding globs
 				for (var k = 0; k < GLOBS.length; k++) {
 					var glob2 = GLOBS[k];
 					
-					if (j != k && (distance(glob.position, glob2.position) < glob2.radius + glob.radius + EXPLOSION_RADIUS)) {
+					if (j != k && (distance(glob.position, glob2.position) < glob2.radius + glob.radius + GLOB_EXPLOSION_RADIUS)) {
 						var direction = glob2.position.sub(glob.position).normalize();
-						var impulse = direction.scale(BLAST_MAGNITUDE);
+						var impulse = direction.scale(GLOB_BLAST_MAGNITUDE);
 						glob2.addImpulse(impulse);
 					}
 				}
@@ -69,8 +70,8 @@ function updateBullets(bullets) {
 	}
 }
 
-function drawBullets(bullets) {
+function drawBullets(ctx, bullets) {
 	for (var i = 0; i < bullets.length; i++) {
-		drawCircle(CTX, bullets[i].position, BULLET_RADIUS, BULLET_COLOR);	
+		drawCircle(ctx, bullets[i].position, BULLET_RADIUS, BULLET_COLOR);	
 	}
 }

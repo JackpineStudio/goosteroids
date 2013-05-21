@@ -23,6 +23,10 @@ Vector.prototype.dot = function (v) {
 	return this.x * v.x + this.y * v.y;	
 }
 
+Vector.prototype.cross = function (v) {
+	return this.x * v.y - this.y * v.x;	
+}
+
 Vector.prototype.angle = function () {
 	return Math.atan(this.y, this.x);	
 }

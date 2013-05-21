@@ -136,8 +136,8 @@ function updateParticles(particles, maxSpeed, velocityDamping, collisions) {
 	}
 }
 
-function drawParticles(particles, color) {
+function drawParticles(ctx, particles, color) {
 	for (var i = 0; i < particles.length; i++) {
-		drawCircle(CTX, particles[i].position, particles[i].radius, color);
+		drawCircle(ctx, particles[i].position, particles[i].radius, color);
 	}
 }
