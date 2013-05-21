@@ -54,7 +54,7 @@ var SHIP_MODEL_SIZE		= 20;						//20				Ship size
 var SHIP_INTERIOR_COLOR = "#FFFFFF";				//"#FFFFFF"			Ship interior color
 var SHIP_BORDER_COLOR	= "#000000";				//"#000000"			Ship border color
 													//
-var TURBO_ACCELERATION	= 6 * SHIP_ACCELERATION;	//					TURBO BOOOOOST!!!!!!!!!!
+var TURBO_ACCELERATION	= 4 * SHIP_ACCELERATION;	//					TURBO BOOOOOST!!!!!!!!!!
 													//
 var CANVAS 				= null;						//null				Canvas
 var CANVAS_TMP		 	= null;						//null				Temporary canvas
@@ -107,8 +107,8 @@ function mainLoop() {
 	var canvasCenter = new Vector(CANVAS.width / 2, CANVAS.height / 2);
 	
 	GLOBS = explosion(canvasCenter, EXPLOSION_MAGNITUDE, GLOB_MASS, GLOB_RADIUS, NUM_GLOBS, 0, true);
-	SHIP_MODEL = generateShipModel(SHIP_MODEL_SIZE);
 	
+	SHIP_MODEL = generateShipModel(SHIP_MODEL_SIZE);
 	SHIP = new Ship(canvasCenter, SHIP_MAX_SPEED, SHIP_DAMPING, SHIP_ACCELERATION, SHIP_TURN_RATE);
 	
 	//setup events	

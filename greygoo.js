@@ -22,7 +22,7 @@ function drawGreyGoo(particles) {
 	var imageData = image.data;
 	
 	for (var i = 0; i < imageData.length; i += 4) {
-		j = i + 3;
+		var j = i + 3;
 
 		if (imageData[j] < MIN_ALPHA_THRESHOLD) {
 			imageData[j] = 0;	
