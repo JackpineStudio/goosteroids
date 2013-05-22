@@ -62,10 +62,10 @@ var SHIP_INTERIOR_COLOR 		= "#FFFFFF";			//"#FFFFFF"			Ship interior color
 var SHIP_BORDER_COLOR			= "#000000";			//"#000000"			Ship border color
 														//
 var AB_ACCELERATION				= 6 * SHIP_ACCELERATION;//					Afterburner acceleration
-var AB_FUEL_CONSUMPTION			= 6;					//					Afterburner fuel consumption
+var AB_FUEL_CONSUMPTION			= 8;					//					Afterburner fuel consumption
 var AB_FUEL_RECHARGE_RATE		= 2;					//3					Fuel recharge per tick
 var AB_MAX_FUEL					= 100;					//100				Max afterburer fuel
-var AB_COOLDOWN					= 30;					//60
+var AB_COOLDOWN					= 30;					//30				Afterburner Cooldown
 														//
 var CANVAS 						= null;					//null				Canvas
 var CANVAS_TMP		 			= null;					//null				Temporary canvas
