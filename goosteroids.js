@@ -65,7 +65,8 @@ var AB_ACCELERATION				= 6 * SHIP_ACCELERATION;//					Afterburner acceleration
 var AB_FUEL_CONSUMPTION			= 5;					//					Afterburner fuel consumption
 var AB_FUEL_RECHARGE_RATE		= 2;					//3					Fuel recharge per tick
 var AB_MAX_FUEL					= 100;					//100				Max afterburer fuel
-var AB_COOLDOWN					= 30;					//30				Afterburner Cooldown
+var AB_COOLDOWN					= 60;					//30				Afterburner Cooldown
+var AB_SHIP_MAX_SPEED			= 2.25 * SHIP_MAX_SPEED;//2.5x				Afterburner ship max speed 
 														//
 var CANVAS 						= null;					//null				Canvas
 var CANVAS_TMP		 			= null;					//null				Temporary canvas
@@ -84,7 +85,7 @@ var KEY_SPACE_BAR				= 32;					//					Space bar key code
 var KEY_SHIFT					= 16;					//					Shift key						
 														//
 var SCORE						= 0;					//0					Score
-var LIVES						= 1;					//3					Lives
+var LIVES						= 3;					//3					Lives
 var MAIN_LOOP_INTERVAL_ID		= null;					//null
 														//
 var RESPAWN_DELAY				= 3 * FPS;				// 
@@ -94,7 +95,7 @@ var FLAMES_COLOR  				= "blue";				//
 var FLAMES_INTERIOR_COLOR  		= "#ffffff";			//
 var FLAMES_MAGNITUDE			= 6;					//
 var FLAMES_STEP					= 2;					//
-var FLAMES_AB_MAGNITUDE			= 20;					//
+var FLAMES_AB_MAGNITUDE			= 17;					//
 var FLAMES_AB_STEP				= 3;					//
 
 

@@ -6,7 +6,7 @@ function Ship(position, maxSpeed, damping, acceleration, turnRate) {
 	this.gunCooldown = 0;				//gun cooldown
 	this.abActivated = false;			//afterburner is activated
 	this.abCooldown = 0;				//afterburner cooldown
-	this.abFuel = 100;					//afterburner fuel
+	this.abFuel = AB_MAX_FUEL;			//afterburner fuel
 	this.position = position;
 	this.orientation = 0;				//angle
 	this.velocity = new Vector(0, 0);
@@ -75,19 +75,32 @@ function updateShip(ship, shipModel) {
 			ship.abCooldown--;
 		}
 		
+		//reminder: everytime the shift button is pressed, the cooldown is activated
 		if (ship.abActivated) {
+			//afterburner is activated
+			
+			//there is fuel in the tank
 			if (ship.abFuel > 0) {
+				//engines set to turbo acceleration and max velocity
+				//drain the fuel a bit
 				ship.acceleration = AB_ACCELERATION;
+				ship.maxSpeed = AB_SHIP_MAX_SPEED;
 				ship.abFuel -= AB_FUEL_CONSUMPTION;
 				ship.abFuel = clamp(ship.abFuel, 0, AB_MAX_FUEL);
-			} else if (ship.abFuel == 0 && ship.abCooldown == 0) {
+			} else if (ship.abFuel == 0) {
+				//set engines to default acceleration and max speed
 				ship.acceleration = SHIP_ACCELERATION;
-				ship.abCooldown = AB_COOLDOWN;
+				ship.maxSpeed = SHIP_MAX_SPEED;
 			}
 		} else {
+			//afterburner is off
+			//engines set to default acceleration and max speed
 			ship.acceleration = SHIP_ACCELERATION;
+			ship.maxSpeed = SHIP_MAX_SPEED;
 			
+			//the cooldown period is over and we are below maximum fuel
 			if (ship.abCooldown == 0 && ship.abFuel < AB_MAX_FUEL) {
+				//fill the fuel a bit
 				ship.abFuel += AB_FUEL_RECHARGE_RATE;
 				ship.abFuel = clamp(ship.abFuel, 0, AB_MAX_FUEL);
 			}
