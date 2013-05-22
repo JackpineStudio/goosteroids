@@ -97,22 +97,18 @@ function updateParticles(particles, maxSpeed, velocityDamping, collisions) {
 		//bounds check
 		if (particle.position.x > width) {
 			particle.position.x = 0;
-			particle.position.y = clamp(height - particle.position.y, 0, height);
 		}
 		
 		if (particle.position.x < 0) {
 			particle.position.x = width;
-			particle.position.y = clamp(height - particle.position.y, 0, height);
 		}
 		
 		if (particle.position.y > height) {
 			particle.position.y = 0;
-			particle.position.x = clamp(width - particle.position.x, 0, width);
 		}
 		
 		if (particle.position.y < 0) {
 			particle.position.y = height;
-			particle.position.x = clamp(width - particle.position.x, 0, width);
 		}
 		
 		if (collisions) {			

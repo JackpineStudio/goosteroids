@@ -2,8 +2,9 @@
  * Ship
  */
 function Ship(position, maxSpeed, damping, acceleration, turnRate) {
-	this.health = 100;					//ship health			
-	this.ab = false;					//afterburner
+	this.alive = true;					//true if ship is alive
+	this.gunCooldown = 0;				//gun cooldown
+	this.abActivated = false;			//afterburner is activated
 	this.abCooldown = 0;				//afterburner cooldown
 	this.abFuel = 100;					//afterburner fuel
 	this.position = position;
@@ -18,7 +19,7 @@ function Ship(position, maxSpeed, damping, acceleration, turnRate) {
 }
 
 function updateShip(ship, shipModel) {
-	if (ship.health > 0) {
+	if (ship.alive) {
 		var width = CANVAS.width - 1;
 		var height = CANVAS.height - 1;
 		
@@ -32,22 +33,18 @@ function updateShip(ship, shipModel) {
 		//bounds check
 		if (ship.position.x > width) {
 			ship.position.x = 0;
-			ship.position.y = clamp(height - ship.position.y, 0, height);
 		}
 		
 		if (ship.position.x < 0) {
 			ship.position.x = width;
-			ship.position.y = clamp(height - ship.position.y, 0, height);
 		}
 		
 		if (ship.position.y > height) {
 			ship.position.y = 0;
-			ship.position.x = clamp(width - ship.position.x, 0, width);
 		}
 		
 		if (ship.position.y < 0) {
 			ship.position.y = height;
-			ship.position.x = clamp(width - ship.position.x, 0, width);
 		}
 		
 		//check if ship has collided with glob(s)
@@ -59,11 +56,18 @@ function updateShip(ship, shipModel) {
 			globPosition = PolarVector(globPosition.angle() - ship.orientation + PI / 2, globPosition.norm());
 			
 			if (circleIntersectTriangle(globPosition, glob.radius + (1/4) * GRADIENT_RADIUS, shipModel[0], shipModel[1], shipModel[2])) {
-				ship.health = 0;
+				ship.alive = false;
+				LIVES--;
+				RESPAWN_FRAMES_REMAINING = RESPAWN_DELAY;
 				EXPLOSIONS.push(new Explosion(ship.position, SHIP_EXPLOSION_MAGNITUDE, EXPLOSION_NUM_PARTICLES, EXPLOSION_PARTICLE_LIFETIME, SHIP_EXPLOSION_COLOR1));
 				EXPLOSIONS.push(new Explosion(ship.position, SHIP_EXPLOSION_MAGNITUDE, EXPLOSION_NUM_PARTICLES, EXPLOSION_PARTICLE_LIFETIME, SHIP_EXPLOSION_COLOR2));
 				return;
 			}
+		}
+		
+		//update gun
+		if (ship.gunCooldown > 0) {
+			ship.gunCooldown--;	
 		}
 		
 		//update afterburner
@@ -71,7 +75,7 @@ function updateShip(ship, shipModel) {
 			ship.abCooldown--;
 		}
 		
-		if (ship.ab) {
+		if (ship.abActivated) {
 			if (ship.abFuel > 0) {
 				ship.acceleration = AB_ACCELERATION;
 				ship.abFuel -= AB_FUEL_CONSUMPTION;
@@ -92,30 +96,28 @@ function updateShip(ship, shipModel) {
 }
 
 function drawShip(ctx, ship, model, interiorColor, borderColor) {
-	if (ship.health > 0) {
+	if (ship.alive) {
 		ctx.save();
 		
 		ctx.translate(ship.position.x, ship.position.y);
 		ctx.rotate(ship.orientation - PI / 2);
 		
-		ctx.beginPath();
-		
-		ctx.moveTo(model[0].x, model[0].y);
-		
-		for (var i = 1; i < model.length; i++) {
-			ctx.lineTo(model[i].x, model[i].y);
-		}
-		
-		ctx.lineTo(model[0].x, model[0].y);
-		
-		ctx.closePath();
-		ctx.lineWidth = 3;
-		ctx.fillStyle = interiorColor;
-		ctx.fill();
-		ctx.strokeStyle = borderColor;
-		ctx.stroke();	
+		drawPolyLine(ctx, model, interiorColor, borderColor);
 		
 		ctx.restore();
+	}
+}
+
+function drawEngineFlames(ctx, ship, model, interiorColor, borderColor) {
+	if (ship.alive) {
+		ctx.save();
+		
+		ctx.translate(ship.position.x, ship.position.y);
+		ctx.rotate(ship.orientation - PI / 2);
+		
+		drawPolyLine(ctx, model, interiorColor, borderColor);
+		
+		ctx.restore();	
 	}
 }
 
@@ -135,7 +137,24 @@ function generateShipModel(base, height) {
 	v2 = v2.sub(center);
 	v3 = v3.sub(center);
 	
-	return [ v1, v2, v3 ];
+	return [ v1, v2, v3, v1 ];
+}
+
+/*
+ * Generates engine flames
+ */
+function generateEngineFlames(shipBase, shipModel, flameStep, flameMagnitude) {
+	var start = shipModel[0];
+	
+	var flames = [ start ];
+	
+	for (var dist = flameStep; dist < shipBase; dist += flameStep) {
+		flames.push(new Vector(start.x + dist, start.y - random(0, flameMagnitude) - 2));
+	}
+	
+	flames.push(shipModel[shipModel.length - 2]);
+	
+	return flames;
 }
 
 /*

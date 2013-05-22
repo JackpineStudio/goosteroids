@@ -64,17 +64,25 @@ function rightArrowUp() {
 }
 
 function spaceBarDown() {
-	var shipBow = SHIP_MODEL[1];
-	shipBow = PolarVector(shipBow.angle() + SHIP.orientation - PI/2, shipBow.norm());
-	shipBow = shipBow.add(SHIP.position);
-	BULLETS.push(new Bullet(shipBow, SHIP.orientation, BULLET_SPEED, BULLET_LIFETIME));
+	if (SHIP.alive && SHIP.gunCooldown == 0) {
+		//find position of front of ship
+		var shipBow = SHIP_MODEL[1];
+		shipBow = PolarVector(shipBow.angle() + SHIP.orientation - PI/2, shipBow.norm());
+		shipBow = shipBow.add(SHIP.position);
+		
+		//fire bullet
+		BULLETS.push(new Bullet(shipBow, SHIP.orientation, BULLET_SPEED, BULLET_LIFETIME));
+		
+		//set cooldown
+		SHIP.gunCooldown = SHIP_GUN_COOLDOWN;
+	}
 }
 
 function shiftDown() {
-	SHIP.ab = true;	
+	SHIP.abActivated = true;	
 }
 
 function shiftUp() {
-	SHIP.ab = false;
+	SHIP.abActivated = false;
 	SHIP.abCooldown = AB_COOLDOWN;
 }

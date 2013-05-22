@@ -27,22 +27,18 @@ function updateBullets(bullets) {
 			//bounds check
 			if (bullet.position.x > width) {
 				bullet.position.x = 0;
-				bullet.position.y = clamp(height - bullet.position.y, 0, height);
 			}
 			
 			if (bullet.position.x < 0) {
 				bullet.position.x = width;
-				bullet.position.y = clamp(height - bullet.position.y, 0, height);
 			}
 			
 			if (bullet.position.y > height) {
 				bullet.position.y = 0;
-				bullet.position.x = clamp(width - bullet.position.x, 0, width);
 			}
 			
 			if (bullet.position.y < 0) {
 				bullet.position.y = height;
-				bullet.position.x = clamp(width - bullet.position.x, 0, width);
 			}
 		}
 		
