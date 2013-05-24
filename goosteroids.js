@@ -8,22 +8,21 @@ var DT_2 					 	= DT * DT;				//DT * DT			Delta time squared
 var PI							= Math.PI				//					Pi	
 var PI_2	 					= 2 * Math.PI;			//2 * PI			Twice pi
 														//
-var G 							= 60;					//25				Gravitational constant 
+var G 							= 35;					//30				Gravitational constant 
 var G_DROPOFF					= 0.001;				//0.001				Gravitational dropoff
 														//
 var GLOBS	 					= [];					//[]				Array of particles
-var NUM_GLOBS					= 20;					//20				Number of Particles
 														//
+var GLOB_MAX_SPEED		 		= 400;					//400				Maxiumum particle velocity														//
 var GLOB_EXPLOSION_MAGNITUDE	= 250;					//200				Explosion magnitude (particle max velocity)
-var GLOB_EXPLOSION_RADIUS		= 20;					//20				Radius of effect
-var GLOB_BLAST_MAGNITUDE		= 500;					//300				Impulse to apply to globs in the radius of effect
+var GLOB_BLAST_RADIUS			= 30;					//20				Radius of effect
+var GLOB_BLAST_MAGNITUDE		= 700;					//300				Impulse to apply to globs in the radius of effect
 var GLOB_EXPLOSION_COLOR		= "#999999";			//"#999999"			Explosion color
 														//
 var GLOB_MASS					= 1;					//1 				Particle mass
-var GLOB_CR						= 0.75;					//1.0				Coefficient of restitution
+var GLOB_CR						= 0.80;					//1.0				Coefficient of restitution
 var GLOB_RADIUS					= 5;					//5					Particle radius
-var GLOB_MAX_SPEED		 		= 400;					//350				Maxiumum particle velocity
-var GLOB_DAMPING				= 1.0;					//1.0				Glob velocity damping
+var GLOB_DAMPING				= 1;					//1.0				Glob velocity damping
 														//
 var MAX_ALPHA_THRESHOLD			= 200;					//200				Maximum alpha threshold
 var MIN_ALPHA_THRESHOLD			= 150;					//150				Minimum alpha threshold
@@ -69,7 +68,7 @@ var AB_COOLDOWN					= 60;					//30				Afterburner Cooldown
 var AB_SHIP_MAX_SPEED			= 2.25 * SHIP_MAX_SPEED;//2.5x				Afterburner ship max speed 
 														//
 var CANVAS 						= null;					//null				Canvas
-var CANVAS_TMP		 			= null;					//null				Temporary canvas
+var TMP_CANVAS		 			= null;					//null				Temporary canvas
 														//
 var CTX 						= null;					//null				2D context
 var TMP_CTX			 			= null;					//null				Temporary 2D context
@@ -86,6 +85,7 @@ var KEY_SHIFT					= 16;					//					Shift key
 														//
 var SCORE						= 0;					//0					Score
 var LIVES						= 3;					//3					Lives
+var STAGE						= 0;					//0
 var MAIN_LOOP_INTERVAL_ID		= null;					//null
 														//
 var RESPAWN_DELAY				= 3 * FPS;				// 
@@ -126,6 +126,33 @@ function respawn() {
 	} else if (!SHIP.alive && RESPAWN_FRAMES_REMAINING == 0) {
 		spawnShip();
 	}
+}
+
+function createBlob(numGlobs, position, orientation, speed) {
+	var globs = explosion(position, GLOB_EXPLOSION_MAGNITUDE, GLOB_MASS, GLOB_RADIUS, numGlobs, true);
+	
+	for (var i = 0; i < globs.length; i++) {
+		globs[i].velocity = PolarVector(orientation, speed);
+	}
+	
+	return globs;
+}
+
+function setupStage(level) {
+	//create random blobs
+	var numBlobs = clamp(level, 0, 9) + 1;
+	
+	 for (var i = 0; i < numBlobs; i++) {
+	 	var blob = createBlob(random(10, 20), 
+	 						  new Vector(random(0, $("#canvas").width()-1), 
+	 						  	  		 random(0, $("#canvas").height()-1)),
+	 						  random(0, PI_2),
+	 						  random(500, 1000));
+	 	
+	 	for (var j = 0; j < blob.length; j++) {
+	 		GLOBS.push(blob[j]);	
+	 	}		  
+	 }
 }
 
 /*
@@ -178,16 +205,31 @@ function mainLoop() {
  	CANVAS = document.getElementById("canvas");
 	CTX = CANVAS.getContext("2d");
 	
-	CANVAS_TMP = document.createElement("canvas");
-	CANVAS_TMP.width = CANVAS.width;
-	CANVAS_TMP.height = CANVAS.height;
-	TMP_CTX = CANVAS_TMP.getContext("2d");	
+	//position canvas in center of screen
+	var top = $(window).height()/2 - $("#canvas").height()/2;
+	var left = $(window).width()/2 - $("#canvas").width()/2;
+	
+	$("#canvas").css({
+		position: "absolute",
+		top: top + "px",
+		left: left + "px",
+		borderStyle: "solid",
+		borderWidth: "2px",
+		backgroundColor: "#fff" 
+	});
+	
+	//setup temporary canvase
+	TMP_CANVAS = document.createElement("canvas");
+	TMP_CANVAS.width = CANVAS.width;
+	TMP_CANVAS.height = CANVAS.height;
+	TMP_CTX = TMP_CANVAS.getContext("2d");	
 	
 	//setup game
-	GLOBS = explosion(new Vector(100, 100), GLOB_EXPLOSION_MAGNITUDE, GLOB_MASS, GLOB_RADIUS, NUM_GLOBS, 0, true);
-	
 	SHIP_MODEL = generateShipModel(SHIP_MODEL_BASE, SHIP_MODEL_HEIGHT);
-		
+	
+	setupStage(STAGE);
+	
+	//spawn ship	
 	spawnShip();
 	
 	//setup events	

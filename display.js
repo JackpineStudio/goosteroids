@@ -59,7 +59,7 @@ function displayRespawnMessage(canvas, ctx, secondsRemaining) {
 	ctx.font = "bold 16px sans-serif";
 	ctx.fillStyle = "black";
 	ctx.textAlign = 'center';
-	ctx.fillText("Respawn in... " + secondsRemaining, canvasCenter.x - 15, canvasCenter.y);
+	ctx.fillText("Respawn in " + secondsRemaining, canvasCenter.x - 15, canvasCenter.y);
 	
 	ctx.restore();	
 }

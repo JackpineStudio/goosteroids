@@ -29,7 +29,7 @@ function updateExplosions(explosions) {
 		explosion.age++;
 		
 		if (explosion.lifetime > 0 && explosion.age > explosion.lifetime) {
-			explosions.particles = [];
+			explosion.particles = [];
 			explosions.splice(i, 1);
 		} else {
 			updateParticles(explosion.particles, GLOB_EXPLOSION_MAGNITUDE, EXPLOSION_DAMPING, false);

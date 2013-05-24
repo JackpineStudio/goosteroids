@@ -2,7 +2,7 @@
  * Greygoo
  */
 function drawGreyGoo(ctx, tmpCtx, particles) {
-	tmpCtx.clearRect(0, 0, CANVAS_TMP.width, CANVAS_TMP.height);
+	tmpCtx.clearRect(0, 0, TMP_CANVAS.width, TMP_CANVAS.height);
 	
 	//draw gradients
 	for (var i = 0; i < particles.length; i++) {
@@ -18,7 +18,7 @@ function drawGreyGoo(ctx, tmpCtx, particles) {
 	}
 	
 	//filter alpha channel
-	var image = tmpCtx.getImageData(0, 0, CANVAS_TMP.width, CANVAS_TMP.height);
+	var image = tmpCtx.getImageData(0, 0, TMP_CANVAS.width, TMP_CANVAS.height);
 	var imageData = image.data;
 	
 	for (var i = 0; i < imageData.length; i += 4) {

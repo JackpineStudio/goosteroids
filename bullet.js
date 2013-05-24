@@ -55,7 +55,7 @@ function updateBullets(bullets) {
 				for (var k = 0; k < GLOBS.length; k++) {
 					var glob2 = GLOBS[k];
 					
-					if (j != k && (distance(glob.position, glob2.position) < glob2.radius + glob.radius + GLOB_EXPLOSION_RADIUS)) {
+					if (j != k && (distance(glob.position, glob2.position) < glob2.radius + glob.radius + GLOB_BLAST_RADIUS)) {
 						var direction = glob2.position.sub(glob.position).normalize();
 						var impulse = direction.scale(GLOB_BLAST_MAGNITUDE);
 						glob2.addImpulse(impulse);

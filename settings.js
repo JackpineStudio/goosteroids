@@ -1,10 +1,10 @@
 /*
  * Settings
  */
-function LowestSettings() {
+function loadLowestSettings() {
 	
 }
 
-function HighestSettings() {
+function loadHighestSettings() {
 	
 }
