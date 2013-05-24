@@ -1,0 +1,1169 @@
+/* 
+ * Constants
+ */
+var FPS 						= 30;					//30				Frames per second			
+var DT 							= 1/FPS;				//1 / FPS 			Delta time		
+var DT_2 					 	= DT * DT;				//DT * DT			Delta time squared
+														//
+var PI							= Math.PI				//					Pi	
+var PI_2	 					= 2 * Math.PI;			//2 * PI			Twice pi
+														//
+var GRAVITY						= 30;					//30				Gravitational constant 
+var GRAVITY_DROPOFF				= 0.001;				//0.001				Gravitational dropoff
+														//
+var GLOB_MAX_SPEED		 		= 400;					//400				Maxiumum particle velocity														//
+var GLOB_EXPLOSION_MAGNITUDE	= 250;					//200				Explosion magnitude (particle max velocity)
+var GLOB_BLAST_RADIUS			= 30;					//20				Radius of effect
+var GLOB_BLAST_MAGNITUDE		= 700;					//300				Impulse to apply to globs in the radius of effect
+														//
+var GLOB_MASS					= 1;					//1 				Particle mass
+var GLOB_CR						= 0.80;					//1.0				Coefficient of restitution
+var GLOB_RADIUS					= 5;					//5					Particle radius
+var GLOB_DAMPING				= 1;					//1.0				Glob velocity damping
+														//
+var MAX_ALPHA_THRESHOLD			= 200;					//200				Maximum alpha threshold
+var MIN_ALPHA_THRESHOLD			= 150;					//150				Minimum alpha threshold
+var GRADIENT_RADIUS 			= GLOB_RADIUS * 3;		//GLOB_RADIUS * 3	Gradient radius multiplier
+var GRADIENT_STOP0				= "rgba(80, 80, 80, 1)";//					Gradient color stop 0
+var GRADIENT_STOP1				= "rgba(80, 80, 80, 0)";//					Gradient color stop 1
+														//
+var GLOB_EXPLOSION_COLOR		= "#999999";			//"#999999"			Explosion color
+														//
+var BULLET_SPEED				= 650;					//650				Bullet speed
+var BULLET_LIFETIME				= 20;					//20				Number of milliseconds bullet is alive
+var BULLET_RADIUS				= 2;					//2					Bullet radius
+var BULLET_COLOR				= "#000000";			//"#000000"			Bullet color
+														//
+var EXPLOSION_DAMPING			= 0.9					//0.9				Particle velocity damping
+var EXPLOSION_NUM_PARTICLES		= 15;					//15				Number of particles in an explosion
+var EXPLOSION_PARTICLE_RADIUS	= 2;					//2					Particle radius
+var EXPLOSION_PARTICLE_LIFETIME = 9;					//10				Particle lifetime
+														//
+var SHIP_EXPLOSION_MAGNITUDE	= 2000;					//350				Explosion magnitude (particle max velocity)
+var SHIP_EXPLOSION_COLOR1		= "red";				//"red"				Explosion color 1
+var SHIP_EXPLOSION_COLOR2		= "yellow";				//"yellow"			Explosion color 2
+														//
+var SHIP_GUN_COOLDOWN			= 4;					//5					Minimum time between shots
+var SHIP_MAX_SPEED				= 400;					//400				Max ship speed
+var SHIP_ACCELERATION			= 500;					//300				Ship acceleration magnitude
+var SHIP_TURN_RATE				= PI_2 / (FPS * 0.04);	//
+var SHIP_DAMPING				= 0.5;					//					Ship velocity damping
+														//
+var SHIP_MODEL					= [];					//[]				Ship model (array of vectors)
+var SHIP_MODEL_BASE				= 15;					//15				Ship model base length
+var SHIP_MODEL_HEIGHT			= 25;					//25				Ship model height
+var SHIP_INTERIOR_COLOR 		= "#ffffff";			//"#ffffff"			Ship interior color
+var SHIP_BORDER_COLOR			= "#000000";			//"#000000"			Ship border color
+														//
+var AB_ACCELERATION				= 6 * SHIP_ACCELERATION;//					Afterburner acceleration
+var AB_FUEL_CONSUMPTION			= 5;					//					Afterburner fuel consumption
+var AB_FUEL_RECHARGE_RATE		= 2;					//3					Fuel recharge per tick
+var AB_MAX_FUEL					= 100;					//100				Max afterburer fuel
+var AB_COOLDOWN					= 60;					//30				Afterburner Cooldown
+var AB_SHIP_MAX_SPEED			= 2.25 * SHIP_MAX_SPEED;//2.5x				Afterburner ship max speed 
+														//
+var FLAMES_COLOR  				= "blue";				//	
+var FLAMES_INTERIOR_COLOR  		= "#ffffff";			//
+var FLAMES_MAGNITUDE			= 6;					//
+var FLAMES_STEP					= 2;					//
+var FLAMES_AB_MAGNITUDE			= 17;					//
+var FLAMES_AB_STEP				= 3;					//
+														//
+var RESPAWN_DELAY				= 3 * FPS;				// 
+var RESPAWN_FRAMES_REMAINING	= 0;					// 
+														//
+var CANVAS 						= null;					//null				Canvas
+var TMP_CANVAS		 			= null;					//null				Temporary canvas
+														//
+var CTX 						= null;					//null				2D context
+var TMP_CTX			 			= null;					//null				Temporary 2D context
+														//
+var SHIP						= null;					//null				Ship object
+var GLOBS	 					= [];					//[]				Array of particles
+var BULLETS						= [];					//[]				Bullets
+var EXPLOSIONS					= [];					//[]				Array of explosions
+														//
+var KEY_DOWN_EVENT_HANDLERS		= [];					//					Key down event handlers
+var KEY_UP_EVENT_HANDLERS		= [];					//					Key up event handlers													
+														//
+var KEY_UP_ARROW 				= 38;					//					Up arrow key code
+var KEY_DOWN_ARROW 				= 40;					//					Down arrow key code
+var KEY_LEFT_ARROW				= 37;					//					Left arrow key code
+var KEY_RIGHT_ARROW				= 39;					//					Right arrow key code
+var KEY_SPACE_BAR				= 32;					//					Space bar key code
+var KEY_SHIFT					= 16;					//					Shift key						
+														//
+var STAGE						= 1;					//1					Stage
+var SCORE						= 0;					//0					Score
+var LIVES						= 3;					//3					Lives
+														//
+var MAIN_LOOP_INTERVAL_ID		= null;					//null
+
+/*
+ * Game setup
+ */
+function spawnShip() {
+	var canvasCenter = new Vector(CANVAS.width / 2, CANVAS.height / 2);
+	SHIP = new Ship(canvasCenter, SHIP_MAX_SPEED, SHIP_DAMPING, SHIP_ACCELERATION, SHIP_TURN_RATE);
+	SHIP.orientation = -PI / 2;
+}
+
+function endGame() {
+	clearInterval(MAIN_LOOP_INTERVAL_ID);
+	$('#gameContainer').fadeOut(1000)
+	$('#gameOverContainer').fadeIn(4000);
+}
+
+function stageOver() {
+	clearInterval(MAIN_LOOP_INTERVAL_ID);
+	
+	$('#stageOverMessage').html("Stage " + STAGE + " complete!<br>Prepare for stage " + (STAGE+1) + "...");
+	
+	$('#gameContainer').fadeOut(1000);
+	$('#stageOverContainer').fadeIn(4000, function () {
+		setTimeout(function () {
+			$('#stageOverContainer').hide();
+			$('#gameContainer').fadeIn(4000);
+				
+			STAGE++;
+			loadSettings(STAGE);
+			spawnShip();
+			MAIN_LOOP_INTERVAL_ID = setInterval(mainLoop, 1000 / FPS);
+			
+		}, 1000);
+	});
+}
+
+function respawn() {
+	if (!SHIP.alive && RESPAWN_FRAMES_REMAINING) {
+		RESPAWN_FRAMES_REMAINING--;
+		
+		var secondsUntilRespawn = Math.ceil(RESPAWN_FRAMES_REMAINING / FPS);
+		
+		if (secondsUntilRespawn > 0) {
+			displayRespawnMessage(CANVAS, CTX, secondsUntilRespawn);
+		}
+	} else if (!SHIP.alive && RESPAWN_FRAMES_REMAINING == 0) {
+		spawnShip();
+	}
+}
+
+/*
+ * Main loop
+ */
+function mainLoop() {
+	CTX.clearRect(0, 0, CANVAS.width, CANVAS.height);
+	
+	if (GLOBS.length == 0) {
+		BULLETS = [];
+		
+		stageOver();
+	}
+	
+	addGravity(GLOBS);
+	
+	updateBullets(BULLETS);
+	updateParticles(GLOBS, GLOB_MAX_SPEED, GLOB_DAMPING, true);
+	updateShip(SHIP, SHIP_MODEL);
+	updateExplosions(EXPLOSIONS);
+	
+	drawGreyGoo(CTX, TMP_CTX, GLOBS);
+	drawShip(CTX, SHIP, SHIP_MODEL, SHIP_INTERIOR_COLOR, SHIP_BORDER_COLOR);
+	
+	if (SHIP.accelerating && !SHIP.abActivated) {
+		var flames = generateEngineFlames(SHIP_MODEL_BASE, SHIP_MODEL, FLAMES_STEP, FLAMES_MAGNITUDE);
+		drawEngineFlames(CTX, SHIP, flames, null, FLAMES_COLOR);
+	}
+	
+	if (SHIP.accelerating && SHIP.abActivated && SHIP.abFuel > 0) {
+		var flames = generateEngineFlames(SHIP_MODEL_BASE, SHIP_MODEL, FLAMES_AB_STEP, FLAMES_AB_MAGNITUDE);
+		drawEngineFlames(CTX, SHIP, flames, null, FLAMES_COLOR);		
+	}
+	
+	drawBullets(CTX, BULLETS);
+	drawExplosions(CTX, EXPLOSIONS);
+	
+	drawAbDisplay(CANVAS, CTX, SHIP.abFuel);
+	drawScoreDisplay(CANVAS, CTX, SCORE);
+	drawLivesDisplay(CANVAS, CTX, LIVES);
+	
+	//end game if player is out of lives
+	if (LIVES < 0) {
+		endGame();
+		return;
+	}
+	
+	//if ship is dead and cooldown is over then respawn ship
+	respawn();
+}
+
+ /*
+  * Init
+  */
+ $(document).ready(function () {	 
+ 	//setup canvas	 
+ 	CANVAS = document.getElementById("canvas");
+	CTX = CANVAS.getContext("2d");
+	
+	//position canvas in center of screen
+	var top = $(window).height()/2 - $("#canvas").height()/2;
+	var left = $(window).width()/2 - $("#canvas").width()/2;
+	
+	$("#canvas").css({
+		position: "absolute",
+		top: top + "px",
+		left: left + "px",
+		borderStyle: "solid",
+		borderWidth: "2px",
+		backgroundColor: "#fff" 
+	});
+	
+	//setup temporary canvase
+	TMP_CANVAS = document.createElement("canvas");
+	TMP_CANVAS.width = CANVAS.width;
+	TMP_CANVAS.height = CANVAS.height;
+	TMP_CTX = TMP_CANVAS.getContext("2d");	
+	
+	//setup game
+	SHIP_MODEL = generateShipModel(SHIP_MODEL_BASE, SHIP_MODEL_HEIGHT);
+	
+	//load settings
+	loadSettings(STAGE);
+	
+	//spawn ship	
+	spawnShip();
+	
+	//setup events	
+	$("body").focus();
+	
+	$("body").keydown(function (event) {
+		handleKeyDownEvent(event);
+	});
+	
+	$("body").keyup(function (event) {
+		handleKeyUpEvent(event);
+	});
+	
+	//register event handlers
+	addKeyDownHandler(new KeyEventHandler(KEY_UP_ARROW, upArrowDown));
+	addKeyUpHandler(new KeyEventHandler(KEY_UP_ARROW, upArrowUp));
+
+	addKeyDownHandler(new KeyEventHandler(KEY_LEFT_ARROW, leftArrowDown));
+	addKeyUpHandler(new KeyEventHandler(KEY_LEFT_ARROW, leftArrowUp));
+
+	addKeyDownHandler(new KeyEventHandler(KEY_RIGHT_ARROW, rightArrowDown));
+	addKeyUpHandler(new KeyEventHandler(KEY_RIGHT_ARROW, rightArrowUp));
+	
+	addKeyDownHandler(new KeyEventHandler(KEY_SPACE_BAR, spaceBarDown));
+	
+	addKeyDownHandler(new KeyEventHandler(KEY_SHIFT, shiftDown));
+	addKeyUpHandler(new KeyEventHandler(KEY_SHIFT, shiftUp));
+	
+	//run main loop
+	MAIN_LOOP_INTERVAL_ID = setInterval(mainLoop, 1000 / FPS);
+});
+ 
+var SESSION_ID = "<%= @session_id %>";
+
+$(document).ready(function () {
+	alert(SESSION_ID);		
+});
+/*
+ * Bullets
+ */
+function Bullet(position, angle, speed, lifetime) {
+	this.position = position;
+	this.velocity = PolarVector(angle, speed);
+	this.lifetime = lifetime;
+	this.age = 0;
+	this.lifetime = lifetime;
+}
+
+function updateBullets(bullets) {
+	var width = CANVAS.width - 1;
+	var height = CANVAS.height - 1;
+	
+	for (var i = 0; i < bullets.length; i++) {
+		var bullet = bullets[i];
+		
+		//increase bullet age and destroy bullet if past lifetime
+		bullet.age++;
+		
+		if (bullet.lifetime > 0 && bullet.age > bullet.lifetime) {
+			bullets.splice(i, 1);
+		} else {
+			bullet.position = bullet.position.add(bullet.velocity.scale(DT));
+			
+			//bounds check
+			if (bullet.position.x > width) {
+				bullet.position.x = 0;
+			}
+			
+			if (bullet.position.x < 0) {
+				bullet.position.x = width;
+			}
+			
+			if (bullet.position.y > height) {
+				bullet.position.y = 0;
+			}
+			
+			if (bullet.position.y < 0) {
+				bullet.position.y = height;
+			}
+		}
+		
+		for (var j = 0; j < GLOBS.length; j++) {
+			var glob = GLOBS[j];
+			
+			if (distance(bullet.position, glob.position) < glob.radius + BULLET_RADIUS + GRADIENT_RADIUS / 2) {
+				bullets.splice(i, 1);
+				GLOBS.splice(j, 1);
+				EXPLOSIONS.push(new Explosion(glob.position, GLOB_EXPLOSION_MAGNITUDE, EXPLOSION_NUM_PARTICLES, EXPLOSION_PARTICLE_LIFETIME, GLOB_EXPLOSION_COLOR));
+				SCORE += 10; 
+				
+				//apply impuses to surrounding globs
+				for (var k = 0; k < GLOBS.length; k++) {
+					var glob2 = GLOBS[k];
+					
+					if (j != k && (distance(glob.position, glob2.position) < glob2.radius + glob.radius + GLOB_BLAST_RADIUS)) {
+						var direction = glob2.position.sub(glob.position).normalize();
+						var impulse = direction.scale(GLOB_BLAST_MAGNITUDE);
+						glob2.addImpulse(impulse);
+					}
+				}
+			}
+		}
+	}
+}
+
+function drawBullets(ctx, bullets) {
+	for (var i = 0; i < bullets.length; i++) {
+		drawCircle(ctx, bullets[i].position, BULLET_RADIUS, BULLET_COLOR);	
+	}
+}
+/*
+ * Display
+ */
+function drawScoreDisplay(canvas, ctx, score) {
+	var displayPosition = new Vector (canvas.width - 90, 40);
+	
+	ctx.save();
+	
+	ctx.font = "bold 20px sans-serif";
+	ctx.fillStyle = "black";
+	ctx.fillText(score, displayPosition.x, displayPosition.y);
+	
+	ctx.restore();
+}
+
+function drawLivesDisplay(canvas, ctx, lives) {
+	ctx.save();
+	
+	ctx.font = "12px sans-serif";
+	ctx.fillStyle = "black";
+	ctx.fillText("Lives  " + lives, 20, 55);
+
+	ctx.restore();
+}
+
+function drawAbDisplay(canvas, ctx, abFuel) {
+	var displayPosition = new Vector(20, 34);
+	
+	ctx.save();
+
+	//label
+	ctx.font = "12px sans-serif";
+	ctx.fillStyle = "black";
+	ctx.fillText("Turbo", displayPosition.x, displayPosition.y);
+	
+	//fuel bar background
+	ctx.beginPath();
+	ctx.rect(displayPosition.x + 40, displayPosition.y - 9, 102, 10);
+	ctx.fillStyle = 'white';
+	ctx.fill();
+	ctx.lineWidth = 2;
+	ctx.strokeStyle = 'black';
+	ctx.stroke();
+	
+	//fuel bar
+	ctx.beginPath();
+	ctx.rect(displayPosition.x + 41, displayPosition.y - 8, (abFuel / AB_MAX_FUEL) * 100, 8);
+	ctx.fillStyle = 'grey';
+	ctx.fill();
+	
+	ctx.restore();
+}
+
+function displayRespawnMessage(canvas, ctx, secondsRemaining) {
+	var canvasCenter = new Vector(canvas.width / 2, canvas.height / 2);
+
+	ctx.save();
+
+	ctx.font = "bold 16px sans-serif";
+	ctx.fillStyle = "black";
+	ctx.textAlign = 'center';
+	ctx.fillText("Respawn in " + secondsRemaining, canvasCenter.x - 15, canvasCenter.y);
+	
+	ctx.restore();	
+}
+/*
+ * Events
+ */
+function KeyEventHandler(key, action) {
+	this.key = key;
+	this.action = action;
+}
+
+function addKeyDownHandler(handler) {
+	KEY_DOWN_EVENT_HANDLERS.push(handler);
+}
+
+function addKeyUpHandler(handler) {
+	KEY_UP_EVENT_HANDLERS.push(handler);
+}
+
+function handleKeyDownEvent(event) {
+	for (var i = 0; i < KEY_DOWN_EVENT_HANDLERS.length; i++) {
+		var handler = KEY_DOWN_EVENT_HANDLERS[i];
+		
+		if (handler.key == event.which) {
+			handler.action();
+			event.preventDefault();
+		}
+	}
+}
+
+function handleKeyUpEvent(event) {
+	for (var i = 0; i < KEY_UP_EVENT_HANDLERS.length; i++) {
+		var handler = KEY_UP_EVENT_HANDLERS[i];
+		
+		if (handler.key == event.which) {
+			handler.action();
+			event.preventDefault();
+		}
+	}
+}
+
+/*
+ * Event Handlers
+ */
+function upArrowDown() {
+	SHIP.accelerating = 1;
+}
+
+function upArrowUp() {
+	SHIP.accelerating = 0;
+}
+
+function leftArrowDown() {
+	SHIP.turning = -1;
+}
+
+function leftArrowUp() {
+	SHIP.turning = 0;
+}
+
+function rightArrowDown() {
+	SHIP.turning = 1;
+}
+
+function rightArrowUp() {
+	SHIP.turning = 0;
+}
+
+function spaceBarDown() {
+	if (SHIP.alive && SHIP.gunCooldown == 0) {
+		//find position of front of ship
+		var shipBow = SHIP_MODEL[1];
+		shipBow = PolarVector(shipBow.angle() + SHIP.orientation - PI/2, shipBow.norm());
+		shipBow = shipBow.add(SHIP.position);
+		
+		//fire bullet
+		BULLETS.push(new Bullet(shipBow, SHIP.orientation, BULLET_SPEED, BULLET_LIFETIME));
+		
+		//set cooldown
+		SHIP.gunCooldown = SHIP_GUN_COOLDOWN;
+	}
+}
+
+function shiftDown() {
+	SHIP.abActivated = true;	
+}
+
+function shiftUp() {
+	SHIP.abActivated = false;
+	SHIP.abCooldown = AB_COOLDOWN;
+}
+/*
+ * Explosions
+ */
+function explosion(position, magnitude, particleMass, particleRadius, numParticles, collisions) {
+	var particles = [];
+	
+	for (var i = 0; i < numParticles; i++) {
+		var velocity = new PolarVector(Math.random() * PI_2, Math.random() * magnitude);
+		var particle = new Particle(particleMass, particleRadius, position.add(velocity.scale(DT)), velocity);	
+		particles.push(particle);
+	}
+	
+	return particles;
+}
+
+function Explosion(position, magnitude, numParticles, lifetime, color) {
+	this.position = position;
+	this.particles = explosion(position, magnitude, 1.0, EXPLOSION_PARTICLE_RADIUS, numParticles, false);
+	this.age = 0;
+	this.lifetime = lifetime;
+	this.color = color;
+}
+
+function updateExplosions(explosions) {
+	for (var i = 0; i < explosions.length; i++) {
+		var explosion = explosions[i];
+		
+		//increase explosion age and destroy explosion if past lifetime
+		explosion.age++;
+		
+		if (explosion.lifetime > 0 && explosion.age > explosion.lifetime) {
+			explosion.particles = [];
+			explosions.splice(i, 1);
+		} else {
+			updateParticles(explosion.particles, GLOB_EXPLOSION_MAGNITUDE, EXPLOSION_DAMPING, false);
+		}
+	}
+}
+
+function drawExplosions(ctx, explosions) {	
+	for (var i = 0; i < explosions.length; i++) {
+		drawParticles(ctx, explosions[i].particles, explosions[i].color);	
+	}
+}
+/*
+ * Gravity
+ */
+function gravForce(particle1, particle2, gravity, dropoff) {
+	var r = distance(particle1.position, particle2.position);
+	
+	if (r < particle1.radius + particle2.radius) {
+		return new Vector(0, 0);	
+	} else {
+		var c = (gravity * particle1.mass * particle2.mass) * Math.exp(-(dropoff) * r);		
+		var d = particle2.position.sub(particle1.position).normalize();	
+		return d.scale(c);
+	}
+}
+
+function addGravity(particles) {
+	for (var i = 0; i < particles.length; i++) {
+		for (var j = 0; j < particles.length; j++) {
+			if (i != j) {
+				particles[i].addForce(gravForce(particles[i], particles[j], GRAVITY, GRAVITY_DROPOFF));	
+			}
+		}
+	}
+}
+/*
+ * Greygoo
+ */
+function drawGreyGoo(ctx, tmpCtx, particles) {
+	tmpCtx.clearRect(0, 0, TMP_CANVAS.width, TMP_CANVAS.height);
+	
+	//draw gradients
+	for (var i = 0; i < particles.length; i++) {
+		particle = particles[i];
+		
+		tmpCtx.beginPath();
+		var gradient = tmpCtx.createRadialGradient(particle.position.x, particle.position.y, particle.radius, particle.position.x, particle.position.y, GRADIENT_RADIUS);
+		gradient.addColorStop(0, GRADIENT_STOP0);
+		gradient.addColorStop(1, GRADIENT_STOP1);
+		tmpCtx.fillStyle = gradient;
+		tmpCtx.arc(particle.position.x, particle.position.y, particle.radius + GRADIENT_RADIUS, 0, PI_2);
+		tmpCtx.fill();
+	}
+	
+	//filter alpha channel
+	var image = tmpCtx.getImageData(0, 0, TMP_CANVAS.width, TMP_CANVAS.height);
+	var imageData = image.data;
+	
+	for (var i = 0; i < imageData.length; i += 4) {
+		var j = i + 3;
+
+		if (imageData[j] < MIN_ALPHA_THRESHOLD) {
+			imageData[j] = 0;	
+		} else if (MIN_ALPHA_THRESHOLD <= imageData[j] && imageData[j] <= MAX_ALPHA_THRESHOLD) {
+			imageData[j] = 255;	
+		} else if (imageData[j] > MAX_ALPHA_THRESHOLD) {
+			imageData[j] = 255;
+		}
+	}
+	
+	ctx.putImageData(image, 0, 0);
+}
+
+
+
+/*
+ * Particles
+ */
+function Particle(mass, radius, position, velocity) {
+	this.radius = radius;
+	this.mass = mass;
+	this.position = position;
+	this.velocity = velocity;
+	this.acceleration = new Vector(0, 0);
+	this.forces = [];
+}
+
+Particle.prototype.inverseMass = function () {
+	return (1.0 / this.mass);	
+}
+
+Particle.prototype.applyForces = function () {
+	var netForce = new Vector(0, 0);
+	
+	for (var i = 0; i < this.forces.length; i++) {
+		netForce = netForce.add(this.forces[i]);
+	}
+	
+	this.acceleration = netForce.scale(this.inverseMass());
+}
+
+Particle.prototype.addForce = function (force) {
+	this.forces.push(force);
+}
+
+Particle.prototype.clearForces = function () {
+	this.forces = [];
+}
+
+Particle.prototype.addImpulse = function (impulse) {
+	this.velocity = this.velocity.add(impulse.scale(this.inverseMass()));
+}
+
+/*
+ * Particle collision contact
+ */
+function ParticleContact(particle1, particle2) {
+	this.particle1 = particle1;
+	this.particle2 = particle2;
+	this.contactNormal = particle2.position.sub(particle1.position).normalize();
+	this.interpenetrationDepth = particle1.radius + particle2.radius - distance(particle1.position, particle2.position);
+}
+
+ParticleContact.prototype.resolveInterpenetration = function () {
+	var totalInverseMass = this.particle1.inverseMass() + this.particle2.inverseMass();
+	this.particle1.position = this.particle1.position.add(this.contactNormal.scale(-1.0 * (this.particle1.mass * totalInverseMass) * this.interpenetrationDepth));
+	this.particle2.position = this.particle2.position.add(this.contactNormal.scale((this.particle2.mass * totalInverseMass) * this.interpenetrationDepth));
+}
+
+ParticleContact.prototype.resolveVelocity = function() {
+	var relativeVelocity = this.particle2.velocity.sub(this.particle1.velocity); 
+	var separatingVelocity = relativeVelocity.dot(this.contactNormal);
+	
+	if (separatingVelocity > 0) {
+		return;
+	}
+	
+	var newSeparatingVelocity = -1.0 * GLOB_CR * separatingVelocity;
+	var deltaSeparatingVelocity = newSeparatingVelocity - separatingVelocity;
+	
+	var totalInverseMass = this.particle1.inverseMass() + this.particle2.inverseMass();
+	var impulseMagnitude = deltaSeparatingVelocity / totalInverseMass;
+	
+	var impulse = this.contactNormal.scale(impulseMagnitude);
+	
+	this.particle1.addImpulse(impulse.scale(-1.0));
+	this.particle2.addImpulse(impulse);
+}
+
+
+function updateParticles(particles, maxSpeed, velocityDamping, collisions) {
+	var width = CANVAS.width - 1;
+	var height = CANVAS.height - 1;
+	var contacts = [];
+	
+	
+	for (var i = 0; i < particles.length; i++) {
+		var particle = particles[i];
+		
+		//apply forces
+		particle.applyForces();
+		
+		//clear forces
+		particle.clearForces();
+		
+		//update position/velocity
+		particle.velocity = particle.velocity.scale(Math.pow(velocityDamping, DT)).add(particle.acceleration.scale(DT));	
+		particle.velocity = particle.velocity.normalize().scale(clamp(particle.velocity.norm(), 0, maxSpeed));
+		particle.position = particle.position.add(particle.velocity.scale(DT)).add(particle.acceleration.scale(DT_2));
+		
+		//bounds check
+		if (particle.position.x > width) {
+			particle.position.x = 0;
+		}
+		
+		if (particle.position.x < 0) {
+			particle.position.x = width;
+		}
+		
+		if (particle.position.y > height) {
+			particle.position.y = 0;
+		}
+		
+		if (particle.position.y < 0) {
+			particle.position.y = height;
+		}
+		
+		if (collisions) {			
+			//collision detection: contact generation (check all pairs of particles)
+			for (var j = i + 1; j < particles.length; j++) {
+				var particle2 = particles[j];
+				
+				if (distance(particle.position, particle2.position) < particle.radius + particle2.radius) {
+					contacts.push(new ParticleContact(particle, particle2));
+				}
+			}
+		}
+	}
+	
+	if (collisions) {			
+		//velocity and interpenetration resolution
+		for (var j = 0; j < contacts.length; j++) {
+			contacts[j].resolveInterpenetration();
+			contacts[j].resolveVelocity();	
+		}
+	}
+}
+
+function drawParticles(ctx, particles, color) {
+	for (var i = 0; i < particles.length; i++) {
+		drawCircle(ctx, particles[i].position, particles[i].radius, color);
+	}
+}
+/*
+ * Settings
+ */
+function createBlob(numGlobs, position, orientation, speed) {
+	var globs = explosion(position, GLOB_EXPLOSION_MAGNITUDE, GLOB_MASS, GLOB_RADIUS, numGlobs, true);
+	
+	for (var i = 0; i < globs.length; i++) {
+		globs[i].velocity = PolarVector(orientation, speed);
+	}
+	
+	return globs;
+}
+
+function addBlobs(blobs) {
+	for (var i = 0; i < blobs.length; i++) {
+		var blob = createBlob(blobs[i].size, new Vector(random(0, $("#canvas").width()-1), random(0, $("#canvas").height()-1)),
+	 					  	  random(0, PI_2),
+	 					  	  blobs[i].speed);
+	 				      
+	 	for (var j = 0; j < blob.length; j++) {
+	 		GLOBS.push(blob[j]);
+	 	}
+	}
+}
+ 
+function level1Settings() {
+	GRAVITY						= 40;					//30				Gravitational constant
+	GRAVITY_DROPOFF				= 0.001;				//0.001				Gravitational dropoff
+
+	GLOB_MAX_SPEED		 		= 400;					//400				Maxiumum particle velocity														//
+
+	GLOB_BLAST_RADIUS			= 30;					//30				Radius of effect
+	GLOB_BLAST_MAGNITUDE		= GLOB_MAX_SPEED / 2;	//400				Impulse to apply to globs in the radius of effect
+
+	GLOB_CR						= 0.80;					//1.0				Coefficient of restitution
+
+	var blobs = [ { size: 20, speed: GLOB_MAX_SPEED / 2 } ];
+	 
+	addBlobs(blobs);
+}
+
+function level2Settings() {
+	GRAVITY						= 30;					//40				Gravitational constant
+	GRAVITY_DROPOFF				= 0.005;				//0.001				Gravitational dropoff
+
+	GLOB_MAX_SPEED		 		= 500;					//400				Maxiumum particle velocity														//
+
+	GLOB_BLAST_RADIUS			= 30;					//20				Radius of effect
+	GLOB_BLAST_MAGNITUDE		= GLOB_MAX_SPEED / 2;	//400				Impulse to apply to globs in the radius of effect
+
+	GLOB_CR						= 0.80;					//1.0				Coefficient of restitution
+	
+	var blobs = [ { size: 20, speed: GLOB_MAX_SPEED / 2 }, { size: 10, speed: GLOB_MAX_SPEED } ];
+	 
+	addBlobs(blobs);
+}
+
+function level3Settings() {
+	GRAVITY						= 100;					//40				Gravitational constant
+	GRAVITY_DROPOFF				= 0.01;					//0.001				Gravitational dropoff
+
+	GLOB_MAX_SPEED		 		= 600;					//500				Maxiumum particle velocity														//
+
+	GLOB_BLAST_RADIUS			= 30;					//20				Radius of effect
+	GLOB_BLAST_MAGNITUDE		= GLOB_MAX_SPEED;		//400				Impulse to apply to globs in the radius of effect
+	
+	GLOB_CR						= 0.80;					//1.0				Coefficient of restitution	
+
+	var blobs = [ { size: 20, speed: GLOB_MAX_SPEED / 3 }, { size: 15, speed: GLOB_MAX_SPEED / 2 }, { size: 20, speed: 2 * GLOB_MAX_SPEED / 3 } ];
+	 
+	addBlobs(blobs);
+}
+
+function loadSettings(stage) {
+	switch (stage) {
+	case 1:
+		level1Settings();
+		break;
+	case 2:
+		level2Settings();
+		break;
+	case 3:
+		level3Settings();
+		break;
+	default:
+		level3Settings();
+	}
+}
+
+/*
+ * Ship
+ */
+function Ship(position, maxSpeed, damping, acceleration, turnRate) {
+	this.alive = true;					//true if ship is alive
+	this.gunCooldown = 0;				//gun cooldown
+	this.abActivated = false;			//afterburner is activated
+	this.abCooldown = 0;				//afterburner cooldown
+	this.abFuel = AB_MAX_FUEL;			//afterburner fuel
+	this.position = position;
+	this.orientation = 0;				//angle
+	this.velocity = new Vector(0, 0);
+	this.maxSpeed = maxSpeed;
+	this.damping = damping;
+	this.acceleration = acceleration;	//acceleration magnitude
+	this.turnRate = turnRate;			//radians per frame
+	this.turning = 0;					//turning coefficient
+	this.accelerating = 0;				//acceleration coefficient
+}
+
+function updateShip(ship, shipModel) {
+	if (ship.alive) {
+		var width = CANVAS.width - 1;
+		var height = CANVAS.height - 1;
+		
+		var acceleration = PolarVector(ship.orientation, 1).scale(ship.accelerating * ship.acceleration);
+		
+		ship.velocity = ship.velocity.scale(Math.pow(ship.damping, DT)).add(acceleration.scale(DT));
+		ship.velocity = ship.velocity.normalize().scale(clamp(ship.velocity.norm(), 0, ship.maxSpeed));
+		ship.position = ship.position.add(ship.velocity.scale(DT)).add(acceleration.scale(DT_2));
+		ship.orientation += ship.turning * ship.turnRate * DT;
+		
+		//bounds check
+		if (ship.position.x > width) {
+			ship.position.x = 0;
+		}
+		
+		if (ship.position.x < 0) {
+			ship.position.x = width;
+		}
+		
+		if (ship.position.y > height) {
+			ship.position.y = 0;
+		}
+		
+		if (ship.position.y < 0) {
+			ship.position.y = height;
+		}
+		
+		//check if ship has collided with glob(s)
+		for (var i = 0; i < GLOBS.length; i++) {
+			var glob = GLOBS[i];
+			
+			//write glob position in ship's coordinate frame
+			var globPosition = glob.position.sub(ship.position);
+			globPosition = PolarVector(globPosition.angle() - ship.orientation + PI / 2, globPosition.norm());
+			
+			if (circleIntersectTriangle(globPosition, glob.radius + (1/4) * GRADIENT_RADIUS, shipModel[0], shipModel[1], shipModel[2])) {
+				ship.alive = false;
+				LIVES--;
+				RESPAWN_FRAMES_REMAINING = RESPAWN_DELAY;
+				EXPLOSIONS.push(new Explosion(ship.position, SHIP_EXPLOSION_MAGNITUDE, EXPLOSION_NUM_PARTICLES/5, EXPLOSION_PARTICLE_LIFETIME, "black"));
+				EXPLOSIONS.push(new Explosion(ship.position, SHIP_EXPLOSION_MAGNITUDE, EXPLOSION_NUM_PARTICLES, EXPLOSION_PARTICLE_LIFETIME, SHIP_EXPLOSION_COLOR1));
+				EXPLOSIONS.push(new Explosion(ship.position, SHIP_EXPLOSION_MAGNITUDE, EXPLOSION_NUM_PARTICLES, EXPLOSION_PARTICLE_LIFETIME, SHIP_EXPLOSION_COLOR2));
+				return;
+			}
+		}
+		
+		//update gun
+		if (ship.gunCooldown > 0) {
+			ship.gunCooldown--;	
+		}
+		
+		//update afterburner
+		if (ship.abCooldown > 0) {
+			ship.abCooldown--;
+		}
+		
+		//reminder: everytime the shift button is pressed, the cooldown is activated
+		if (ship.abActivated) {
+			//afterburner is activated
+			
+			//there is fuel in the tank
+			if (ship.abFuel > 0) {
+				//engines set to turbo acceleration and max velocity
+				//drain the fuel a bit
+				ship.acceleration = AB_ACCELERATION;
+				ship.maxSpeed = AB_SHIP_MAX_SPEED;
+				ship.abFuel -= AB_FUEL_CONSUMPTION;
+				ship.abFuel = clamp(ship.abFuel, 0, AB_MAX_FUEL);
+			} else if (ship.abFuel == 0) {
+				//set engines to default acceleration and max speed
+				ship.acceleration = SHIP_ACCELERATION;
+				ship.maxSpeed = SHIP_MAX_SPEED;
+			}
+		} else {
+			//afterburner is off
+			//engines set to default acceleration and max speed
+			ship.acceleration = SHIP_ACCELERATION;
+			ship.maxSpeed = SHIP_MAX_SPEED;
+			
+			//the cooldown period is over and we are below maximum fuel
+			if (ship.abCooldown == 0 && ship.abFuel < AB_MAX_FUEL) {
+				//fill the fuel a bit
+				ship.abFuel += AB_FUEL_RECHARGE_RATE;
+				ship.abFuel = clamp(ship.abFuel, 0, AB_MAX_FUEL);
+			}
+		}
+	}
+}
+
+function drawShip(ctx, ship, model, interiorColor, borderColor) {
+	if (ship.alive) {
+		ctx.save();
+		
+		ctx.translate(ship.position.x, ship.position.y);
+		ctx.rotate(ship.orientation - PI / 2);
+		
+		drawPolyLine(ctx, model, interiorColor, borderColor);
+		
+		ctx.restore();
+	}
+}
+
+function drawEngineFlames(ctx, ship, model, interiorColor, borderColor) {
+	if (ship.alive) {
+		ctx.save();
+		
+		ctx.translate(ship.position.x, ship.position.y);
+		ctx.rotate(ship.orientation - PI / 2);
+		
+		drawPolyLine(ctx, model, interiorColor, borderColor);
+		
+		ctx.restore();	
+	}
+}
+
+/*
+ * Generates the vertices of an isoceles triangle
+ */
+function generateShipModel(base, height) {
+	var hypotenuse = Math.sqrt(height * height + (1/4) * base * base);
+	var theta = Math.atan((2 * height) / base);
+	
+	var v1 = new Vector(0, 0);
+	var v2 = PolarVector(theta, hypotenuse);
+	var v3 = PolarVector(0, base);
+	
+	var center = v1.add(v2.add(v3)).scale(1/3);
+	v1 = v1.sub(center);
+	v2 = v2.sub(center);
+	v3 = v3.sub(center);
+	
+	return [ v1, v2, v3, v1 ];
+}
+
+/*
+ * Generates engine flames
+ */
+function generateEngineFlames(shipBase, shipModel, flameStep, flameMagnitude) {
+	var start = shipModel[0];
+	
+	var flames = [ start ];
+	
+	for (var dist = flameStep; dist < shipBase; dist += flameStep) {
+		flames.push(new Vector(start.x + dist, start.y - random(0, flameMagnitude) - 2));
+	}
+	
+	flames.push(shipModel[shipModel.length - 2]);
+	
+	return flames;
+}
+
+/*
+ * Tests if p1 and p2 are on the same side of the line l(x) = v1 + x(v2 - v1)
+ */
+function sameSide(p1, p2, v1, v2) {
+	var cp1 = p1.sub(v1).cross(v2.sub(v1));
+	var cp2 = p2.sub(v1).cross(v2.sub(v1));
+	return (cp1 * cp2 >= 0);
+}
+
+/*
+ * Tests if p is in the triangle [v1, v2, v3]
+ */
+function inTriangle(p, v1, v2, v3) {
+	return (sameSide(p, v3, v1, v2) && 
+			sameSide(p, v1, v2, v3) && 
+			sameSide(p, v2, v3, v1));
+}
+
+/*
+ * Computes the orthogonal projection of p onto the line l(x) = v1 + x(v2 - v1) 
+ */
+function orthoProjection(p, v1, v2) {
+	var t = p.sub(v1).dot(v2.sub(v1)) / v2.sub(v1).dot(v2.sub(v1));
+	var op = v1.add(v2.sub(v1).scale(t));
+	return { t : t, op : op };
+}
+
+/*
+ * Tests if the circle (center, radius) is in the triangle [v1, v2, v3]
+ */
+function circleIntersectTriangle(center, radius, v1, v2, v3) {
+	if (inTriangle(center, v1, v2, v3))
+		return true;
+	
+	if (distance(center, v1) < radius ||
+		distance(center, v2) < radius ||
+		distance(center, v3) < radius)
+		return true;
+		
+	var projection = orthoProjection(center, v1, v2);
+	
+	if (0 < projection.t && projection.t < 1 && distance(center, projection.op) < radius)
+		return true;
+	
+	projection = orthoProjection(center, v2, v3);
+	
+	if (0 < projection.t && projection.t < 1 && distance(center, projection.op) < radius)
+		return true;
+	
+	projection = orthoProjection(center, v3, v1);
+	
+	if (0 < projection.t && projection.t < 1 && distance(center, projection.op) < radius)
+		return true;
+	
+	return false;
+}
+
+/*
+ * Utility functions
+ */
+function clamp(c, min, max) {
+	if (c < min)
+		return min;
+	else if (c > max)
+		return max
+	else
+		return c;
+}
+
+function random(min, max) {
+	return min + Math.random() * (max - min);
+}
+
+function drawCircle(ctx, position, radius, color) {
+	ctx.beginPath();
+	ctx.fillStyle = color;
+	ctx.arc(position.x, position.y, radius, 0, PI_2);
+	ctx.closePath();
+	ctx.fill();
+}
+
+function drawPolyLine(ctx, vertices, interiorColor, borderColor) {
+	ctx.beginPath();
+	
+	ctx.moveTo(vertices[0].x, vertices[0].y);
+	
+	for (var i = 1; i < vertices.length; i++) {
+		ctx.lineTo(vertices[i].x, vertices[i].y);
+	}
+	
+	if (interiorColor) {
+		ctx.fillStyle = interiorColor;
+		ctx.fill();
+	}
+
+	if (borderColor) {
+		ctx.lineWidth = 3;
+		ctx.strokeStyle = borderColor;
+		ctx.stroke();
+	}
+}
+/*
+ * Vector class
+ */
+ 
+function Vector(x, y) {
+	this.x = x;
+	this.y = y;	
+}
+
+Vector.prototype.add = function (v) {
+	return new Vector(this.x + v.x, this.y + v.y);	
+}
+
+Vector.prototype.sub = function (v) {
+	return new Vector(this.x - v.x, this.y - v.y);	
+}
+
+Vector.prototype.scale = function (c) {
+	return new Vector(c * this.x, c * this.y);
+}
+
+Vector.prototype.dot = function (v) {
+	return this.x * v.x + this.y * v.y;	
+}
+
+Vector.prototype.cross = function (v) {
+	return this.x * v.y - this.y * v.x;	
+}
+
+Vector.prototype.angle = function () {
+	return Math.atan(this.y, this.x);	
+}
+
+Vector.prototype.norm = function () {
+	return Math.sqrt(this.x * this.x + this.y * this.y);	
+}
+
+Vector.prototype.normalize = function () {
+	var c = this.norm();
+
+	if (c == 0) {
+		return this;
+	} else {
+		return this.scale(1 / c);		
+	}
+}
+
+Vector.prototype.toString = function () {
+	return "Vector(" + this.x + ", " + this.y + ")";	
+}
+
+/*
+ * Create vector in polar form
+ */
+function PolarVector(angle, length) {
+	return new Vector(length * Math.cos(angle), length * Math.sin(angle));
+}
+
+/*
+ * Distance between two points
+ */
+function distance(v1, v2) {
+	return v1.sub(v2).norm();
+}

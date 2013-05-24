@@ -7,11 +7,11 @@ function KeyEventHandler(key, action) {
 }
 
 function addKeyDownHandler(handler) {
-	this.KEY_DOWN_EVENT_HANDLERS.push(handler);
+	KEY_DOWN_EVENT_HANDLERS.push(handler);
 }
 
 function addKeyUpHandler(handler) {
-	this.KEY_UP_EVENT_HANDLERS.push(handler);
+	KEY_UP_EVENT_HANDLERS.push(handler);
 }
 
 function handleKeyDownEvent(event) {

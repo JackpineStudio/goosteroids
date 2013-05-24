@@ -8,16 +8,13 @@ var DT_2 					 	= DT * DT;				//DT * DT			Delta time squared
 var PI							= Math.PI				//					Pi	
 var PI_2	 					= 2 * Math.PI;			//2 * PI			Twice pi
 														//
-var G 							= 35;					//30				Gravitational constant 
-var G_DROPOFF					= 0.001;				//0.001				Gravitational dropoff
-														//
-var GLOBS	 					= [];					//[]				Array of particles
+var GRAVITY						= 30;					//30				Gravitational constant 
+var GRAVITY_DROPOFF				= 0.001;				//0.001				Gravitational dropoff
 														//
 var GLOB_MAX_SPEED		 		= 400;					//400				Maxiumum particle velocity														//
 var GLOB_EXPLOSION_MAGNITUDE	= 250;					//200				Explosion magnitude (particle max velocity)
 var GLOB_BLAST_RADIUS			= 30;					//20				Radius of effect
 var GLOB_BLAST_MAGNITUDE		= 700;					//300				Impulse to apply to globs in the radius of effect
-var GLOB_EXPLOSION_COLOR		= "#999999";			//"#999999"			Explosion color
 														//
 var GLOB_MASS					= 1;					//1 				Particle mass
 var GLOB_CR						= 0.80;					//1.0				Coefficient of restitution
@@ -30,14 +27,13 @@ var GRADIENT_RADIUS 			= GLOB_RADIUS * 3;		//GLOB_RADIUS * 3	Gradient radius mul
 var GRADIENT_STOP0				= "rgba(80, 80, 80, 1)";//					Gradient color stop 0
 var GRADIENT_STOP1				= "rgba(80, 80, 80, 0)";//					Gradient color stop 1
 														//
-var BULLETS						= [];					//[]				Bullets
+var GLOB_EXPLOSION_COLOR		= "#999999";			//"#999999"			Explosion color
 														//
 var BULLET_SPEED				= 650;					//650				Bullet speed
 var BULLET_LIFETIME				= 20;					//20				Number of milliseconds bullet is alive
 var BULLET_RADIUS				= 2;					//2					Bullet radius
 var BULLET_COLOR				= "#000000";			//"#000000"			Bullet color
 														//
-var EXPLOSIONS					= [];					//[]				Array of explosions
 var EXPLOSION_DAMPING			= 0.9					//0.9				Particle velocity damping
 var EXPLOSION_NUM_PARTICLES		= 15;					//15				Number of particles in an explosion
 var EXPLOSION_PARTICLE_RADIUS	= 2;					//2					Particle radius
@@ -47,7 +43,6 @@ var SHIP_EXPLOSION_MAGNITUDE	= 2000;					//350				Explosion magnitude (particle 
 var SHIP_EXPLOSION_COLOR1		= "red";				//"red"				Explosion color 1
 var SHIP_EXPLOSION_COLOR2		= "yellow";				//"yellow"			Explosion color 2
 														//
-var SHIP						= null;					//null				Ship object
 var SHIP_GUN_COOLDOWN			= 4;					//5					Minimum time between shots
 var SHIP_MAX_SPEED				= 400;					//400				Max ship speed
 var SHIP_ACCELERATION			= 500;					//300				Ship acceleration magnitude
@@ -67,11 +62,26 @@ var AB_MAX_FUEL					= 100;					//100				Max afterburer fuel
 var AB_COOLDOWN					= 60;					//30				Afterburner Cooldown
 var AB_SHIP_MAX_SPEED			= 2.25 * SHIP_MAX_SPEED;//2.5x				Afterburner ship max speed 
 														//
+var FLAMES_COLOR  				= "blue";				//	
+var FLAMES_INTERIOR_COLOR  		= "#ffffff";			//
+var FLAMES_MAGNITUDE			= 6;					//
+var FLAMES_STEP					= 2;					//
+var FLAMES_AB_MAGNITUDE			= 17;					//
+var FLAMES_AB_STEP				= 3;					//
+														//
+var RESPAWN_DELAY				= 3 * FPS;				// 
+var RESPAWN_FRAMES_REMAINING	= 0;					// 
+														//
 var CANVAS 						= null;					//null				Canvas
 var TMP_CANVAS		 			= null;					//null				Temporary canvas
 														//
 var CTX 						= null;					//null				2D context
 var TMP_CTX			 			= null;					//null				Temporary 2D context
+														//
+var SHIP						= null;					//null				Ship object
+var GLOBS	 					= [];					//[]				Array of particles
+var BULLETS						= [];					//[]				Bullets
+var EXPLOSIONS					= [];					//[]				Array of explosions
 														//
 var KEY_DOWN_EVENT_HANDLERS		= [];					//					Key down event handlers
 var KEY_UP_EVENT_HANDLERS		= [];					//					Key up event handlers													
@@ -83,21 +93,11 @@ var KEY_RIGHT_ARROW				= 39;					//					Right arrow key code
 var KEY_SPACE_BAR				= 32;					//					Space bar key code
 var KEY_SHIFT					= 16;					//					Shift key						
 														//
+var STAGE						= 1;					//1					Stage
 var SCORE						= 0;					//0					Score
 var LIVES						= 3;					//3					Lives
-var STAGE						= 0;					//0
+														//
 var MAIN_LOOP_INTERVAL_ID		= null;					//null
-														//
-var RESPAWN_DELAY				= 3 * FPS;				// 
-var RESPAWN_FRAMES_REMAINING	= 0;					// 
-														//
-var FLAMES_COLOR  				= "blue";				//	
-var FLAMES_INTERIOR_COLOR  		= "#ffffff";			//
-var FLAMES_MAGNITUDE			= 6;					//
-var FLAMES_STEP					= 2;					//
-var FLAMES_AB_MAGNITUDE			= 17;					//
-var FLAMES_AB_STEP				= 3;					//
-
 
 /*
  * Game setup
@@ -114,6 +114,26 @@ function endGame() {
 	$('#gameOverContainer').fadeIn(4000);
 }
 
+function stageOver() {
+	clearInterval(MAIN_LOOP_INTERVAL_ID);
+	
+	$('#stageOverMessage').html("Stage " + STAGE + " complete!<br>Prepare for stage " + (STAGE+1) + "...");
+	
+	$('#gameContainer').fadeOut(1000);
+	$('#stageOverContainer').fadeIn(4000, function () {
+		setTimeout(function () {
+			$('#stageOverContainer').hide();
+			$('#gameContainer').fadeIn(4000);
+				
+			STAGE++;
+			loadSettings(STAGE);
+			spawnShip();
+			MAIN_LOOP_INTERVAL_ID = setInterval(mainLoop, 1000 / FPS);
+			
+		}, 1000);
+	});
+}
+
 function respawn() {
 	if (!SHIP.alive && RESPAWN_FRAMES_REMAINING) {
 		RESPAWN_FRAMES_REMAINING--;
@@ -128,38 +148,18 @@ function respawn() {
 	}
 }
 
-function createBlob(numGlobs, position, orientation, speed) {
-	var globs = explosion(position, GLOB_EXPLOSION_MAGNITUDE, GLOB_MASS, GLOB_RADIUS, numGlobs, true);
-	
-	for (var i = 0; i < globs.length; i++) {
-		globs[i].velocity = PolarVector(orientation, speed);
-	}
-	
-	return globs;
-}
-
-function setupStage(level) {
-	//create random blobs
-	var numBlobs = clamp(level, 0, 9) + 1;
-	
-	 for (var i = 0; i < numBlobs; i++) {
-	 	var blob = createBlob(random(10, 20), 
-	 						  new Vector(random(0, $("#canvas").width()-1), 
-	 						  	  		 random(0, $("#canvas").height()-1)),
-	 						  random(0, PI_2),
-	 						  random(500, 1000));
-	 	
-	 	for (var j = 0; j < blob.length; j++) {
-	 		GLOBS.push(blob[j]);	
-	 	}		  
-	 }
-}
-
 /*
  * Main loop
  */
 function mainLoop() {
 	CTX.clearRect(0, 0, CANVAS.width, CANVAS.height);
+	
+	if (GLOBS.length == 0) {
+		BULLETS = [];
+		
+		stageOver();
+	}
+	
 	addGravity(GLOBS);
 	
 	updateBullets(BULLETS);
@@ -227,7 +227,8 @@ function mainLoop() {
 	//setup game
 	SHIP_MODEL = generateShipModel(SHIP_MODEL_BASE, SHIP_MODEL_HEIGHT);
 	
-	setupStage(STAGE);
+	//load settings
+	loadSettings(STAGE);
 	
 	//spawn ship	
 	spawnShip();
@@ -260,4 +261,10 @@ function mainLoop() {
 	
 	//run main loop
 	MAIN_LOOP_INTERVAL_ID = setInterval(mainLoop, 1000 / FPS);
+});
+ 
+var SESSION_ID = "<%= @session_id %>";
+
+$(document).ready(function () {
+	alert(SESSION_ID);		
 });
