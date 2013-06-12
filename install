@@ -1,1 +1,0 @@
-cp goosteroids-min.js ~/Projects/goosteroids-rails/app/views/goosteroids/index.js.erb
