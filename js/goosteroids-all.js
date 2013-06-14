@@ -383,7 +383,7 @@ function drawScoreDisplay(canvas, ctx, score) {
 	
 	ctx.save();
 	
-	ctx.font = "bold 24px sans-serif";
+	ctx.font = "bold 24px Arial";
 	ctx.fillStyle = "white";
 	ctx.fillText(score, displayPosition.x, displayPosition.y);
 	
@@ -393,7 +393,7 @@ function drawScoreDisplay(canvas, ctx, score) {
 function drawStageDisplay(canvas, ctx, stage) {
 	ctx.save();
 	
-	ctx.font = "10px sans-serif bolder";
+	ctx.font = "bold 10px Arial";
 	ctx.fillStyle = "white";
 	ctx.fillText("STAGE", 20, 55);
 	ctx.fillText(stage, 60, 55);
@@ -404,7 +404,7 @@ function drawStageDisplay(canvas, ctx, stage) {
 function drawLivesDisplay(canvas, ctx, lives) {
 	ctx.save();
 	
-	ctx.font = "10px sans-serif bolder";
+	ctx.font = "bold 10px Arial";
 	ctx.fillStyle = "white";
 	ctx.fillText("LIVES", 20, 75);
 	ctx.fillText(lives, 60, 75);
@@ -418,7 +418,7 @@ function drawAbDisplay(canvas, ctx, abFuel) {
 	ctx.save();
 
 	//label
-	ctx.font = "10px sans-serif bolder";
+	ctx.font = "bold 10px Arial";
 	ctx.fillStyle = "white";
 	ctx.fillText("TURBO", displayPosition.x, displayPosition.y);
 	
@@ -445,10 +445,10 @@ function displayRespawnMessage(canvas, ctx, secondsRemaining) {
 
 	ctx.save();
 
-	ctx.font = "bold 16px sans-serif";
+	ctx.font = "bold 18px Arial";
 	ctx.fillStyle = "white";
 	ctx.textAlign = 'center';
-	ctx.fillText("Respawning in " + secondsRemaining, canvasCenter.x - 15, canvasCenter.y);
+	ctx.fillText("RESPAWNING IN " + secondsRemaining, canvasCenter.x, canvasCenter.y);
 	
 	ctx.restore();	
 }
