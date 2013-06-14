@@ -5,3 +5,9 @@
 #
 #   cities = City.create([{ name: 'Chicago' }, { name: 'Copenhagen' }])
 #   Mayor.create(name: 'Emanuel', city: cities.first)
+
+# Session seeds
+
+sessions = Session.create([{ session_id: 'ZpOoftRxntBdUvoWvkpK87KIGKuPV3O56byG0cihKHWvnH1zUcSUaZtpbMTma',last_active: DateTime.now },
+						   { session_id: 'bQJTV5ETVw4cA7y1UJeDVe201Y5SviRKBUtGJLgi66HkZnYhvFqkWhpFgsUoaT', last_active: DateTime.now }])
+

@@ -27,23 +27,24 @@ var GRADIENT_RADIUS 			= GLOB_RADIUS * 3;		//GLOB_RADIUS * 3	Gradient radius mul
 var GRADIENT_STOP0				= "rgba(80, 80, 80, 1)";//					Gradient color stop 0
 var GRADIENT_STOP1				= "rgba(80, 80, 80, 0)";//					Gradient color stop 1
 														//
-var GLOB_EXPLOSION_COLOR		= "#999999";			//"#999999"			Explosion color
+var GLOB_EXPLOSION_COLOR		= "#b0b0b0";			//"#999999"			Explosion color
 														//
 var BULLET_SPEED				= 650;					//650				Bullet speed
 var BULLET_LIFETIME				= 20;					//20				Number of milliseconds bullet is alive
 var BULLET_RADIUS				= 2;					//2					Bullet radius
-var BULLET_COLOR				= "#000000";			//"#000000"			Bullet color
+var BULLET_COLOR				= "#ffffff";			//"#000000"			Bullet color
 														//
 var EXPLOSION_DAMPING			= 0.9					//0.9				Particle velocity damping
 var EXPLOSION_NUM_PARTICLES		= 15;					//15				Number of particles in an explosion
 var EXPLOSION_PARTICLE_RADIUS	= 2;					//2					Particle radius
-var EXPLOSION_PARTICLE_LIFETIME = 9;					//10				Particle lifetime
+var EXPLOSION_PARTICLE_LIFETIME = 15;					//10				Particle lifetime
 														//
-var SHIP_EXPLOSION_MAGNITUDE	= 2000;					//350				Explosion magnitude (particle max velocity)
-var SHIP_EXPLOSION_COLOR1		= "red";				//"red"				Explosion color 1
-var SHIP_EXPLOSION_COLOR2		= "yellow";				//"yellow"			Explosion color 2
+var SHIP_EXPLOSION_MAGNITUDE	= 1000;					//350				Explosion magnitude (particle max velocity)
+var SHIP_EXPLOSION_BORDER_COLOR	= "black";				//"black"			Explosion color 1
+var SHIP_EXPLOSION_INTERIOR_COLOR = "white";			//"white"			Explosion color 1
+var SHIP_EXPLOSION_SPARK_COLOR	= "yellow";				//"yellow"			Explosion color 2
 														//
-var SHIP_GUN_COOLDOWN			= 4;					//5					Minimum time between shots
+var SHIP_GUN_COOLDOWN			= 6;					//5					Minimum time between shots
 var SHIP_MAX_SPEED				= 400;					//400				Max ship speed
 var SHIP_ACCELERATION			= 500;					//300				Ship acceleration magnitude
 var SHIP_TURN_RATE				= PI_2 / (FPS * 0.04);	//
@@ -54,6 +55,7 @@ var SHIP_MODEL_BASE				= 15;					//15				Ship model base length
 var SHIP_MODEL_HEIGHT			= 25;					//25				Ship model height
 var SHIP_INTERIOR_COLOR 		= "#ffffff";			//"#ffffff"			Ship interior color
 var SHIP_BORDER_COLOR			= "#000000";			//"#000000"			Ship border color
+var SHIP_BORDER_WIDTH			= 3;					//3					Ship border width
 														//
 var AB_ACCELERATION				= 6 * SHIP_ACCELERATION;//					Afterburner acceleration
 var AB_FUEL_CONSUMPTION			= 5;					//					Afterburner fuel consumption
@@ -62,7 +64,8 @@ var AB_MAX_FUEL					= 100;					//100				Max afterburer fuel
 var AB_COOLDOWN					= 60;					//30				Afterburner Cooldown
 var AB_SHIP_MAX_SPEED			= 2.25 * SHIP_MAX_SPEED;//2.5x				Afterburner ship max speed 
 														//
-var FLAMES_COLOR  				= "blue";				//	
+var FLAMES_COLOR  				= "blue";				//
+var FLAMES_THICKNESS  			= 3;
 var FLAMES_INTERIOR_COLOR  		= "#ffffff";			//
 var FLAMES_MAGNITUDE			= 6;					//
 var FLAMES_STEP					= 2;					//
@@ -108,34 +111,8 @@ function spawnShip() {
 	SHIP.orientation = -PI / 2;
 }
 
-function endGame() {
-	clearInterval(MAIN_LOOP_INTERVAL_ID);
-	$('#gameContainer').fadeOut(1000)
-	$('#gameOverContainer').fadeIn(4000);
-}
-
-function stageOver() {
-	clearInterval(MAIN_LOOP_INTERVAL_ID);
-	
-	$('#stageOverMessage').html("Stage " + STAGE + " complete!<br>Prepare for stage " + (STAGE+1) + "...");
-	
-	$('#gameContainer').fadeOut(1000);
-	$('#stageOverContainer').fadeIn(4000, function () {
-		setTimeout(function () {
-			$('#stageOverContainer').hide();
-			$('#gameContainer').fadeIn(4000);
-				
-			STAGE++;
-			loadSettings(STAGE);
-			spawnShip();
-			MAIN_LOOP_INTERVAL_ID = setInterval(mainLoop, 1000 / FPS);
-			
-		}, 1000);
-	});
-}
-
 function respawn() {
-	if (!SHIP.alive && RESPAWN_FRAMES_REMAINING) {
+	if (!SHIP.alive && RESPAWN_FRAMES_REMAINING > 0) {
 		RESPAWN_FRAMES_REMAINING--;
 		
 		var secondsUntilRespawn = Math.ceil(RESPAWN_FRAMES_REMAINING / FPS);
@@ -168,24 +145,26 @@ function mainLoop() {
 	updateExplosions(EXPLOSIONS);
 	
 	drawGreyGoo(CTX, TMP_CTX, GLOBS);
-	drawShip(CTX, SHIP, SHIP_MODEL, SHIP_INTERIOR_COLOR, SHIP_BORDER_COLOR);
+	drawShip(CTX, SHIP, SHIP_MODEL, SHIP_INTERIOR_COLOR, SHIP_BORDER_COLOR, SHIP_BORDER_WIDTH);
 	
 	if (SHIP.accelerating && !SHIP.abActivated) {
 		var flames = generateEngineFlames(SHIP_MODEL_BASE, SHIP_MODEL, FLAMES_STEP, FLAMES_MAGNITUDE);
-		drawEngineFlames(CTX, SHIP, flames, null, FLAMES_COLOR);
+		drawEngineFlames(CTX, SHIP, flames, null, FLAMES_COLOR, FLAMES_THICKNESS);
 	}
 	
 	if (SHIP.accelerating && SHIP.abActivated && SHIP.abFuel > 0) {
 		var flames = generateEngineFlames(SHIP_MODEL_BASE, SHIP_MODEL, FLAMES_AB_STEP, FLAMES_AB_MAGNITUDE);
-		drawEngineFlames(CTX, SHIP, flames, null, FLAMES_COLOR);		
+		drawEngineFlames(CTX, SHIP, flames, null, FLAMES_COLOR, FLAMES_THICKNESS);		
 	}
 	
 	drawBullets(CTX, BULLETS);
 	drawExplosions(CTX, EXPLOSIONS);
 	
 	drawAbDisplay(CANVAS, CTX, SHIP.abFuel);
-	drawScoreDisplay(CANVAS, CTX, SCORE);
+	drawStageDisplay(CANVAS, CTX, STAGE);
 	drawLivesDisplay(CANVAS, CTX, LIVES);
+	
+	drawScoreDisplay(CANVAS, CTX, SCORE);
 	
 	//end game if player is out of lives
 	if (LIVES < 0) {
@@ -197,26 +176,25 @@ function mainLoop() {
 	respawn();
 }
 
- /*
-  * Init
-  */
- $(document).ready(function () {	 
+/*
+ * Start/stop game
+ */
+function startGame() {
+	//run main loop
+	MAIN_LOOP_INTERVAL_ID = setInterval(mainLoop, 1000 / FPS);
+}
+
+function stopGame() {
+	clearInterval(MAIN_LOOP_INTERVAL_ID);
+}
+
+/*
+ * Initialize game
+ */
+function initGame() {
  	//setup canvas	 
- 	CANVAS = document.getElementById("canvas");
+ 	CANVAS = document.getElementById("gameCanvas");
 	CTX = CANVAS.getContext("2d");
-	
-	//position canvas in center of screen
-	var top = $(window).height()/2 - $("#canvas").height()/2;
-	var left = $(window).width()/2 - $("#canvas").width()/2;
-	
-	$("#canvas").css({
-		position: "absolute",
-		top: top + "px",
-		left: left + "px",
-		borderStyle: "solid",
-		borderWidth: "2px",
-		backgroundColor: "#fff" 
-	});
 	
 	//setup temporary canvase
 	TMP_CANVAS = document.createElement("canvas");
@@ -255,19 +233,75 @@ function mainLoop() {
 	addKeyUpHandler(new KeyEventHandler(KEY_RIGHT_ARROW, rightArrowUp));
 	
 	addKeyDownHandler(new KeyEventHandler(KEY_SPACE_BAR, spaceBarDown));
-	
+	addKeyUpHandler(new KeyEventHandler(KEY_SPACE_BAR, spaceBarUp));
+		
 	addKeyDownHandler(new KeyEventHandler(KEY_SHIFT, shiftDown));
 	addKeyUpHandler(new KeyEventHandler(KEY_SHIFT, shiftUp));
-	
-	//run main loop
-	MAIN_LOOP_INTERVAL_ID = setInterval(mainLoop, 1000 / FPS);
-});
+}
+
+/*
+ * Game actions
+ */
+
  
-var SESSION_ID = "<%= @session_id %>";
+function endGame() {
+	stopGame();
+	$("#gameOverContainer").show();	
+	$('#gameContainer').fadeOut(2000);
+}
+
+function stageOver() {
+	stopGame();
+	
+	STAGE++;
+	
+	$('#stageMessage').html("Stage " + STAGE);
+	
+	$('#stageContainer').fadeIn(2500, function () {
+		setTimeout(function () {
+			$('#stageContainer').fadeOut(1000);
+			$('#gameContainer').fadeIn(2000);			
+			loadSettings(STAGE);
+			spawnShip();
+			startGame();
+		}, 500);
+	});
+}
+
+function showInstructions() {
+	$("#introductionContainer").fadeOut(2000);
+	$("#instructionsContainer").fadeIn(2000);
+}
+
+function playGame() {
+	$("#instructionsContainer").stop();
+	
+	//STAGE = 3;
+	LIVES = 0;
+	
+	$('#stageMessage').html("Stage " + STAGE);
+	
+	$("#instructionsContainer").fadeOut(2000);
+	$('#stageContainer').fadeIn(2000, function () {
+		setTimeout(function () {
+			$('#gameContainer').show();
+			$('#stageContainer').fadeOut(2000, function () {						
+				initGame();
+				startGame();
+			});
+		}, 500);
+	});	
+}
 
 $(document).ready(function () {
-	alert(SESSION_ID);		
+	$("#playButton").click(playGame);
+	
+	setTimeout(showInstructions, 2500);
+	
+	console.log("SESSION_ID: " + SESSION_ID);
 });
+
+var SESSION_ID = "<%= @session_id %>";
 /*
  * Bullets
  */
@@ -349,19 +383,31 @@ function drawScoreDisplay(canvas, ctx, score) {
 	
 	ctx.save();
 	
-	ctx.font = "bold 20px sans-serif";
-	ctx.fillStyle = "black";
+	ctx.font = "bold 24px sans-serif";
+	ctx.fillStyle = "white";
 	ctx.fillText(score, displayPosition.x, displayPosition.y);
 	
 	ctx.restore();
+}
+
+function drawStageDisplay(canvas, ctx, stage) {
+	ctx.save();
+	
+	ctx.font = "12px sans-serif";
+	ctx.fillStyle = "white";
+	ctx.fillText("Stage", 20, 55);
+	ctx.fillText(stage, 60, 55);
+
+	ctx.restore();	
 }
 
 function drawLivesDisplay(canvas, ctx, lives) {
 	ctx.save();
 	
 	ctx.font = "12px sans-serif";
-	ctx.fillStyle = "black";
-	ctx.fillText("Lives  " + lives, 20, 55);
+	ctx.fillStyle = "white";
+	ctx.fillText("Lives", 20, 75);
+	ctx.fillText(lives, 60, 75);
 
 	ctx.restore();
 }
@@ -373,21 +419,21 @@ function drawAbDisplay(canvas, ctx, abFuel) {
 
 	//label
 	ctx.font = "12px sans-serif";
-	ctx.fillStyle = "black";
+	ctx.fillStyle = "white";
 	ctx.fillText("Turbo", displayPosition.x, displayPosition.y);
 	
 	//fuel bar background
 	ctx.beginPath();
-	ctx.rect(displayPosition.x + 40, displayPosition.y - 9, 102, 10);
+	ctx.rect(displayPosition.x + 42, displayPosition.y - 9, 102, 10);
 	ctx.fillStyle = 'white';
 	ctx.fill();
 	ctx.lineWidth = 2;
-	ctx.strokeStyle = 'black';
+	ctx.strokeStyle = 'white';
 	ctx.stroke();
 	
 	//fuel bar
 	ctx.beginPath();
-	ctx.rect(displayPosition.x + 41, displayPosition.y - 8, (abFuel / AB_MAX_FUEL) * 100, 8);
+	ctx.rect(displayPosition.x + 43, displayPosition.y - 8, (abFuel / AB_MAX_FUEL) * 100, 8);
 	ctx.fillStyle = 'grey';
 	ctx.fill();
 	
@@ -400,9 +446,9 @@ function displayRespawnMessage(canvas, ctx, secondsRemaining) {
 	ctx.save();
 
 	ctx.font = "bold 16px sans-serif";
-	ctx.fillStyle = "black";
+	ctx.fillStyle = "white";
 	ctx.textAlign = 'center';
-	ctx.fillText("Respawn in " + secondsRemaining, canvasCenter.x - 15, canvasCenter.y);
+	ctx.fillText("Respawning in " + secondsRemaining, canvasCenter.x - 15, canvasCenter.y);
 	
 	ctx.restore();	
 }
@@ -472,18 +518,11 @@ function rightArrowUp() {
 }
 
 function spaceBarDown() {
-	if (SHIP.alive && SHIP.gunCooldown == 0) {
-		//find position of front of ship
-		var shipBow = SHIP_MODEL[1];
-		shipBow = PolarVector(shipBow.angle() + SHIP.orientation - PI/2, shipBow.norm());
-		shipBow = shipBow.add(SHIP.position);
-		
-		//fire bullet
-		BULLETS.push(new Bullet(shipBow, SHIP.orientation, BULLET_SPEED, BULLET_LIFETIME));
-		
-		//set cooldown
-		SHIP.gunCooldown = SHIP_GUN_COOLDOWN;
-	}
+	SHIP.gunFiring = true;
+}
+
+function spaceBarUp() {
+	SHIP.gunFiring = false;
 }
 
 function shiftDown() {
@@ -785,7 +824,7 @@ function level2Settings() {
 	GRAVITY						= 30;					//40				Gravitational constant
 	GRAVITY_DROPOFF				= 0.005;				//0.001				Gravitational dropoff
 
-	GLOB_MAX_SPEED		 		= 500;					//400				Maxiumum particle velocity														//
+	GLOB_MAX_SPEED		 		= 400;					//400				Maxiumum particle velocity														//
 
 	GLOB_BLAST_RADIUS			= 30;					//20				Radius of effect
 	GLOB_BLAST_MAGNITUDE		= GLOB_MAX_SPEED / 2;	//400				Impulse to apply to globs in the radius of effect
@@ -801,7 +840,7 @@ function level3Settings() {
 	GRAVITY						= 100;					//40				Gravitational constant
 	GRAVITY_DROPOFF				= 0.01;					//0.001				Gravitational dropoff
 
-	GLOB_MAX_SPEED		 		= 600;					//500				Maxiumum particle velocity														//
+	GLOB_MAX_SPEED		 		= 500;					//500				Maxiumum particle velocity														//
 
 	GLOB_BLAST_RADIUS			= 30;					//20				Radius of effect
 	GLOB_BLAST_MAGNITUDE		= GLOB_MAX_SPEED;		//400				Impulse to apply to globs in the radius of effect
@@ -834,6 +873,7 @@ function loadSettings(stage) {
  */
 function Ship(position, maxSpeed, damping, acceleration, turnRate) {
 	this.alive = true;					//true if ship is alive
+	this.gunFiring = false;
 	this.gunCooldown = 0;				//gun cooldown
 	this.abActivated = false;			//afterburner is activated
 	this.abCooldown = 0;				//afterburner cooldown
@@ -890,9 +930,9 @@ function updateShip(ship, shipModel) {
 				ship.alive = false;
 				LIVES--;
 				RESPAWN_FRAMES_REMAINING = RESPAWN_DELAY;
-				EXPLOSIONS.push(new Explosion(ship.position, SHIP_EXPLOSION_MAGNITUDE, EXPLOSION_NUM_PARTICLES/5, EXPLOSION_PARTICLE_LIFETIME, "black"));
-				EXPLOSIONS.push(new Explosion(ship.position, SHIP_EXPLOSION_MAGNITUDE, EXPLOSION_NUM_PARTICLES, EXPLOSION_PARTICLE_LIFETIME, SHIP_EXPLOSION_COLOR1));
-				EXPLOSIONS.push(new Explosion(ship.position, SHIP_EXPLOSION_MAGNITUDE, EXPLOSION_NUM_PARTICLES, EXPLOSION_PARTICLE_LIFETIME, SHIP_EXPLOSION_COLOR2));
+				EXPLOSIONS.push(new Explosion(ship.position, 5*SHIP_EXPLOSION_MAGNITUDE, EXPLOSION_NUM_PARTICLES, EXPLOSION_PARTICLE_LIFETIME, SHIP_EXPLOSION_BORDER_COLOR));
+				EXPLOSIONS.push(new Explosion(ship.position, 2*SHIP_EXPLOSION_MAGNITUDE, 4*EXPLOSION_NUM_PARTICLES, EXPLOSION_PARTICLE_LIFETIME, SHIP_EXPLOSION_INTERIOR_COLOR));
+				EXPLOSIONS.push(new Explosion(ship.position, SHIP_EXPLOSION_MAGNITUDE, EXPLOSION_NUM_PARTICLES, EXPLOSION_PARTICLE_LIFETIME, SHIP_EXPLOSION_SPARK_COLOR));
 				return;
 			}
 		}
@@ -900,6 +940,20 @@ function updateShip(ship, shipModel) {
 		//update gun
 		if (ship.gunCooldown > 0) {
 			ship.gunCooldown--;	
+		}
+		
+		//if gun is firing and gun is ready to fire
+		if (ship.gunFiring && ship.gunCooldown == 0) {
+			//find position of front of ship
+			var shipBow = SHIP_MODEL[1];
+			shipBow = PolarVector(shipBow.angle() + ship.orientation - PI/2, shipBow.norm() + SHIP_BORDER_WIDTH);
+			shipBow = shipBow.add(ship.position);
+			
+			//fire bullet
+			BULLETS.push(new Bullet(shipBow, ship.orientation, BULLET_SPEED, BULLET_LIFETIME));
+			
+			//set cooldown
+			ship.gunCooldown = SHIP_GUN_COOLDOWN;
 		}
 		
 		//update afterburner
@@ -920,6 +974,7 @@ function updateShip(ship, shipModel) {
 				ship.abFuel -= AB_FUEL_CONSUMPTION;
 				ship.abFuel = clamp(ship.abFuel, 0, AB_MAX_FUEL);
 			} else if (ship.abFuel == 0) {
+				//afterburner is off
 				//set engines to default acceleration and max speed
 				ship.acceleration = SHIP_ACCELERATION;
 				ship.maxSpeed = SHIP_MAX_SPEED;
@@ -940,27 +995,27 @@ function updateShip(ship, shipModel) {
 	}
 }
 
-function drawShip(ctx, ship, model, interiorColor, borderColor) {
+function drawShip(ctx, ship, model, interiorColor, borderColor, borderWidth) {
 	if (ship.alive) {
 		ctx.save();
 		
 		ctx.translate(ship.position.x, ship.position.y);
 		ctx.rotate(ship.orientation - PI / 2);
 		
-		drawPolyLine(ctx, model, interiorColor, borderColor);
+		drawPolyLine(ctx, model, interiorColor, borderColor, borderWidth);
 		
 		ctx.restore();
 	}
 }
 
-function drawEngineFlames(ctx, ship, model, interiorColor, borderColor) {
+function drawEngineFlames(ctx, ship, model, interiorColor, borderColor, borderWidth) {
 	if (ship.alive) {
 		ctx.save();
 		
 		ctx.translate(ship.position.x, ship.position.y);
 		ctx.rotate(ship.orientation - PI / 2);
 		
-		drawPolyLine(ctx, model, interiorColor, borderColor);
+		drawPolyLine(ctx, model, interiorColor, borderColor, borderWidth);
 		
 		ctx.restore();	
 	}
@@ -1083,7 +1138,7 @@ function drawCircle(ctx, position, radius, color) {
 	ctx.fill();
 }
 
-function drawPolyLine(ctx, vertices, interiorColor, borderColor) {
+function drawPolyLine(ctx, vertices, interiorColor, borderColor, borderWidth) {
 	ctx.beginPath();
 	
 	ctx.moveTo(vertices[0].x, vertices[0].y);
@@ -1098,7 +1153,7 @@ function drawPolyLine(ctx, vertices, interiorColor, borderColor) {
 	}
 
 	if (borderColor) {
-		ctx.lineWidth = 3;
+		ctx.lineWidth = borderWidth;
 		ctx.strokeStyle = borderColor;
 		ctx.stroke();
 	}

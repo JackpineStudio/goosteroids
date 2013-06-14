@@ -27,23 +27,24 @@ var GRADIENT_RADIUS 			= GLOB_RADIUS * 3;		//GLOB_RADIUS * 3	Gradient radius mul
 var GRADIENT_STOP0				= "rgba(80, 80, 80, 1)";//					Gradient color stop 0
 var GRADIENT_STOP1				= "rgba(80, 80, 80, 0)";//					Gradient color stop 1
 														//
-var GLOB_EXPLOSION_COLOR		= "#999999";			//"#999999"			Explosion color
+var GLOB_EXPLOSION_COLOR		= "#b0b0b0";			//"#999999"			Explosion color
 														//
 var BULLET_SPEED				= 650;					//650				Bullet speed
 var BULLET_LIFETIME				= 20;					//20				Number of milliseconds bullet is alive
 var BULLET_RADIUS				= 2;					//2					Bullet radius
-var BULLET_COLOR				= "#000000";			//"#000000"			Bullet color
+var BULLET_COLOR				= "#ffffff";			//"#000000"			Bullet color
 														//
 var EXPLOSION_DAMPING			= 0.9					//0.9				Particle velocity damping
 var EXPLOSION_NUM_PARTICLES		= 15;					//15				Number of particles in an explosion
 var EXPLOSION_PARTICLE_RADIUS	= 2;					//2					Particle radius
-var EXPLOSION_PARTICLE_LIFETIME = 9;					//10				Particle lifetime
+var EXPLOSION_PARTICLE_LIFETIME = 15;					//10				Particle lifetime
 														//
-var SHIP_EXPLOSION_MAGNITUDE	= 2000;					//350				Explosion magnitude (particle max velocity)
-var SHIP_EXPLOSION_COLOR1		= "red";				//"red"				Explosion color 1
-var SHIP_EXPLOSION_COLOR2		= "yellow";				//"yellow"			Explosion color 2
+var SHIP_EXPLOSION_MAGNITUDE	= 1000;					//350				Explosion magnitude (particle max velocity)
+var SHIP_EXPLOSION_BORDER_COLOR	= "black";				//"black"			Explosion color 1
+var SHIP_EXPLOSION_INTERIOR_COLOR = "white";			//"white"			Explosion color 1
+var SHIP_EXPLOSION_SPARK_COLOR	= "yellow";				//"yellow"			Explosion color 2
 														//
-var SHIP_GUN_COOLDOWN			= 4;					//5					Minimum time between shots
+var SHIP_GUN_COOLDOWN			= 6;					//5					Minimum time between shots
 var SHIP_MAX_SPEED				= 400;					//400				Max ship speed
 var SHIP_ACCELERATION			= 500;					//300				Ship acceleration magnitude
 var SHIP_TURN_RATE				= PI_2 / (FPS * 0.04);	//
@@ -54,6 +55,7 @@ var SHIP_MODEL_BASE				= 15;					//15				Ship model base length
 var SHIP_MODEL_HEIGHT			= 25;					//25				Ship model height
 var SHIP_INTERIOR_COLOR 		= "#ffffff";			//"#ffffff"			Ship interior color
 var SHIP_BORDER_COLOR			= "#000000";			//"#000000"			Ship border color
+var SHIP_BORDER_WIDTH			= 3;					//3					Ship border width
 														//
 var AB_ACCELERATION				= 6 * SHIP_ACCELERATION;//					Afterburner acceleration
 var AB_FUEL_CONSUMPTION			= 5;					//					Afterburner fuel consumption
@@ -62,7 +64,8 @@ var AB_MAX_FUEL					= 100;					//100				Max afterburer fuel
 var AB_COOLDOWN					= 60;					//30				Afterburner Cooldown
 var AB_SHIP_MAX_SPEED			= 2.25 * SHIP_MAX_SPEED;//2.5x				Afterburner ship max speed 
 														//
-var FLAMES_COLOR  				= "blue";				//	
+var FLAMES_COLOR  				= "blue";				//
+var FLAMES_THICKNESS  			= 3;
 var FLAMES_INTERIOR_COLOR  		= "#ffffff";			//
 var FLAMES_MAGNITUDE			= 6;					//
 var FLAMES_STEP					= 2;					//
@@ -108,34 +111,8 @@ function spawnShip() {
 	SHIP.orientation = -PI / 2;
 }
 
-function endGame() {
-	clearInterval(MAIN_LOOP_INTERVAL_ID);
-	$('#gameContainer').fadeOut(1000)
-	$('#gameOverContainer').fadeIn(4000);
-}
-
-function stageOver() {
-	clearInterval(MAIN_LOOP_INTERVAL_ID);
-	
-	$('#stageOverMessage').html("Stage " + STAGE + " complete!<br>Prepare for stage " + (STAGE+1) + "...");
-	
-	$('#gameContainer').fadeOut(1000);
-	$('#stageOverContainer').fadeIn(4000, function () {
-		setTimeout(function () {
-			$('#stageOverContainer').hide();
-			$('#gameContainer').fadeIn(4000);
-				
-			STAGE++;
-			loadSettings(STAGE);
-			spawnShip();
-			MAIN_LOOP_INTERVAL_ID = setInterval(mainLoop, 1000 / FPS);
-			
-		}, 1000);
-	});
-}
-
 function respawn() {
-	if (!SHIP.alive && RESPAWN_FRAMES_REMAINING) {
+	if (!SHIP.alive && RESPAWN_FRAMES_REMAINING > 0) {
 		RESPAWN_FRAMES_REMAINING--;
 		
 		var secondsUntilRespawn = Math.ceil(RESPAWN_FRAMES_REMAINING / FPS);
@@ -168,24 +145,26 @@ function mainLoop() {
 	updateExplosions(EXPLOSIONS);
 	
 	drawGreyGoo(CTX, TMP_CTX, GLOBS);
-	drawShip(CTX, SHIP, SHIP_MODEL, SHIP_INTERIOR_COLOR, SHIP_BORDER_COLOR);
+	drawShip(CTX, SHIP, SHIP_MODEL, SHIP_INTERIOR_COLOR, SHIP_BORDER_COLOR, SHIP_BORDER_WIDTH);
 	
 	if (SHIP.accelerating && !SHIP.abActivated) {
 		var flames = generateEngineFlames(SHIP_MODEL_BASE, SHIP_MODEL, FLAMES_STEP, FLAMES_MAGNITUDE);
-		drawEngineFlames(CTX, SHIP, flames, null, FLAMES_COLOR);
+		drawEngineFlames(CTX, SHIP, flames, null, FLAMES_COLOR, FLAMES_THICKNESS);
 	}
 	
 	if (SHIP.accelerating && SHIP.abActivated && SHIP.abFuel > 0) {
 		var flames = generateEngineFlames(SHIP_MODEL_BASE, SHIP_MODEL, FLAMES_AB_STEP, FLAMES_AB_MAGNITUDE);
-		drawEngineFlames(CTX, SHIP, flames, null, FLAMES_COLOR);		
+		drawEngineFlames(CTX, SHIP, flames, null, FLAMES_COLOR, FLAMES_THICKNESS);		
 	}
 	
 	drawBullets(CTX, BULLETS);
 	drawExplosions(CTX, EXPLOSIONS);
 	
 	drawAbDisplay(CANVAS, CTX, SHIP.abFuel);
-	drawScoreDisplay(CANVAS, CTX, SCORE);
+	drawStageDisplay(CANVAS, CTX, STAGE);
 	drawLivesDisplay(CANVAS, CTX, LIVES);
+	
+	drawScoreDisplay(CANVAS, CTX, SCORE);
 	
 	//end game if player is out of lives
 	if (LIVES < 0) {
@@ -197,26 +176,25 @@ function mainLoop() {
 	respawn();
 }
 
- /*
-  * Init
-  */
- $(document).ready(function () {	 
+/*
+ * Start/stop game
+ */
+function startGame() {
+	//run main loop
+	MAIN_LOOP_INTERVAL_ID = setInterval(mainLoop, 1000 / FPS);
+}
+
+function stopGame() {
+	clearInterval(MAIN_LOOP_INTERVAL_ID);
+}
+
+/*
+ * Initialize game
+ */
+function initGame() {
  	//setup canvas	 
- 	CANVAS = document.getElementById("canvas");
+ 	CANVAS = document.getElementById("gameCanvas");
 	CTX = CANVAS.getContext("2d");
-	
-	//position canvas in center of screen
-	var top = $(window).height()/2 - $("#canvas").height()/2;
-	var left = $(window).width()/2 - $("#canvas").width()/2;
-	
-	$("#canvas").css({
-		position: "absolute",
-		top: top + "px",
-		left: left + "px",
-		borderStyle: "solid",
-		borderWidth: "2px",
-		backgroundColor: "#fff" 
-	});
 	
 	//setup temporary canvase
 	TMP_CANVAS = document.createElement("canvas");
@@ -255,16 +233,72 @@ function mainLoop() {
 	addKeyUpHandler(new KeyEventHandler(KEY_RIGHT_ARROW, rightArrowUp));
 	
 	addKeyDownHandler(new KeyEventHandler(KEY_SPACE_BAR, spaceBarDown));
-	
+	addKeyUpHandler(new KeyEventHandler(KEY_SPACE_BAR, spaceBarUp));
+		
 	addKeyDownHandler(new KeyEventHandler(KEY_SHIFT, shiftDown));
 	addKeyUpHandler(new KeyEventHandler(KEY_SHIFT, shiftUp));
-	
-	//run main loop
-	MAIN_LOOP_INTERVAL_ID = setInterval(mainLoop, 1000 / FPS);
-});
+}
+
+/*
+ * Game actions
+ */
+
  
-var SESSION_ID = "<%= @session_id %>";
+function endGame() {
+	stopGame();
+	$("#gameOverContainer").show();	
+	$('#gameContainer').fadeOut(2000);
+}
+
+function stageOver() {
+	stopGame();
+	
+	STAGE++;
+	
+	$('#stageMessage').html("Stage " + STAGE);
+	
+	$('#stageContainer').fadeIn(2500, function () {
+		setTimeout(function () {
+			$('#stageContainer').fadeOut(1000);
+			$('#gameContainer').fadeIn(2000);			
+			loadSettings(STAGE);
+			spawnShip();
+			startGame();
+		}, 500);
+	});
+}
+
+function showInstructions() {
+	$("#introductionContainer").fadeOut(2000);
+	$("#instructionsContainer").fadeIn(2000);
+}
+
+function playGame() {
+	$("#instructionsContainer").stop();
+	
+	//STAGE = 3;
+	LIVES = 0;
+	
+	$('#stageMessage').html("Stage " + STAGE);
+	
+	$("#instructionsContainer").fadeOut(2000);
+	$('#stageContainer').fadeIn(2000, function () {
+		setTimeout(function () {
+			$('#gameContainer').show();
+			$('#stageContainer').fadeOut(2000, function () {						
+				initGame();
+				startGame();
+			});
+		}, 500);
+	});	
+}
 
 $(document).ready(function () {
-	alert(SESSION_ID);		
+	$("#playButton").click(playGame);
+	
+	setTimeout(showInstructions, 2500);
+	
+	console.log("SESSION_ID: " + SESSION_ID);
 });
+
+var SESSION_ID = "<%= @session_id %>";

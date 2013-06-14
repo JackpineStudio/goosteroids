@@ -43,7 +43,7 @@ function level2Settings() {
 	GRAVITY						= 30;					//40				Gravitational constant
 	GRAVITY_DROPOFF				= 0.005;				//0.001				Gravitational dropoff
 
-	GLOB_MAX_SPEED		 		= 500;					//400				Maxiumum particle velocity														//
+	GLOB_MAX_SPEED		 		= 400;					//400				Maxiumum particle velocity														//
 
 	GLOB_BLAST_RADIUS			= 30;					//20				Radius of effect
 	GLOB_BLAST_MAGNITUDE		= GLOB_MAX_SPEED / 2;	//400				Impulse to apply to globs in the radius of effect
@@ -59,7 +59,7 @@ function level3Settings() {
 	GRAVITY						= 100;					//40				Gravitational constant
 	GRAVITY_DROPOFF				= 0.01;					//0.001				Gravitational dropoff
 
-	GLOB_MAX_SPEED		 		= 600;					//500				Maxiumum particle velocity														//
+	GLOB_MAX_SPEED		 		= 500;					//500				Maxiumum particle velocity														//
 
 	GLOB_BLAST_RADIUS			= 30;					//20				Radius of effect
 	GLOB_BLAST_MAGNITUDE		= GLOB_MAX_SPEED;		//400				Impulse to apply to globs in the radius of effect

@@ -6,19 +6,31 @@ function drawScoreDisplay(canvas, ctx, score) {
 	
 	ctx.save();
 	
-	ctx.font = "bold 20px sans-serif";
-	ctx.fillStyle = "black";
+	ctx.font = "bold 24px sans-serif";
+	ctx.fillStyle = "white";
 	ctx.fillText(score, displayPosition.x, displayPosition.y);
 	
 	ctx.restore();
+}
+
+function drawStageDisplay(canvas, ctx, stage) {
+	ctx.save();
+	
+	ctx.font = "12px sans-serif";
+	ctx.fillStyle = "white";
+	ctx.fillText("Stage", 20, 55);
+	ctx.fillText(stage, 60, 55);
+
+	ctx.restore();	
 }
 
 function drawLivesDisplay(canvas, ctx, lives) {
 	ctx.save();
 	
 	ctx.font = "12px sans-serif";
-	ctx.fillStyle = "black";
-	ctx.fillText("Lives  " + lives, 20, 55);
+	ctx.fillStyle = "white";
+	ctx.fillText("Lives", 20, 75);
+	ctx.fillText(lives, 60, 75);
 
 	ctx.restore();
 }
@@ -30,21 +42,21 @@ function drawAbDisplay(canvas, ctx, abFuel) {
 
 	//label
 	ctx.font = "12px sans-serif";
-	ctx.fillStyle = "black";
+	ctx.fillStyle = "white";
 	ctx.fillText("Turbo", displayPosition.x, displayPosition.y);
 	
 	//fuel bar background
 	ctx.beginPath();
-	ctx.rect(displayPosition.x + 40, displayPosition.y - 9, 102, 10);
+	ctx.rect(displayPosition.x + 42, displayPosition.y - 9, 102, 10);
 	ctx.fillStyle = 'white';
 	ctx.fill();
 	ctx.lineWidth = 2;
-	ctx.strokeStyle = 'black';
+	ctx.strokeStyle = 'white';
 	ctx.stroke();
 	
 	//fuel bar
 	ctx.beginPath();
-	ctx.rect(displayPosition.x + 41, displayPosition.y - 8, (abFuel / AB_MAX_FUEL) * 100, 8);
+	ctx.rect(displayPosition.x + 43, displayPosition.y - 8, (abFuel / AB_MAX_FUEL) * 100, 8);
 	ctx.fillStyle = 'grey';
 	ctx.fill();
 	
@@ -57,9 +69,9 @@ function displayRespawnMessage(canvas, ctx, secondsRemaining) {
 	ctx.save();
 
 	ctx.font = "bold 16px sans-serif";
-	ctx.fillStyle = "black";
+	ctx.fillStyle = "white";
 	ctx.textAlign = 'center';
-	ctx.fillText("Respawn in " + secondsRemaining, canvasCenter.x - 15, canvasCenter.y);
+	ctx.fillText("Respawning in " + secondsRemaining, canvasCenter.x - 15, canvasCenter.y);
 	
 	ctx.restore();	
 }

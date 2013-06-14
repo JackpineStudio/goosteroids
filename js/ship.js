@@ -3,6 +3,7 @@
  */
 function Ship(position, maxSpeed, damping, acceleration, turnRate) {
 	this.alive = true;					//true if ship is alive
+	this.gunFiring = false;
 	this.gunCooldown = 0;				//gun cooldown
 	this.abActivated = false;			//afterburner is activated
 	this.abCooldown = 0;				//afterburner cooldown
@@ -59,9 +60,9 @@ function updateShip(ship, shipModel) {
 				ship.alive = false;
 				LIVES--;
 				RESPAWN_FRAMES_REMAINING = RESPAWN_DELAY;
-				EXPLOSIONS.push(new Explosion(ship.position, SHIP_EXPLOSION_MAGNITUDE, EXPLOSION_NUM_PARTICLES/5, EXPLOSION_PARTICLE_LIFETIME, "black"));
-				EXPLOSIONS.push(new Explosion(ship.position, SHIP_EXPLOSION_MAGNITUDE, EXPLOSION_NUM_PARTICLES, EXPLOSION_PARTICLE_LIFETIME, SHIP_EXPLOSION_COLOR1));
-				EXPLOSIONS.push(new Explosion(ship.position, SHIP_EXPLOSION_MAGNITUDE, EXPLOSION_NUM_PARTICLES, EXPLOSION_PARTICLE_LIFETIME, SHIP_EXPLOSION_COLOR2));
+				EXPLOSIONS.push(new Explosion(ship.position, 5*SHIP_EXPLOSION_MAGNITUDE, EXPLOSION_NUM_PARTICLES, EXPLOSION_PARTICLE_LIFETIME, SHIP_EXPLOSION_BORDER_COLOR));
+				EXPLOSIONS.push(new Explosion(ship.position, 2*SHIP_EXPLOSION_MAGNITUDE, 4*EXPLOSION_NUM_PARTICLES, EXPLOSION_PARTICLE_LIFETIME, SHIP_EXPLOSION_INTERIOR_COLOR));
+				EXPLOSIONS.push(new Explosion(ship.position, SHIP_EXPLOSION_MAGNITUDE, EXPLOSION_NUM_PARTICLES, EXPLOSION_PARTICLE_LIFETIME, SHIP_EXPLOSION_SPARK_COLOR));
 				return;
 			}
 		}
@@ -69,6 +70,20 @@ function updateShip(ship, shipModel) {
 		//update gun
 		if (ship.gunCooldown > 0) {
 			ship.gunCooldown--;	
+		}
+		
+		//if gun is firing and gun is ready to fire
+		if (ship.gunFiring && ship.gunCooldown == 0) {
+			//find position of front of ship
+			var shipBow = SHIP_MODEL[1];
+			shipBow = PolarVector(shipBow.angle() + ship.orientation - PI/2, shipBow.norm() + SHIP_BORDER_WIDTH);
+			shipBow = shipBow.add(ship.position);
+			
+			//fire bullet
+			BULLETS.push(new Bullet(shipBow, ship.orientation, BULLET_SPEED, BULLET_LIFETIME));
+			
+			//set cooldown
+			ship.gunCooldown = SHIP_GUN_COOLDOWN;
 		}
 		
 		//update afterburner
@@ -89,6 +104,7 @@ function updateShip(ship, shipModel) {
 				ship.abFuel -= AB_FUEL_CONSUMPTION;
 				ship.abFuel = clamp(ship.abFuel, 0, AB_MAX_FUEL);
 			} else if (ship.abFuel == 0) {
+				//afterburner is off
 				//set engines to default acceleration and max speed
 				ship.acceleration = SHIP_ACCELERATION;
 				ship.maxSpeed = SHIP_MAX_SPEED;
@@ -109,27 +125,27 @@ function updateShip(ship, shipModel) {
 	}
 }
 
-function drawShip(ctx, ship, model, interiorColor, borderColor) {
+function drawShip(ctx, ship, model, interiorColor, borderColor, borderWidth) {
 	if (ship.alive) {
 		ctx.save();
 		
 		ctx.translate(ship.position.x, ship.position.y);
 		ctx.rotate(ship.orientation - PI / 2);
 		
-		drawPolyLine(ctx, model, interiorColor, borderColor);
+		drawPolyLine(ctx, model, interiorColor, borderColor, borderWidth);
 		
 		ctx.restore();
 	}
 }
 
-function drawEngineFlames(ctx, ship, model, interiorColor, borderColor) {
+function drawEngineFlames(ctx, ship, model, interiorColor, borderColor, borderWidth) {
 	if (ship.alive) {
 		ctx.save();
 		
 		ctx.translate(ship.position.x, ship.position.y);
 		ctx.rotate(ship.orientation - PI / 2);
 		
-		drawPolyLine(ctx, model, interiorColor, borderColor);
+		drawPolyLine(ctx, model, interiorColor, borderColor, borderWidth);
 		
 		ctx.restore();	
 	}

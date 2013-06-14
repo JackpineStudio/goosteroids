@@ -64,18 +64,11 @@ function rightArrowUp() {
 }
 
 function spaceBarDown() {
-	if (SHIP.alive && SHIP.gunCooldown == 0) {
-		//find position of front of ship
-		var shipBow = SHIP_MODEL[1];
-		shipBow = PolarVector(shipBow.angle() + SHIP.orientation - PI/2, shipBow.norm());
-		shipBow = shipBow.add(SHIP.position);
-		
-		//fire bullet
-		BULLETS.push(new Bullet(shipBow, SHIP.orientation, BULLET_SPEED, BULLET_LIFETIME));
-		
-		//set cooldown
-		SHIP.gunCooldown = SHIP_GUN_COOLDOWN;
-	}
+	SHIP.gunFiring = true;
+}
+
+function spaceBarUp() {
+	SHIP.gunFiring = false;
 }
 
 function shiftDown() {
