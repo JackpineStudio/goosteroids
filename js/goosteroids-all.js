@@ -277,7 +277,7 @@ function playGame() {
 	$("#instructionsContainer").stop();
 	
 	//STAGE = 3;
-	LIVES = 0;
+	//LIVES = 0;
 	
 	$('#stageMessage').html("Stage " + STAGE);
 	
@@ -393,9 +393,9 @@ function drawScoreDisplay(canvas, ctx, score) {
 function drawStageDisplay(canvas, ctx, stage) {
 	ctx.save();
 	
-	ctx.font = "12px sans-serif";
+	ctx.font = "10px sans-serif bolder";
 	ctx.fillStyle = "white";
-	ctx.fillText("Stage", 20, 55);
+	ctx.fillText("STAGE", 20, 55);
 	ctx.fillText(stage, 60, 55);
 
 	ctx.restore();	
@@ -404,9 +404,9 @@ function drawStageDisplay(canvas, ctx, stage) {
 function drawLivesDisplay(canvas, ctx, lives) {
 	ctx.save();
 	
-	ctx.font = "12px sans-serif";
+	ctx.font = "10px sans-serif bolder";
 	ctx.fillStyle = "white";
-	ctx.fillText("Lives", 20, 75);
+	ctx.fillText("LIVES", 20, 75);
 	ctx.fillText(lives, 60, 75);
 
 	ctx.restore();
@@ -418,13 +418,13 @@ function drawAbDisplay(canvas, ctx, abFuel) {
 	ctx.save();
 
 	//label
-	ctx.font = "12px sans-serif";
+	ctx.font = "10px sans-serif bolder";
 	ctx.fillStyle = "white";
-	ctx.fillText("Turbo", displayPosition.x, displayPosition.y);
+	ctx.fillText("TURBO", displayPosition.x, displayPosition.y);
 	
 	//fuel bar background
 	ctx.beginPath();
-	ctx.rect(displayPosition.x + 42, displayPosition.y - 9, 102, 10);
+	ctx.rect(displayPosition.x + 43, displayPosition.y - 9, 102, 10);
 	ctx.fillStyle = 'white';
 	ctx.fill();
 	ctx.lineWidth = 2;
@@ -433,7 +433,7 @@ function drawAbDisplay(canvas, ctx, abFuel) {
 	
 	//fuel bar
 	ctx.beginPath();
-	ctx.rect(displayPosition.x + 43, displayPosition.y - 8, (abFuel / AB_MAX_FUEL) * 100, 8);
+	ctx.rect(displayPosition.x + 44, displayPosition.y - 8, (abFuel / AB_MAX_FUEL) * 100, 8);
 	ctx.fillStyle = 'grey';
 	ctx.fill();
 	

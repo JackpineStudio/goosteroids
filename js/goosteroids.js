@@ -277,7 +277,7 @@ function playGame() {
 	$("#instructionsContainer").stop();
 	
 	//STAGE = 3;
-	LIVES = 0;
+	//LIVES = 0;
 	
 	$('#stageMessage').html("Stage " + STAGE);
 	
