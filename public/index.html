@@ -7,7 +7,7 @@
 		<link rel="stylesheet" type="text/css" href="css/goosteroids.css">
 	</head>
 	<body>
-		<div id="introductionContainer" class="container">
+		<div id="introduction" class="screen">
 			<div class="wrapper">
 				<div class="body">
 					<img src="images/logo.png" class="logo">
@@ -16,7 +16,7 @@
 			</div>
 		</div>
 		
-		<div id="instructionsContainer" class="container">
+		<div id="instructions" class="screen">
 			<div class="wrapper">
 				<div class="header">
 					<img src="images/logo-small.png" class="logo">
@@ -24,13 +24,16 @@
 				</div>
 				
 				<div class="body">
-					<p>
-						The <a href="http://jackpine.co/work.php#greygoo" target="_blank">"grey goo"</a> of the internet has come alive in this remake of the classic Asteroids game!<br>
-						Globs of goo are attracted to one another and clump together to form blobs.<br>
-						You must destroy these globs and blobs - by shooting them with your spaceship's laser - before they take over the universe!<br>
-						Blobs fly apart when shot, and the force of attraction between the globs results in fast, crazy, and unpredictable motion.<br>
-						We invite you to play in full screen by pressing F11!
-					</p>
+					<div style="width:600px; position:relative; display:block; margin-left:auto; margin-right:auto;">
+						<p>
+							The <a href="http://jackpine.co/work.php#greygoo" target="_blank">"grey goo"</a> of the Internet 
+							has come alive in this remake of the classic Asteroids game! Globs of goo are attracted to one 
+							another and clump together to form blobs. You must destroy these globs and blobs - by shooting 
+							them with your spaceship's laser - before they take over the entire universe! Blobs fly apart when shot,
+							and the force of attraction between the globs results in fast, crazy, and unpredictable motion.
+							We invite you to play in full screen by pressing F11!
+						</p>
+					</div>
 					
 					<img id="playButton" src="images/play-button.png" class="play-button">
 					
@@ -44,13 +47,13 @@
 			</div>
 		</div>
 	
-		<div id="gameContainer" class="container">
+		<div id="game" class="screen">
 			<div class="wrapper">
 				<div class="header">
 					<img src="images/logo-very-small.png">
 				</div>
 				
-				<div class="body"><canvas id="gameCanvas" width="920" height="690"></canvas></div>
+				<div class="body"><canvas id="canvas" width="920" height="690"></canvas></div>
 				
 				<div class="footer">
 					<a href="http://jackpine.co" target="_blank"><img src="images/jackpine-logo-small.png"></a>
@@ -58,7 +61,7 @@
 			</div>
 		</div>
 		
-		<div id="stageContainer" class="container">
+		<div id="stage" class="screen">
 			<div class="wrapper">
 				<div class="header">
 					<img src="images/logo-very-small.png" class="logo">
@@ -72,7 +75,7 @@
 			</div>
 		</div>
 		
-		<div id="gameOverContainer" class="container">
+		<div id="gameOver" class="screen">
 			<div class="wrapper">
 				<div class="header">
 					<img src="images/logo-very-small.png" class="logo">
@@ -86,7 +89,7 @@
 			</div>
 		</div>
 		
-		<div id="highScoresContainer" class="container">
+		<div id="highScores" class="screen">
 		</div>
 	</body>
 </html>

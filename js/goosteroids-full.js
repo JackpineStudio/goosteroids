@@ -34,15 +34,16 @@ var BULLET_LIFETIME				= 20;					//20				Number of milliseconds bullet is alive
 var BULLET_RADIUS				= 2;					//2					Bullet radius
 var BULLET_COLOR				= "#ffffff";			//"#000000"			Bullet color
 														//
-var EXPLOSION_DAMPING			= 0.9					//0.9				Particle velocity damping
+var EXPLOSION_DAMPING			= 0.8;					//0.8				Particle velocity damping
 var EXPLOSION_NUM_PARTICLES		= 15;					//15				Number of particles in an explosion
 var EXPLOSION_PARTICLE_RADIUS	= 2;					//2					Particle radius
-var EXPLOSION_PARTICLE_LIFETIME = 15;					//10				Particle lifetime
+var EXPLOSION_PARTICLE_LIFETIME = 20;					//15				Particle lifetime
 														//
-var SHIP_EXPLOSION_MAGNITUDE	= 1000;					//350				Explosion magnitude (particle max velocity)
-var SHIP_EXPLOSION_BORDER_COLOR	= "black";				//"black"			Explosion color 1
-var SHIP_EXPLOSION_INTERIOR_COLOR = "white";			//"white"			Explosion color 1
-var SHIP_EXPLOSION_SPARK_COLOR	= "yellow";				//"yellow"			Explosion color 2
+var SHIP_EXPLOSION_MAGNITUDE	= 1000;					//1000				Explosion magnitude (particle max velocity)
+var SHIP_EXPLOSION_BORDER_COLOR	= "black";				//"black"			Explosion border color 1
+var SHIP_EXPLOSION_INTERIOR_COLOR = "white";			//"white"			Explosion interior 1
+var SHIP_EXPLOSION_SPARK_COLOR1	= "yellow";				//"yellow"			Explosion spark color 1
+var SHIP_EXPLOSION_SPARK_COLOR2	= "red";				//"red"				Explosion spark color 2
 														//
 var SHIP_GUN_COOLDOWN			= 6;					//5					Minimum time between shots
 var SHIP_MAX_SPEED				= 400;					//400				Max ship speed
@@ -58,10 +59,10 @@ var SHIP_BORDER_COLOR			= "#000000";			//"#000000"			Ship border color
 var SHIP_BORDER_WIDTH			= 3;					//3					Ship border width
 														//
 var AB_ACCELERATION				= 6 * SHIP_ACCELERATION;//					Afterburner acceleration
-var AB_FUEL_CONSUMPTION			= 5;					//					Afterburner fuel consumption
+var AB_FUEL_CONSUMPTION			= 5;					//5					Afterburner fuel consumption
 var AB_FUEL_RECHARGE_RATE		= 2;					//3					Fuel recharge per tick
 var AB_MAX_FUEL					= 100;					//100				Max afterburer fuel
-var AB_COOLDOWN					= 60;					//30				Afterburner Cooldown
+var AB_COOLDOWN					= 60;					//60				Afterburner Cooldown
 var AB_SHIP_MAX_SPEED			= 2.25 * SHIP_MAX_SPEED;//2.5x				Afterburner ship max speed 
 														//
 var FLAMES_COLOR  				= "blue";				//
@@ -98,9 +99,15 @@ var KEY_SHIFT					= 16;					//					Shift key
 														//
 var STAGE						= 1;					//1					Stage
 var SCORE						= 0;					//0					Score
+var TOTAL_SCORE					= 0;					//0					Total score
 var LIVES						= 3;					//3					Lives
 														//
-var MAIN_LOOP_INTERVAL_ID		= null;					//null
+var MAIN_LOOP_ID				= null;					//null
+var UPDATE_LOOP_ID				= null;					//null
+var UPDATE_LOOP_INTERVAL		= 10 * 1000;			//10 * 1000
+														//
+var SESSION_ID = "<%= @session_id %>";					//
+var GAME_ID = 0;										//
 
 /*
  * Game setup
@@ -168,7 +175,7 @@ function mainLoop() {
 	
 	//end game if player is out of lives
 	if (LIVES < 0) {
-		endGame();
+		gameOver();
 		return;
 	}
 	
@@ -179,13 +186,13 @@ function mainLoop() {
 /*
  * Start/stop game
  */
-function startGame() {
+function startGameLoop() {
 	//run main loop
-	MAIN_LOOP_INTERVAL_ID = setInterval(mainLoop, 1000 / FPS);
+	MAIN_LOOP_ID = setInterval(mainLoop, 1000 / FPS);
 }
 
-function stopGame() {
-	clearInterval(MAIN_LOOP_INTERVAL_ID);
+function stopGameLoop() {
+	clearInterval(MAIN_LOOP_ID);
 }
 
 /*
@@ -193,7 +200,7 @@ function stopGame() {
  */
 function initGame() {
  	//setup canvas	 
- 	CANVAS = document.getElementById("gameCanvas");
+ 	CANVAS = document.getElementById("canvas");
 	CTX = CANVAS.getContext("2d");
 	
 	//setup temporary canvase
@@ -240,68 +247,219 @@ function initGame() {
 }
 
 /*
+ * Update loop
+ */
+function updateLoop() {
+	updateGame(SESSION_ID, GAME_ID, SCORE, STAGE);
+}
+
+function startUpdateLoop() {
+	UPDATE_LOOP_ID = setInterval(updateLoop, UPDATE_LOOP_INTERVAL);
+}
+
+function stopUpdateLoop() {
+	clearInterval(UPDATE_LOOP_ID);
+}
+
+/*
  * Game actions
  */
 
- 
-function endGame() {
-	stopGame();
-	$("#gameOverContainer").show();	
-	$('#gameContainer').fadeOut(2000);
-}
-
-function stageOver() {
-	stopGame();
-	
-	STAGE++;
-	
-	$('#stageMessage').html("Stage " + STAGE);
-	
-	$('#stageContainer').fadeIn(2500, function () {
-		setTimeout(function () {
-			$('#stageContainer').fadeOut(1000);
-			$('#gameContainer').fadeIn(2000);			
-			loadSettings(STAGE);
-			spawnShip();
-			startGame();
-		}, 500);
-	});
-}
-
 function showInstructions() {
-	$("#introductionContainer").fadeOut(2000);
-	$("#instructionsContainer").fadeIn(2000);
+	$("#introduction").fadeOut(2000);
+	$("#instructions").fadeIn(2000);
 }
 
 function playGame() {
-	$("#instructionsContainer").stop();
+	$("#instructions").stop();
 	
 	//STAGE = 3;
-	//LIVES = 0;
+	LIVES = 0;
 	
 	$('#stageMessage').html("Stage " + STAGE);
 	
-	$("#instructionsContainer").fadeOut(2000);
-	$('#stageContainer').fadeIn(2000, function () {
+	$("#instructions").fadeOut(2000);
+	$('#stage').fadeIn(2000, function () {
 		setTimeout(function () {
-			$('#gameContainer').show();
-			$('#stageContainer').fadeOut(2000, function () {						
+			$('#game').show();
+			$('#stage').fadeOut(2000, function () {			
 				initGame();
-				startGame();
+				newGame(SESSION_ID, function (game_id) {
+					GAME_ID = game_id;
+					
+					console.log("GAME_ID: " + GAME_ID);
+					
+					startUpdateLoop();
+					startGameLoop();
+				});
 			});
 		}, 500);
 	});	
 }
 
+function stageOver() {
+	stopGameLoop();
+	
+	STAGE++;
+	
+	updateLoop(); //force game update
+	
+	$('#stageMessage').html("Stage " + STAGE);
+	
+	$('#stage').fadeIn(2000, function () {
+		setTimeout(function () {
+			$('#stage').fadeOut(2000);
+			$('#game').fadeIn(2000);			
+			loadSettings(STAGE);
+			spawnShip();
+			startGameLoop();
+		}, 500);
+	});
+}
+
+function gameOver() {
+	updateLoop(); 		//force game update
+	stopUpdateLoop();	//stop update loop
+	stopGameLoop();		//stop game loop
+	endGame(SESSION_ID, GAME_ID, function () {
+		$("#gameOver").show();
+		$('#game').fadeOut(2000);
+	});
+}
+
 $(document).ready(function () {
 	$("#playButton").click(playGame);
 	
-	setTimeout(showInstructions, 2500);
+	setTimeout(showInstructions, 2000);
 	
 	console.log("SESSION_ID: " + SESSION_ID);
 });
+var GET = "GET";
+var POST = "POST";
 
-var SESSION_ID = "<%= @session_id %>";
+var METHOD = "GET";
+var TIMEOUT = 2000;
+
+function error(data) {
+	return data.type.valueOf() == "error";
+}
+
+function handleError(data) {
+	if (data.type.valueOf() == "error") {
+		var msg = "Error: " + data.error_message; 
+		alert(msg);
+		console.log(msg);
+		//window.location="/";
+	}
+}
+
+function handleAjaxFailure(textStatus, errorThrown) {
+	var msg = "Ajax failure: " + textStatus + " (" + errorThrown + ")";
+	alert(msg);
+	console.log(msg);
+	//window.location="/";
+}
+
+function sendAjaxRequest(url, method, timeout, data, success, error) {
+	var request = $.ajax({
+		url: url,
+		type: method,
+		dataType: "json",
+		cache: false,
+		data: data
+	});
+
+	request.done(function(data, textStatus, jqXHR) {
+		success(data, textStatus);
+	});
+	
+	request.fail(function(jqXHR, textStatus, errorThrown) {
+		error(textStatus, errorThrown);
+	});
+}
+
+function newGame(sessionId, callback) {
+	console.log("ajax: newGame")
+	
+	var game_id = -1;
+	var data = { session_id: sessionId };
+	
+	sendAjaxRequest("goosteroids/new.json", 
+		METHOD, TIMEOUT, data,
+		
+		function (data, textStatus) {
+			console.log("textStatus: " + textStatus);
+			console.log("data: " + strHash(data));
+			
+			if (error(data)) {
+				handleError(data);
+			} else {				
+				if (callback) {
+					callback.call(this, data.game_id);
+				}
+			}
+		},
+		
+		function (textStatus, errorThrown) {
+			handleAjaxFailure(textStatus, errorThrown);
+		}
+	);
+}
+
+function updateGame(sessionId, gameId, totalScore, stage, callback) {
+	console.log("ajax: updateGame")
+	
+	var data = { session_id: sessionId, game_id: gameId, score: totalScore, stage: stage, client_timestamp: toUTC(new Date()) };
+	
+	sendAjaxRequest("goosteroids/update.json",
+		METHOD, TIMEOUT, data,
+		
+		function (data, textStatus) { //Success
+			console.log("textStatus: " + textStatus);
+			console.log("data: " + strHash(data));
+			
+			if (error(data)) {
+				handleError(data);
+			} else {	
+				if (callback) {
+					callback.call(this);
+				}
+			}
+		},
+		
+		function (textStatus, errorThrown) { //Error
+			handleAjaxFailure(textStatus, errorThrown);
+		}
+	);
+}
+
+function endGame(sessionId, gameId, callback) {
+	console.log("ajax: endGame")
+	
+	var data = { session_id: sessionId, game_id: gameId };
+	
+	sendAjaxRequest("goosteroids/end_game.json",
+		METHOD, TIMEOUT, data,
+		
+		function (data, textStatus) { //Success
+			console.log("textStatus: " + textStatus);
+			console.log("data: " + strHash(data));
+			
+			if (error(data)) {
+				handleError(data);
+			} else {	
+				if (callback) {
+					callback.call(this);
+				}
+			}
+		},
+		
+		function (textStatus, errorThrown) { //Error
+			handleAjaxFailure(textStatus, errorThrown);
+		}
+	);
+}
+
 /*
  * Bullets
  */
@@ -353,7 +511,8 @@ function updateBullets(bullets) {
 				bullets.splice(i, 1);
 				GLOBS.splice(j, 1);
 				EXPLOSIONS.push(new Explosion(glob.position, GLOB_EXPLOSION_MAGNITUDE, EXPLOSION_NUM_PARTICLES, EXPLOSION_PARTICLE_LIFETIME, GLOB_EXPLOSION_COLOR));
-				SCORE += 10; 
+				SCORE += 10;
+				TOTAL_SCORE += 10;
 				
 				//apply impuses to surrounding globs
 				for (var k = 0; k < GLOBS.length; k++) {
@@ -379,7 +538,7 @@ function drawBullets(ctx, bullets) {
  * Display
  */
 function drawScoreDisplay(canvas, ctx, score) {
-	var displayPosition = new Vector (canvas.width - 90, 40);
+	var displayPosition = new Vector (canvas.width - 100, 50);
 	
 	ctx.save();
 	
@@ -930,9 +1089,10 @@ function updateShip(ship, shipModel) {
 				ship.alive = false;
 				LIVES--;
 				RESPAWN_FRAMES_REMAINING = RESPAWN_DELAY;
-				EXPLOSIONS.push(new Explosion(ship.position, 5*SHIP_EXPLOSION_MAGNITUDE, EXPLOSION_NUM_PARTICLES, EXPLOSION_PARTICLE_LIFETIME, SHIP_EXPLOSION_BORDER_COLOR));
-				EXPLOSIONS.push(new Explosion(ship.position, 2*SHIP_EXPLOSION_MAGNITUDE, 4*EXPLOSION_NUM_PARTICLES, EXPLOSION_PARTICLE_LIFETIME, SHIP_EXPLOSION_INTERIOR_COLOR));
-				EXPLOSIONS.push(new Explosion(ship.position, SHIP_EXPLOSION_MAGNITUDE, EXPLOSION_NUM_PARTICLES, EXPLOSION_PARTICLE_LIFETIME, SHIP_EXPLOSION_SPARK_COLOR));
+				EXPLOSIONS.push(new Explosion(ship.position, 5*SHIP_EXPLOSION_MAGNITUDE, 1.5*EXPLOSION_NUM_PARTICLES, EXPLOSION_PARTICLE_LIFETIME, SHIP_EXPLOSION_BORDER_COLOR));
+				EXPLOSIONS.push(new Explosion(ship.position, 2*SHIP_EXPLOSION_MAGNITUDE, 5*EXPLOSION_NUM_PARTICLES, EXPLOSION_PARTICLE_LIFETIME, SHIP_EXPLOSION_INTERIOR_COLOR));
+				EXPLOSIONS.push(new Explosion(ship.position, SHIP_EXPLOSION_MAGNITUDE/3, EXPLOSION_NUM_PARTICLES, EXPLOSION_PARTICLE_LIFETIME, SHIP_EXPLOSION_SPARK_COLOR1));
+				EXPLOSIONS.push(new Explosion(ship.position, SHIP_EXPLOSION_MAGNITUDE/3, EXPLOSION_NUM_PARTICLES/2, EXPLOSION_PARTICLE_LIFETIME, SHIP_EXPLOSION_SPARK_COLOR2));
 				return;
 			}
 		}
@@ -946,7 +1106,7 @@ function updateShip(ship, shipModel) {
 		if (ship.gunFiring && ship.gunCooldown == 0) {
 			//find position of front of ship
 			var shipBow = SHIP_MODEL[1];
-			shipBow = PolarVector(shipBow.angle() + ship.orientation - PI/2, shipBow.norm() + SHIP_BORDER_WIDTH);
+			shipBow = PolarVector(shipBow.angle() + ship.orientation - PI/2, shipBow.norm() + 2*SHIP_BORDER_WIDTH);
 			shipBow = shipBow.add(ship.position);
 			
 			//fire bullet
@@ -1151,13 +1311,36 @@ function drawPolyLine(ctx, vertices, interiorColor, borderColor, borderWidth) {
 		ctx.fillStyle = interiorColor;
 		ctx.fill();
 	}
-
+	
 	if (borderColor) {
 		ctx.lineWidth = borderWidth;
 		ctx.strokeStyle = borderColor;
 		ctx.stroke();
 	}
 }
+
+function chomp(str, search, replace) {
+	return str.replace(new RegExp(search + "$"), replace);
+}
+
+function strHash(hash) {
+	var str = "{ ";
+	
+	for (var key in hash) {
+		str += key + " : " + hash[key] + ", "; 
+	}
+	
+	str = chomp(str, ", ", "");	
+	str +=  " }";
+	
+	return str;
+}
+
+function toUTC(date) {
+	return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds(), date.getUTCMilliseconds());	
+}
+
+
 /*
  * Vector class
  */

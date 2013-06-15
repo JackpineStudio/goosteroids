@@ -2,7 +2,7 @@
  * Display
  */
 function drawScoreDisplay(canvas, ctx, score) {
-	var displayPosition = new Vector (canvas.width - 90, 40);
+	var displayPosition = new Vector (canvas.width - 100, 50);
 	
 	ctx.save();
 	

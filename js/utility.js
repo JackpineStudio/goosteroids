@@ -35,10 +35,33 @@ function drawPolyLine(ctx, vertices, interiorColor, borderColor, borderWidth) {
 		ctx.fillStyle = interiorColor;
 		ctx.fill();
 	}
-
+	
 	if (borderColor) {
 		ctx.lineWidth = borderWidth;
 		ctx.strokeStyle = borderColor;
 		ctx.stroke();
 	}
 }
+
+function chomp(str, search, replace) {
+	return str.replace(new RegExp(search + "$"), replace);
+}
+
+function strHash(hash) {
+	var str = "{ ";
+	
+	for (var key in hash) {
+		str += key + " : " + hash[key] + ", "; 
+	}
+	
+	str = chomp(str, ", ", "");	
+	str +=  " }";
+	
+	return str;
+}
+
+function toUTC(date) {
+	return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds(), date.getUTCMilliseconds());	
+}
+
+

@@ -34,15 +34,16 @@ var BULLET_LIFETIME				= 20;					//20				Number of milliseconds bullet is alive
 var BULLET_RADIUS				= 2;					//2					Bullet radius
 var BULLET_COLOR				= "#ffffff";			//"#000000"			Bullet color
 														//
-var EXPLOSION_DAMPING			= 0.9					//0.9				Particle velocity damping
+var EXPLOSION_DAMPING			= 0.8;					//0.8				Particle velocity damping
 var EXPLOSION_NUM_PARTICLES		= 15;					//15				Number of particles in an explosion
 var EXPLOSION_PARTICLE_RADIUS	= 2;					//2					Particle radius
-var EXPLOSION_PARTICLE_LIFETIME = 15;					//10				Particle lifetime
+var EXPLOSION_PARTICLE_LIFETIME = 20;					//15				Particle lifetime
 														//
-var SHIP_EXPLOSION_MAGNITUDE	= 1000;					//350				Explosion magnitude (particle max velocity)
-var SHIP_EXPLOSION_BORDER_COLOR	= "black";				//"black"			Explosion color 1
-var SHIP_EXPLOSION_INTERIOR_COLOR = "white";			//"white"			Explosion color 1
-var SHIP_EXPLOSION_SPARK_COLOR	= "yellow";				//"yellow"			Explosion color 2
+var SHIP_EXPLOSION_MAGNITUDE	= 1000;					//1000				Explosion magnitude (particle max velocity)
+var SHIP_EXPLOSION_BORDER_COLOR	= "black";				//"black"			Explosion border color 1
+var SHIP_EXPLOSION_INTERIOR_COLOR = "white";			//"white"			Explosion interior 1
+var SHIP_EXPLOSION_SPARK_COLOR1	= "yellow";				//"yellow"			Explosion spark color 1
+var SHIP_EXPLOSION_SPARK_COLOR2	= "red";				//"red"				Explosion spark color 2
 														//
 var SHIP_GUN_COOLDOWN			= 6;					//5					Minimum time between shots
 var SHIP_MAX_SPEED				= 400;					//400				Max ship speed
@@ -58,10 +59,10 @@ var SHIP_BORDER_COLOR			= "#000000";			//"#000000"			Ship border color
 var SHIP_BORDER_WIDTH			= 3;					//3					Ship border width
 														//
 var AB_ACCELERATION				= 6 * SHIP_ACCELERATION;//					Afterburner acceleration
-var AB_FUEL_CONSUMPTION			= 5;					//					Afterburner fuel consumption
+var AB_FUEL_CONSUMPTION			= 5;					//5					Afterburner fuel consumption
 var AB_FUEL_RECHARGE_RATE		= 2;					//3					Fuel recharge per tick
 var AB_MAX_FUEL					= 100;					//100				Max afterburer fuel
-var AB_COOLDOWN					= 60;					//30				Afterburner Cooldown
+var AB_COOLDOWN					= 60;					//60				Afterburner Cooldown
 var AB_SHIP_MAX_SPEED			= 2.25 * SHIP_MAX_SPEED;//2.5x				Afterburner ship max speed 
 														//
 var FLAMES_COLOR  				= "blue";				//
@@ -98,9 +99,15 @@ var KEY_SHIFT					= 16;					//					Shift key
 														//
 var STAGE						= 1;					//1					Stage
 var SCORE						= 0;					//0					Score
+var TOTAL_SCORE					= 0;					//0					Total score
 var LIVES						= 3;					//3					Lives
 														//
-var MAIN_LOOP_INTERVAL_ID		= null;					//null
+var MAIN_LOOP_ID				= null;					//null
+var UPDATE_LOOP_ID				= null;					//null
+var UPDATE_LOOP_INTERVAL		= 10 * 1000;			//10 * 1000
+														//
+var SESSION_ID = "<%= @session_id %>";					//
+var GAME_ID = 0;										//
 
 /*
  * Game setup
@@ -168,7 +175,7 @@ function mainLoop() {
 	
 	//end game if player is out of lives
 	if (LIVES < 0) {
-		endGame();
+		gameOver();
 		return;
 	}
 	
@@ -179,13 +186,13 @@ function mainLoop() {
 /*
  * Start/stop game
  */
-function startGame() {
+function startGameLoop() {
 	//run main loop
-	MAIN_LOOP_INTERVAL_ID = setInterval(mainLoop, 1000 / FPS);
+	MAIN_LOOP_ID = setInterval(mainLoop, 1000 / FPS);
 }
 
-function stopGame() {
-	clearInterval(MAIN_LOOP_INTERVAL_ID);
+function stopGameLoop() {
+	clearInterval(MAIN_LOOP_ID);
 }
 
 /*
@@ -193,7 +200,7 @@ function stopGame() {
  */
 function initGame() {
  	//setup canvas	 
- 	CANVAS = document.getElementById("gameCanvas");
+ 	CANVAS = document.getElementById("canvas");
 	CTX = CANVAS.getContext("2d");
 	
 	//setup temporary canvase
@@ -240,65 +247,90 @@ function initGame() {
 }
 
 /*
+ * Update loop
+ */
+function updateLoop() {
+	updateGame(SESSION_ID, GAME_ID, SCORE, STAGE);
+}
+
+function startUpdateLoop() {
+	UPDATE_LOOP_ID = setInterval(updateLoop, UPDATE_LOOP_INTERVAL);
+}
+
+function stopUpdateLoop() {
+	clearInterval(UPDATE_LOOP_ID);
+}
+
+/*
  * Game actions
  */
 
- 
-function endGame() {
-	stopGame();
-	$("#gameOverContainer").show();	
-	$('#gameContainer').fadeOut(2000);
-}
-
-function stageOver() {
-	stopGame();
-	
-	STAGE++;
-	
-	$('#stageMessage').html("Stage " + STAGE);
-	
-	$('#stageContainer').fadeIn(2500, function () {
-		setTimeout(function () {
-			$('#stageContainer').fadeOut(1000);
-			$('#gameContainer').fadeIn(2000);			
-			loadSettings(STAGE);
-			spawnShip();
-			startGame();
-		}, 500);
-	});
-}
-
 function showInstructions() {
-	$("#introductionContainer").fadeOut(2000);
-	$("#instructionsContainer").fadeIn(2000);
+	$("#introduction").fadeOut(2000);
+	$("#instructions").fadeIn(2000);
 }
 
 function playGame() {
-	$("#instructionsContainer").stop();
+	$("#instructions").stop();
 	
 	//STAGE = 3;
-	//LIVES = 0;
+	LIVES = 0;
 	
 	$('#stageMessage').html("Stage " + STAGE);
 	
-	$("#instructionsContainer").fadeOut(2000);
-	$('#stageContainer').fadeIn(2000, function () {
+	$("#instructions").fadeOut(2000);
+	$('#stage').fadeIn(2000, function () {
 		setTimeout(function () {
-			$('#gameContainer').show();
-			$('#stageContainer').fadeOut(2000, function () {						
+			$('#game').show();
+			$('#stage').fadeOut(2000, function () {			
 				initGame();
-				startGame();
+				newGame(SESSION_ID, function (game_id) {
+					GAME_ID = game_id;
+					
+					console.log("GAME_ID: " + GAME_ID);
+					
+					startUpdateLoop();
+					startGameLoop();
+				});
 			});
 		}, 500);
 	});	
 }
 
+function stageOver() {
+	stopGameLoop();
+	
+	STAGE++;
+	
+	updateLoop(); //force game update
+	
+	$('#stageMessage').html("Stage " + STAGE);
+	
+	$('#stage').fadeIn(2000, function () {
+		setTimeout(function () {
+			$('#stage').fadeOut(2000);
+			$('#game').fadeIn(2000);			
+			loadSettings(STAGE);
+			spawnShip();
+			startGameLoop();
+		}, 500);
+	});
+}
+
+function gameOver() {
+	updateLoop(); 		//force game update
+	stopUpdateLoop();	//stop update loop
+	stopGameLoop();		//stop game loop
+	endGame(SESSION_ID, GAME_ID, function () {
+		$("#gameOver").show();
+		$('#game').fadeOut(2000);
+	});
+}
+
 $(document).ready(function () {
 	$("#playButton").click(playGame);
 	
-	setTimeout(showInstructions, 2500);
+	setTimeout(showInstructions, 2000);
 	
 	console.log("SESSION_ID: " + SESSION_ID);
 });
-
-var SESSION_ID = "<%= @session_id %>";
