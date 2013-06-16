@@ -48,16 +48,7 @@ function chomp(str, search, replace) {
 }
 
 function strHash(hash) {
-	var str = "{ ";
-	
-	for (var key in hash) {
-		str += key + " : " + hash[key] + ", "; 
-	}
-	
-	str = chomp(str, ", ", "");	
-	str +=  " }";
-	
-	return str;
+	return JSON.stringify(hash, null, " ");
 }
 
 function toUTC(date) {

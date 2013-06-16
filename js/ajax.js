@@ -1,8 +1,10 @@
 var GET = "GET";
 var POST = "POST";
 
-var METHOD = "GET";
+var METHOD = GET;
 var TIMEOUT = 2000;
+
+var UPDATING = false;
 
 function error(data) {
 	return data.type.valueOf() == "error";
@@ -10,117 +12,126 @@ function error(data) {
 
 function handleError(data) {
 	if (data.type.valueOf() == "error") {
-		var msg = "Error: " + data.error_message; 
-		alert(msg);
-		console.log(msg);
-		//window.location="/";
+		stopUpdateLoop();
+		stopGameLoop();
+		
+		var message = data.error_message; 
+		console.log(message);
+		
+		showErrorDialog(message, function () {
+			window.location="/";	
+		});
 	}
 }
 
 function handleAjaxFailure(textStatus, errorThrown) {
-	var msg = "Ajax failure: " + textStatus + " (" + errorThrown + ")";
-	alert(msg);
-	console.log(msg);
-	//window.location="/";
+	var message = "Ajax failure: " + textStatus + " (" + errorThrown + ")";
+	console.log(message);
+	
+	showErrorDialog(message, function () {
+		window.location="/";	
+	});
 }
 
-function sendAjaxRequest(url, method, timeout, data, success, error) {
+function sendAjaxRequest(url, data, callback) {
+	data.session_id = SESSION_ID;
+	
+	console.log("ajax request: " + url + ", data: " + strHash(data))
+	
 	var request = $.ajax({
 		url: url,
-		type: method,
+		type: METHOD,
+		timeout: TIMEOUT,
 		dataType: "json",
 		cache: false,
 		data: data
 	});
 
 	request.done(function(data, textStatus, jqXHR) {
-		success(data, textStatus);
+		console.log("ajax response: " + url + ", status: " + textStatus + ", data: " + strHash(data));
+		
+		if (error(data)) {
+			handleError(data);
+		} else {
+			if (callback) {
+				callback.call(this, data);
+			}
+		}
 	});
 	
 	request.fail(function(jqXHR, textStatus, errorThrown) {
-		error(textStatus, errorThrown);
+		console.log("ajax response: " + url + ", status: " + textStatus + ", error: " + errorThrown);
+		handleAjaxFailure(textStatus, errorThrown);
 	});
 }
 
-function newGame(sessionId, callback) {
-	console.log("ajax: newGame")
-	
-	var game_id = -1;
-	var data = { session_id: sessionId };
-	
-	sendAjaxRequest("goosteroids/new.json", 
-		METHOD, TIMEOUT, data,
-		
-		function (data, textStatus) {
-			console.log("textStatus: " + textStatus);
-			console.log("data: " + strHash(data));
-			
-			if (error(data)) {
-				handleError(data);
-			} else {				
-				if (callback) {
-					callback.call(this, data.game_id);
-				}
-			}
-		},
-		
-		function (textStatus, errorThrown) {
-			handleAjaxFailure(textStatus, errorThrown);
-		}
-	);
+function newGame(callback) {
+	sendAjaxRequest("goosteroids/new_game.json", {}, callback);
 }
 
-function updateGame(sessionId, gameId, totalScore, stage, callback) {
-	console.log("ajax: updateGame")
+function loadSettings(callback) {
+	var data = { game_id: GAME_ID };
 	
-	var data = { session_id: sessionId, game_id: gameId, score: totalScore, stage: stage, client_timestamp: toUTC(new Date()) };
+	sendAjaxRequest("goosteroids/get_settings.json", data, function (data) {
+		GRAVITY					= data.settings.gravity;
+		GRAVITY_DROPOFF			= data.settings.gravity_dropoff;
+		GLOB_MAX_SPEED			= data.settings.glob_max_speed;
+		GLOB_BLAST_RADIUS		= data.settings.glob_blast_radius;
+		GLOB_BLAST_MAGNITUDE	= data.settings.glob_blast_magnitude;		
+		GLOB_CR					= data.settings.glob_cr;	
+		
+		addBlobs(data.settings.blobs);
 	
-	sendAjaxRequest("goosteroids/update.json",
-		METHOD, TIMEOUT, data,
-		
-		function (data, textStatus) { //Success
-			console.log("textStatus: " + textStatus);
-			console.log("data: " + strHash(data));
-			
-			if (error(data)) {
-				handleError(data);
-			} else {	
-				if (callback) {
-					callback.call(this);
-				}
-			}
-		},
-		
-		function (textStatus, errorThrown) { //Error
-			handleAjaxFailure(textStatus, errorThrown);
+		if (callback) {
+			callback.call(this, data);
 		}
-	);
+	});
 }
 
-function endGame(sessionId, gameId, callback) {
-	console.log("ajax: endGame")
-	
-	var data = { session_id: sessionId, game_id: gameId };
-	
-	sendAjaxRequest("goosteroids/end_game.json",
-		METHOD, TIMEOUT, data,
+function updateGame(callback) {
+	if (!UPDATING) {
+		UPDATING = true;
 		
-		function (data, textStatus) { //Success
-			console.log("textStatus: " + textStatus);
-			console.log("data: " + strHash(data));
+		var data = { game_id: GAME_ID, lives: LIVES, globs_destroyed: GLOBS_DESTROYED, client_time: toUTC(new Date()) };
+		
+		sendAjaxRequest("goosteroids/update_game.json", data, function (data) {
+			GLOBS_DESTROYED = 0;
 			
-			if (error(data)) {
-				handleError(data);
-			} else {	
-				if (callback) {
-					callback.call(this);
-				}
+			if (callback) {
+				callback.call(this, data);
 			}
-		},
-		
-		function (textStatus, errorThrown) { //Error
-			handleAjaxFailure(textStatus, errorThrown);
-		}
-	);
+			
+			UPDATING = false;
+		});
+	} else {
+		setTimeout(function () {
+			updateGame(callback);		
+		}, 1000);
+	}
 }
 
+function endStage(callback) {	
+	var data = { game_id: GAME_ID };
+	sendAjaxRequest("goosteroids/end_stage.json", data, function (data) {
+		STAGE++;
+		GLOBS_DESTROYED = 0;
+		
+		if (callback) {
+			callback.call(this, data);
+		}
+	});
+}
+
+function endGame(callback) {	
+	var data = { game_id: GAME_ID };
+	sendAjaxRequest("goosteroids/end_game.json", data, callback);
+}
+
+function setPlayerName(name, callback) {
+	var data = { game_id: GAME_ID, name: name };
+	sendAjaxRequest("goosteroids/set_player_name.json", data, callback);
+}
+
+function getHighScores(callback) {
+	sendAjaxRequest("goosteroids/get_high_scores.json", {}, callback);
+}

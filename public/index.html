@@ -3,10 +3,12 @@
 	<head>
 		<title>Goosteroids</title>
 		<script src="http://code.jquery.com/jquery-latest.min.js" type="text/javascript"></script>
-		<script src="goosteroids.js"  type="text/javascript"></script>
+		<script src="js/JSON-js/json2.js" type="text/javascript"></script>
+		<script src="js/jquery.simplemodal.1.4.4.min.js" type="text/javascript"></script>
+		<script src="goosteroids.js" type="text/javascript"></script>
 		<link rel="stylesheet" type="text/css" href="css/goosteroids.css">
 	</head>
-	<body>
+	<body>	
 		<div id="introduction" class="screen">
 			<div class="wrapper">
 				<div class="body">
@@ -36,6 +38,10 @@
 					</div>
 					
 					<img id="playButton" src="images/play-button.png" class="play-button">
+					
+					<script type="text/javascript">
+						$("#playButton").click(playGame);
+					</script>
 					
 					<img src="images/instructions-title.png" class="title">
 					<img src="images/instructions.png" class="instructions">
@@ -90,6 +96,56 @@
 		</div>
 		
 		<div id="highScores" class="screen">
+			<div class="wrapper">
+				<div class="header">
+					<img src="images/logo-small.png" class="logo">
+				</div>
+				
+				<div class="body">
+					<hr style="width:800px;">
+					<table class="highScores">
+						<tr class="table-header">
+							<th>Name</th>
+							<th>Stage</th>
+							<th>Score</th>
+							<th>Time</th>
+						</tr>
+					</table>
+					<hr style="width:800px;">
+				</div>
+				
+				<div class="footer">
+					<a href="http://jackpine.co" target="_blank"><img src="images/jackpine-logo-small.png"></a>
+				</div>
+			</div>
+		</div>
+		
+		<div id="dialog" class="dialog">
+			<div style="display:table; width:100%; height:100%; padding:10px 0px; margin:0px;">
+				<div style="display:table-row;">
+					<div style="display:table-cell; vertical-align:top;">
+						<div class="dialog-header"><div id="dialog-title"></div></div>
+						<hr class="dialog-divider">
+					</div>
+				</div>
+				
+				<div style="display:table-row;">
+					<div style="display:table-cell; vertical-align:middle;">
+						<div class="dialog-body">
+							<div id="dialog-message"></div>
+							<input id="dialog-input" size="20"> 
+						</div>
+					</div>
+				</div>
+				
+				<div style="display:table-row;">
+					<div style="display:table-cell; vertical-align:bottom;">
+						<hr class="dialog-divider">
+						<div id="dialog-footer">
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 	</body>
 </html>

@@ -99,12 +99,12 @@ var KEY_SHIFT					= 16;					//					Shift key
 														//
 var STAGE						= 1;					//1					Stage
 var SCORE						= 0;					//0					Score
-var TOTAL_SCORE					= 0;					//0					Total score
 var LIVES						= 3;					//3					Lives
+var GLOBS_DESTROYED				= 0;					//					Number of globs destroyed this update
 														//
 var MAIN_LOOP_ID				= null;					//null
 var UPDATE_LOOP_ID				= null;					//null
-var UPDATE_LOOP_INTERVAL		= 10 * 1000;			//10 * 1000
+var UPDATE_LOOP_INTERVAL		= 5 * 1000;				//10 * 1000
 														//
 var SESSION_ID = "<%= @session_id %>";					//
 var GAME_ID = 0;										//
@@ -212,13 +212,10 @@ function initGame() {
 	//setup game
 	SHIP_MODEL = generateShipModel(SHIP_MODEL_BASE, SHIP_MODEL_HEIGHT);
 	
-	//load settings
-	loadSettings(STAGE);
-	
 	//spawn ship	
 	spawnShip();
 	
-	//setup events	
+	//setup events
 	$("body").focus();
 	
 	$("body").keydown(function (event) {
@@ -249,8 +246,8 @@ function initGame() {
 /*
  * Update loop
  */
-function updateLoop() {
-	updateGame(SESSION_ID, GAME_ID, SCORE, STAGE);
+function updateLoop() {	
+	updateGame();
 }
 
 function startUpdateLoop() {
@@ -271,26 +268,27 @@ function showInstructions() {
 }
 
 function playGame() {
-	$("#instructions").stop();
+	enableKeyEvents();
 	
-	//STAGE = 3;
-	LIVES = 0;
+	$("#instructions").stop();
 	
 	$('#stageMessage').html("Stage " + STAGE);
 	
 	$("#instructions").fadeOut(2000);
+	
 	$('#stage').fadeIn(2000, function () {
 		setTimeout(function () {
 			$('#game').show();
+			
 			$('#stage').fadeOut(2000, function () {			
 				initGame();
-				newGame(SESSION_ID, function (game_id) {
-					GAME_ID = game_id;
-					
-					console.log("GAME_ID: " + GAME_ID);
-					
-					startUpdateLoop();
-					startGameLoop();
+				
+				newGame(function (data) {
+					GAME_ID = data.game_id;
+					loadSettings(function () {
+						startGameLoop();
+						startUpdateLoop();
+					});
 				});
 			});
 		}, 500);
@@ -300,45 +298,78 @@ function playGame() {
 function stageOver() {
 	stopGameLoop();
 	
-	STAGE++;
-	
-	updateLoop(); //force game update
-	
-	$('#stageMessage').html("Stage " + STAGE);
-	
-	$('#stage').fadeIn(2000, function () {
-		setTimeout(function () {
-			$('#stage').fadeOut(2000);
-			$('#game').fadeIn(2000);			
-			loadSettings(STAGE);
-			spawnShip();
-			startGameLoop();
-		}, 500);
+	updateGame(function () {
+		endStage(function () {
+			$('#stageMessage').html("Stage " + STAGE);
+			
+			$('#stage').fadeIn(2000, function () {
+				setTimeout(function () {
+					$('#stage').fadeOut(2000);
+					$('#game').fadeIn(2000);
+					
+					loadSettings();
+					spawnShip();
+					startGameLoop();
+					
+				}, 500);
+			});
+		});
 	});
 }
 
 function gameOver() {
-	updateLoop(); 		//force game update
-	stopUpdateLoop();	//stop update loop
-	stopGameLoop();		//stop game loop
-	endGame(SESSION_ID, GAME_ID, function () {
-		$("#gameOver").show();
-		$('#game').fadeOut(2000);
+	disableKeyEvents();
+	stopUpdateLoop();
+	stopGameLoop();
+	
+	updateGame(function () {
+		endGame(function (data) {
+			$("#gameOver").show();
+			$('#game').fadeOut(2000, function () {
+				if (data.high_score) {
+					showHighScorePrompt(highScores);
+				} else {
+					highScores();	
+				}
+			});
+		});
+	});
+}
+
+function highScores() {
+	getHighScores(function (data) {
+		var high_scores = data.high_scores;
+			
+		$("#highScores").show();
+		$("#gameOver").fadeOut(2000);
+		
+		$("table.highScores tr:not(.table-header)").remove();
+		
+		for (var i = 0; i < high_scores.length; i++) {
+			var rowHTML = "<tr>";
+			
+			rowHTML += "<td>" + high_scores[i].player_name + "</td>";
+			rowHTML += "<td>" + high_scores[i].stage + "</td>";
+			rowHTML += "<td>" + high_scores[i].score + "</td>";
+			rowHTML += "<td>" + high_scores[i].time + "</td>";
+			
+			rowHTML += "</tr>";
+			
+			$("table.highScores").append(rowHTML);
+		}
 	});
 }
 
 $(document).ready(function () {
-	$("#playButton").click(playGame);
-	
 	setTimeout(showInstructions, 2000);
-	
-	console.log("SESSION_ID: " + SESSION_ID);
 });
 var GET = "GET";
 var POST = "POST";
 
-var METHOD = "GET";
+var METHOD = GET;
 var TIMEOUT = 2000;
+
+var UPDATING = false;
 
 function error(data) {
 	return data.type.valueOf() == "error";
@@ -346,118 +377,152 @@ function error(data) {
 
 function handleError(data) {
 	if (data.type.valueOf() == "error") {
-		var msg = "Error: " + data.error_message; 
-		alert(msg);
-		console.log(msg);
-		//window.location="/";
+		stopUpdateLoop();
+		stopGameLoop();
+		
+		var message = data.error_message; 
+		console.log(message);
+		
+		showErrorDialog(message, function () {
+			window.location="/";	
+		});
 	}
 }
 
 function handleAjaxFailure(textStatus, errorThrown) {
-	var msg = "Ajax failure: " + textStatus + " (" + errorThrown + ")";
-	alert(msg);
-	console.log(msg);
-	//window.location="/";
+	var message = "Ajax failure: " + textStatus + " (" + errorThrown + ")";
+	console.log(message);
+	
+	showErrorDialog(message, function () {
+		window.location="/";	
+	});
 }
 
-function sendAjaxRequest(url, method, timeout, data, success, error) {
+function sendAjaxRequest(url, data, callback) {
+	data.session_id = SESSION_ID;
+	
+	console.log("ajax request: " + url + ", data: " + strHash(data))
+	
 	var request = $.ajax({
 		url: url,
-		type: method,
+		type: METHOD,
+		timeout: TIMEOUT,
 		dataType: "json",
 		cache: false,
 		data: data
 	});
 
 	request.done(function(data, textStatus, jqXHR) {
-		success(data, textStatus);
+		console.log("ajax response: " + url + ", status: " + textStatus + ", data: " + strHash(data));
+		
+		if (error(data)) {
+			handleError(data);
+		} else {
+			if (callback) {
+				callback.call(this, data);
+			}
+		}
 	});
 	
 	request.fail(function(jqXHR, textStatus, errorThrown) {
-		error(textStatus, errorThrown);
+		console.log("ajax response: " + url + ", status: " + textStatus + ", error: " + errorThrown);
+		handleAjaxFailure(textStatus, errorThrown);
 	});
 }
 
-function newGame(sessionId, callback) {
-	console.log("ajax: newGame")
-	
-	var game_id = -1;
-	var data = { session_id: sessionId };
-	
-	sendAjaxRequest("goosteroids/new.json", 
-		METHOD, TIMEOUT, data,
-		
-		function (data, textStatus) {
-			console.log("textStatus: " + textStatus);
-			console.log("data: " + strHash(data));
-			
-			if (error(data)) {
-				handleError(data);
-			} else {				
-				if (callback) {
-					callback.call(this, data.game_id);
-				}
-			}
-		},
-		
-		function (textStatus, errorThrown) {
-			handleAjaxFailure(textStatus, errorThrown);
-		}
-	);
+function newGame(callback) {
+	sendAjaxRequest("goosteroids/new_game.json", {}, callback);
 }
 
-function updateGame(sessionId, gameId, totalScore, stage, callback) {
-	console.log("ajax: updateGame")
+function loadSettings(callback) {
+	var data = { game_id: GAME_ID };
 	
-	var data = { session_id: sessionId, game_id: gameId, score: totalScore, stage: stage, client_timestamp: toUTC(new Date()) };
+	sendAjaxRequest("goosteroids/get_settings.json", data, function (data) {
+		GRAVITY					= data.settings.gravity;
+		GRAVITY_DROPOFF			= data.settings.gravity_dropoff;
+		GLOB_MAX_SPEED			= data.settings.glob_max_speed;
+		GLOB_BLAST_RADIUS		= data.settings.glob_blast_radius;
+		GLOB_BLAST_MAGNITUDE	= data.settings.glob_blast_magnitude;		
+		GLOB_CR					= data.settings.glob_cr;	
+		
+		addBlobs(data.settings.blobs);
 	
-	sendAjaxRequest("goosteroids/update.json",
-		METHOD, TIMEOUT, data,
-		
-		function (data, textStatus) { //Success
-			console.log("textStatus: " + textStatus);
-			console.log("data: " + strHash(data));
-			
-			if (error(data)) {
-				handleError(data);
-			} else {	
-				if (callback) {
-					callback.call(this);
-				}
-			}
-		},
-		
-		function (textStatus, errorThrown) { //Error
-			handleAjaxFailure(textStatus, errorThrown);
+		if (callback) {
+			callback.call(this, data);
 		}
-	);
+	});
 }
 
-function endGame(sessionId, gameId, callback) {
-	console.log("ajax: endGame")
-	
-	var data = { session_id: sessionId, game_id: gameId };
-	
-	sendAjaxRequest("goosteroids/end_game.json",
-		METHOD, TIMEOUT, data,
+function updateGame(callback) {
+	if (!UPDATING) {
+		UPDATING = true;
 		
-		function (data, textStatus) { //Success
-			console.log("textStatus: " + textStatus);
-			console.log("data: " + strHash(data));
+		var data = { game_id: GAME_ID, lives: LIVES, globs_destroyed: GLOBS_DESTROYED, client_time: toUTC(new Date()) };
+		
+		sendAjaxRequest("goosteroids/update_game.json", data, function (data) {
+			GLOBS_DESTROYED = 0;
 			
-			if (error(data)) {
-				handleError(data);
-			} else {	
-				if (callback) {
-					callback.call(this);
-				}
+			if (callback) {
+				callback.call(this, data);
 			}
-		},
+			
+			UPDATING = false;
+		});
+	} else {
+		setTimeout(function () {
+			updateGame(callback);		
+		}, 1000);
+	}
+}
+
+function endStage(callback) {	
+	var data = { game_id: GAME_ID };
+	sendAjaxRequest("goosteroids/end_stage.json", data, function (data) {
+		STAGE++;
+		GLOBS_DESTROYED = 0;
 		
-		function (textStatus, errorThrown) { //Error
-			handleAjaxFailure(textStatus, errorThrown);
+		if (callback) {
+			callback.call(this, data);
 		}
-	);
+	});
+}
+
+function endGame(callback) {	
+	var data = { game_id: GAME_ID };
+	sendAjaxRequest("goosteroids/end_game.json", data, callback);
+}
+
+function setPlayerName(name, callback) {
+	var data = { game_id: GAME_ID, name: name };
+	sendAjaxRequest("goosteroids/set_player_name.json", data, callback);
+}
+
+function getHighScores(callback) {
+	sendAjaxRequest("goosteroids/get_high_scores.json", {}, callback);
+}
+/*
+ * Blobs
+ */
+function createBlob(numGlobs, position, orientation, speed) {
+	var globs = explosion(position, GLOB_EXPLOSION_MAGNITUDE, GLOB_MASS, GLOB_RADIUS, numGlobs, true);
+	
+	for (var i = 0; i < globs.length; i++) {
+		globs[i].velocity = PolarVector(orientation, speed);
+	}
+	
+	return globs;
+}
+
+function addBlobs(blobs) {
+	for (var i = 0; i < blobs.length; i++) {
+		var blob = createBlob(blobs[i].size, new Vector(random(0, $("#canvas").width()-1), random(0, $("#canvas").height()-1)),
+	 					  	  random(0, PI_2),
+	 					  	  blobs[i].speed);
+	 				      
+	 	for (var j = 0; j < blob.length; j++) {
+	 		GLOBS.push(blob[j]);
+	 	}
+	}
 }
 
 /*
@@ -508,11 +573,15 @@ function updateBullets(bullets) {
 			var glob = GLOBS[j];
 			
 			if (distance(bullet.position, glob.position) < glob.radius + BULLET_RADIUS + GRADIENT_RADIUS / 2) {
+				GLOBS_DESTROYED++;
+				
 				bullets.splice(i, 1);
+				
 				GLOBS.splice(j, 1);
+				
 				EXPLOSIONS.push(new Explosion(glob.position, GLOB_EXPLOSION_MAGNITUDE, EXPLOSION_NUM_PARTICLES, EXPLOSION_PARTICLE_LIFETIME, GLOB_EXPLOSION_COLOR));
+				
 				SCORE += 10;
-				TOTAL_SCORE += 10;
 				
 				//apply impuses to surrounding globs
 				for (var k = 0; k < GLOBS.length; k++) {
@@ -533,6 +602,89 @@ function drawBullets(ctx, bullets) {
 	for (var i = 0; i < bullets.length; i++) {
 		drawCircle(ctx, bullets[i].position, BULLET_RADIUS, BULLET_COLOR);	
 	}
+}
+function showDialog(title, message, buttons, prompt, onClose) {
+	$("#dialog-title").text(title);
+	$("#dialog-message").html(message);
+	
+	if (prompt) {
+		$("#dialog-input").show();
+	} else {
+		$("#dialog-input").hide();
+	}
+	
+	$("#dialog-footer").html("");
+	
+	for (var i = 0; i < buttons.length; i++) {
+		var buttonHTML = "";
+		
+		if (buttons.length == 2 && i == 0) {
+			buttonHTML = "<div class='dialog-button' style='text-align:right;'>";
+		} else if (buttons.length == 2 && i == 1) {
+			buttonHTML = "<div class='dialog-button' style='text-align:left;'>";
+		} else {
+			buttonHTML = "<div class='dialog-button'>";
+		}
+		
+		buttonHTML += "<button class='dialog-button'>" + buttons[i].label + "</button></div>";
+		
+		$("#dialog-footer").append(buttonHTML);
+		
+		if (buttons[i].click) {
+			$("button.dialog-button").eq(i).click(buttons[i].click);
+		}
+	}
+	
+	if (onClose) {
+		$("#dialog").modal( { onClose: onClose } );
+	} else {
+		$("#dialog").modal();
+	}
+}
+
+function showErrorDialog(message, onClose) {
+	var closeButton = { 
+		label: "Close", 
+		click:  function () { $.modal.close(); } 
+	};
+	
+	showDialog("ERROR!", message, [ closeButton ], false, onClose);
+}
+
+function showHighScorePrompt(onClose) {
+	var message = "Congratulations you got a high score!<br>Brag about it by entering your name below:<br><br>"
+	
+	var submitButton = { 
+		label: "Submit",
+		click:  function () {
+			var name = $("#dialog-input").val();
+			
+			if (!name || name.trim().length == 0) {
+				$("#dialog-message").html("Bragging requires a name!<br>Please enter your name below:<br><br>");
+			} else {
+				$.modal.close();
+				
+				setPlayerName(name, function () {
+					if (onClose) {
+						onClose();
+					}
+				});
+			}
+		}
+	};
+	
+	var cancelButton = { 
+		label: "Cancel", 
+		click:  function () {
+			$.modal.close();
+			
+			if (onClose) {
+				onClose();
+			}
+		} 
+	};
+	
+	showDialog("HIGH SCORE!", message, [ submitButton, cancelButton ], true);
 }
 /*
  * Display
@@ -614,6 +766,16 @@ function displayRespawnMessage(canvas, ctx, secondsRemaining) {
 /*
  * Events
  */
+var KEY_EVENTS_ENABLED = false;
+
+function enableKeyEvents() {
+	KEY_EVENTS_ENABLED = true;
+}
+
+function disableKeyEvents() {
+	KEY_EVENTS_ENABLED = false;
+}
+
 function KeyEventHandler(key, action) {
 	this.key = key;
 	this.action = action;
@@ -628,23 +790,27 @@ function addKeyUpHandler(handler) {
 }
 
 function handleKeyDownEvent(event) {
-	for (var i = 0; i < KEY_DOWN_EVENT_HANDLERS.length; i++) {
-		var handler = KEY_DOWN_EVENT_HANDLERS[i];
-		
-		if (handler.key == event.which) {
-			handler.action();
-			event.preventDefault();
+	if (KEY_EVENTS_ENABLED) {
+		for (var i = 0; i < KEY_DOWN_EVENT_HANDLERS.length; i++) {
+			var handler = KEY_DOWN_EVENT_HANDLERS[i];
+			
+			if (handler.key == event.which) {
+				handler.action();
+				event.preventDefault();
+			}
 		}
 	}
 }
 
 function handleKeyUpEvent(event) {
-	for (var i = 0; i < KEY_UP_EVENT_HANDLERS.length; i++) {
-		var handler = KEY_UP_EVENT_HANDLERS[i];
-		
-		if (handler.key == event.which) {
-			handler.action();
-			event.preventDefault();
+	if (KEY_EVENTS_ENABLED) {
+		for (var i = 0; i < KEY_UP_EVENT_HANDLERS.length; i++) {
+			var handler = KEY_UP_EVENT_HANDLERS[i];
+			
+			if (handler.key == event.which) {
+				handler.action();
+				event.preventDefault();
+			}
 		}
 	}
 }
@@ -938,95 +1104,6 @@ function drawParticles(ctx, particles, color) {
 		drawCircle(ctx, particles[i].position, particles[i].radius, color);
 	}
 }
-/*
- * Settings
- */
-function createBlob(numGlobs, position, orientation, speed) {
-	var globs = explosion(position, GLOB_EXPLOSION_MAGNITUDE, GLOB_MASS, GLOB_RADIUS, numGlobs, true);
-	
-	for (var i = 0; i < globs.length; i++) {
-		globs[i].velocity = PolarVector(orientation, speed);
-	}
-	
-	return globs;
-}
-
-function addBlobs(blobs) {
-	for (var i = 0; i < blobs.length; i++) {
-		var blob = createBlob(blobs[i].size, new Vector(random(0, $("#canvas").width()-1), random(0, $("#canvas").height()-1)),
-	 					  	  random(0, PI_2),
-	 					  	  blobs[i].speed);
-	 				      
-	 	for (var j = 0; j < blob.length; j++) {
-	 		GLOBS.push(blob[j]);
-	 	}
-	}
-}
- 
-function level1Settings() {
-	GRAVITY						= 40;					//30				Gravitational constant
-	GRAVITY_DROPOFF				= 0.001;				//0.001				Gravitational dropoff
-
-	GLOB_MAX_SPEED		 		= 400;					//400				Maxiumum particle velocity														//
-
-	GLOB_BLAST_RADIUS			= 30;					//30				Radius of effect
-	GLOB_BLAST_MAGNITUDE		= GLOB_MAX_SPEED / 2;	//400				Impulse to apply to globs in the radius of effect
-
-	GLOB_CR						= 0.80;					//1.0				Coefficient of restitution
-
-	var blobs = [ { size: 20, speed: GLOB_MAX_SPEED / 2 } ];
-	 
-	addBlobs(blobs);
-}
-
-function level2Settings() {
-	GRAVITY						= 30;					//40				Gravitational constant
-	GRAVITY_DROPOFF				= 0.005;				//0.001				Gravitational dropoff
-
-	GLOB_MAX_SPEED		 		= 400;					//400				Maxiumum particle velocity														//
-
-	GLOB_BLAST_RADIUS			= 30;					//20				Radius of effect
-	GLOB_BLAST_MAGNITUDE		= GLOB_MAX_SPEED / 2;	//400				Impulse to apply to globs in the radius of effect
-
-	GLOB_CR						= 0.80;					//1.0				Coefficient of restitution
-	
-	var blobs = [ { size: 20, speed: GLOB_MAX_SPEED / 2 }, { size: 10, speed: GLOB_MAX_SPEED } ];
-	 
-	addBlobs(blobs);
-}
-
-function level3Settings() {
-	GRAVITY						= 100;					//40				Gravitational constant
-	GRAVITY_DROPOFF				= 0.01;					//0.001				Gravitational dropoff
-
-	GLOB_MAX_SPEED		 		= 500;					//500				Maxiumum particle velocity														//
-
-	GLOB_BLAST_RADIUS			= 30;					//20				Radius of effect
-	GLOB_BLAST_MAGNITUDE		= GLOB_MAX_SPEED;		//400				Impulse to apply to globs in the radius of effect
-	
-	GLOB_CR						= 0.80;					//1.0				Coefficient of restitution	
-
-	var blobs = [ { size: 20, speed: GLOB_MAX_SPEED / 3 }, { size: 15, speed: GLOB_MAX_SPEED / 2 }, { size: 20, speed: 2 * GLOB_MAX_SPEED / 3 } ];
-	 
-	addBlobs(blobs);
-}
-
-function loadSettings(stage) {
-	switch (stage) {
-	case 1:
-		level1Settings();
-		break;
-	case 2:
-		level2Settings();
-		break;
-	case 3:
-		level3Settings();
-		break;
-	default:
-		level3Settings();
-	}
-}
-
 /*
  * Ship
  */
@@ -1324,16 +1401,7 @@ function chomp(str, search, replace) {
 }
 
 function strHash(hash) {
-	var str = "{ ";
-	
-	for (var key in hash) {
-		str += key + " : " + hash[key] + ", "; 
-	}
-	
-	str = chomp(str, ", ", "");	
-	str +=  " }";
-	
-	return str;
+	return JSON.stringify(hash, null, " ");
 }
 
 function toUTC(date) {

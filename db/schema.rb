@@ -14,15 +14,16 @@
 ActiveRecord::Schema.define(:version => 20130614130540) do
 
   create_table "games", :force => true do |t|
-    t.integer  "session_id",                    :null => false
-    t.integer  "score",      :default => 0
-    t.integer  "stage",      :default => 1
-    t.string   "name"
-    t.datetime "start_time",                    :null => false
+    t.integer  "session_id",                         :null => false
+    t.integer  "score",           :default => 0
+    t.integer  "stage",           :default => 1
+    t.integer  "globs_destroyed", :default => 0
+    t.string   "player_name"
+    t.datetime "start_time",                         :null => false
     t.datetime "end_time"
-    t.boolean  "game_over",  :default => false
-    t.datetime "created_at",                    :null => false
-    t.datetime "updated_at",                    :null => false
+    t.boolean  "over",            :default => false
+    t.datetime "created_at",                         :null => false
+    t.datetime "updated_at",                         :null => false
   end
 
   create_table "sessions", :force => true do |t|

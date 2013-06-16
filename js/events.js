@@ -1,6 +1,16 @@
 /*
  * Events
  */
+var KEY_EVENTS_ENABLED = false;
+
+function enableKeyEvents() {
+	KEY_EVENTS_ENABLED = true;
+}
+
+function disableKeyEvents() {
+	KEY_EVENTS_ENABLED = false;
+}
+
 function KeyEventHandler(key, action) {
 	this.key = key;
 	this.action = action;
@@ -15,23 +25,27 @@ function addKeyUpHandler(handler) {
 }
 
 function handleKeyDownEvent(event) {
-	for (var i = 0; i < KEY_DOWN_EVENT_HANDLERS.length; i++) {
-		var handler = KEY_DOWN_EVENT_HANDLERS[i];
-		
-		if (handler.key == event.which) {
-			handler.action();
-			event.preventDefault();
+	if (KEY_EVENTS_ENABLED) {
+		for (var i = 0; i < KEY_DOWN_EVENT_HANDLERS.length; i++) {
+			var handler = KEY_DOWN_EVENT_HANDLERS[i];
+			
+			if (handler.key == event.which) {
+				handler.action();
+				event.preventDefault();
+			}
 		}
 	}
 }
 
 function handleKeyUpEvent(event) {
-	for (var i = 0; i < KEY_UP_EVENT_HANDLERS.length; i++) {
-		var handler = KEY_UP_EVENT_HANDLERS[i];
-		
-		if (handler.key == event.which) {
-			handler.action();
-			event.preventDefault();
+	if (KEY_EVENTS_ENABLED) {
+		for (var i = 0; i < KEY_UP_EVENT_HANDLERS.length; i++) {
+			var handler = KEY_UP_EVENT_HANDLERS[i];
+			
+			if (handler.key == event.which) {
+				handler.action();
+				event.preventDefault();
+			}
 		}
 	}
 }

@@ -46,11 +46,15 @@ function updateBullets(bullets) {
 			var glob = GLOBS[j];
 			
 			if (distance(bullet.position, glob.position) < glob.radius + BULLET_RADIUS + GRADIENT_RADIUS / 2) {
+				GLOBS_DESTROYED++;
+				
 				bullets.splice(i, 1);
+				
 				GLOBS.splice(j, 1);
+				
 				EXPLOSIONS.push(new Explosion(glob.position, GLOB_EXPLOSION_MAGNITUDE, EXPLOSION_NUM_PARTICLES, EXPLOSION_PARTICLE_LIFETIME, GLOB_EXPLOSION_COLOR));
+				
 				SCORE += 10;
-				TOTAL_SCORE += 10;
 				
 				//apply impuses to surrounding globs
 				for (var k = 0; k < GLOBS.length; k++) {

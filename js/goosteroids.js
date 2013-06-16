@@ -99,12 +99,12 @@ var KEY_SHIFT					= 16;					//					Shift key
 														//
 var STAGE						= 1;					//1					Stage
 var SCORE						= 0;					//0					Score
-var TOTAL_SCORE					= 0;					//0					Total score
 var LIVES						= 3;					//3					Lives
+var GLOBS_DESTROYED				= 0;					//					Number of globs destroyed this update
 														//
 var MAIN_LOOP_ID				= null;					//null
 var UPDATE_LOOP_ID				= null;					//null
-var UPDATE_LOOP_INTERVAL		= 10 * 1000;			//10 * 1000
+var UPDATE_LOOP_INTERVAL		= 5 * 1000;				//10 * 1000
 														//
 var SESSION_ID = "<%= @session_id %>";					//
 var GAME_ID = 0;										//
@@ -212,13 +212,10 @@ function initGame() {
 	//setup game
 	SHIP_MODEL = generateShipModel(SHIP_MODEL_BASE, SHIP_MODEL_HEIGHT);
 	
-	//load settings
-	loadSettings(STAGE);
-	
 	//spawn ship	
 	spawnShip();
 	
-	//setup events	
+	//setup events
 	$("body").focus();
 	
 	$("body").keydown(function (event) {
@@ -249,8 +246,8 @@ function initGame() {
 /*
  * Update loop
  */
-function updateLoop() {
-	updateGame(SESSION_ID, GAME_ID, SCORE, STAGE);
+function updateLoop() {	
+	updateGame();
 }
 
 function startUpdateLoop() {
@@ -271,26 +268,27 @@ function showInstructions() {
 }
 
 function playGame() {
-	$("#instructions").stop();
+	enableKeyEvents();
 	
-	//STAGE = 3;
-	LIVES = 0;
+	$("#instructions").stop();
 	
 	$('#stageMessage').html("Stage " + STAGE);
 	
 	$("#instructions").fadeOut(2000);
+	
 	$('#stage').fadeIn(2000, function () {
 		setTimeout(function () {
 			$('#game').show();
+			
 			$('#stage').fadeOut(2000, function () {			
 				initGame();
-				newGame(SESSION_ID, function (game_id) {
-					GAME_ID = game_id;
-					
-					console.log("GAME_ID: " + GAME_ID);
-					
-					startUpdateLoop();
-					startGameLoop();
+				
+				newGame(function (data) {
+					GAME_ID = data.game_id;
+					loadSettings(function () {
+						startGameLoop();
+						startUpdateLoop();
+					});
 				});
 			});
 		}, 500);
@@ -300,37 +298,68 @@ function playGame() {
 function stageOver() {
 	stopGameLoop();
 	
-	STAGE++;
-	
-	updateLoop(); //force game update
-	
-	$('#stageMessage').html("Stage " + STAGE);
-	
-	$('#stage').fadeIn(2000, function () {
-		setTimeout(function () {
-			$('#stage').fadeOut(2000);
-			$('#game').fadeIn(2000);			
-			loadSettings(STAGE);
-			spawnShip();
-			startGameLoop();
-		}, 500);
+	updateGame(function () {
+		endStage(function () {
+			$('#stageMessage').html("Stage " + STAGE);
+			
+			$('#stage').fadeIn(2000, function () {
+				setTimeout(function () {
+					$('#stage').fadeOut(2000);
+					$('#game').fadeIn(2000);
+					
+					loadSettings();
+					spawnShip();
+					startGameLoop();
+					
+				}, 500);
+			});
+		});
 	});
 }
 
 function gameOver() {
-	updateLoop(); 		//force game update
-	stopUpdateLoop();	//stop update loop
-	stopGameLoop();		//stop game loop
-	endGame(SESSION_ID, GAME_ID, function () {
-		$("#gameOver").show();
-		$('#game').fadeOut(2000);
+	disableKeyEvents();
+	stopUpdateLoop();
+	stopGameLoop();
+	
+	updateGame(function () {
+		endGame(function (data) {
+			$("#gameOver").show();
+			$('#game').fadeOut(2000, function () {
+				if (data.high_score) {
+					showHighScorePrompt(highScores);
+				} else {
+					highScores();	
+				}
+			});
+		});
+	});
+}
+
+function highScores() {
+	getHighScores(function (data) {
+		var high_scores = data.high_scores;
+			
+		$("#highScores").show();
+		$("#gameOver").fadeOut(2000);
+		
+		$("table.highScores tr:not(.table-header)").remove();
+		
+		for (var i = 0; i < high_scores.length; i++) {
+			var rowHTML = "<tr>";
+			
+			rowHTML += "<td>" + high_scores[i].player_name + "</td>";
+			rowHTML += "<td>" + high_scores[i].stage + "</td>";
+			rowHTML += "<td>" + high_scores[i].score + "</td>";
+			rowHTML += "<td>" + high_scores[i].time + "</td>";
+			
+			rowHTML += "</tr>";
+			
+			$("table.highScores").append(rowHTML);
+		}
 	});
 }
 
 $(document).ready(function () {
-	$("#playButton").click(playGame);
-	
 	setTimeout(showInstructions, 2000);
-	
-	console.log("SESSION_ID: " + SESSION_ID);
 });
