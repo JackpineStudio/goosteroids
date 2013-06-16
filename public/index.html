@@ -133,7 +133,9 @@
 										
 					<script type="text/javascript">
 						$(function () { 
-							$("#playAgainButton").click(playGame);
+							$("#playAgainButton").click(playGame).click(function () {
+								this.blur();
+							});
 						});
 					</script>
 				</div>

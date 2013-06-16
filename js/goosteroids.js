@@ -249,7 +249,8 @@ function initGame() {
  * Update loop
  */
 function updateLoop() {	
-	updateGame();
+	updateGame(GLOBS_DESTROYED);
+	GLOBS_DESTROYED	= 0;
 }
 
 function startUpdateLoop() {
@@ -273,9 +274,11 @@ function playGame() {
 	CTX.clearRect(0, 0, CANVAS.width, CANVAS.height);
 	
 	PLAYER_NAME = "";
+	
 	SCORE = 0;
 	STAGE = 1;
 	LIVES = 3;
+	
 	GLOBS_DESTROYED	= 0;
 	
 	GLOBS = [];
@@ -313,7 +316,7 @@ function stageOver() {
 	stopUpdateLoop();
 	stopGameLoop();
 	
-	updateGame(function () {
+	updateGame(GLOBS_DESTROYED, function () {
 		endStage(function () {
 			$('#stageMessage').html("Stage " + STAGE);
 			
@@ -332,6 +335,8 @@ function stageOver() {
 			});
 		});
 	});
+	
+	GLOBS_DESTROYED	= 0;
 }
 
 function gameOver() {
@@ -339,7 +344,7 @@ function gameOver() {
 	stopUpdateLoop();
 	stopGameLoop();
 	
-	updateGame(function () {
+	updateGame(GLOBS_DESTROYED, function () {
 		endGame(function (data) {
 			$("#gameOver").show();
 			$('#game').fadeOut(2000, function () {
@@ -351,6 +356,8 @@ function gameOver() {
 			});
 		});
 	});
+	
+	GLOBS_DESTROYED	= 0;
 }
 
 function highScores() {

@@ -85,20 +85,18 @@ function loadSettings(callback) {
 	});
 }
 
-function updateGame(callback) {
+function updateGame(globsDestroyed, callback) {
 	if (!UPDATING) {
 		UPDATING = true;
 		
-		var data = { game_id: GAME_ID, lives: LIVES, globs_destroyed: GLOBS_DESTROYED, client_time: toUTC(new Date()) };
+		var data = { game_id: GAME_ID, lives: LIVES, globs_destroyed: globsDestroyed, client_time: toUTC(new Date()) };
 		
 		sendAjaxRequest("goosteroids/update_game.json", data, function (data) {
-			GLOBS_DESTROYED = 0;
+			UPDATING = false;
 			
 			if (callback) {
 				callback.call(this, data);
 			}
-			
-			UPDATING = false;
 		});
 	} else {
 		setTimeout(function () {
