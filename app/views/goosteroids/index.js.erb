@@ -54,8 +54,9 @@ var SHIP_DAMPING				= 0.5;					//					Ship velocity damping
 var SHIP_MODEL					= [];					//[]				Ship model (array of vectors)
 var SHIP_MODEL_BASE				= 15;					//15				Ship model base length
 var SHIP_MODEL_HEIGHT			= 25;					//25				Ship model height
-var SHIP_INTERIOR_COLOR 		= "#ffffff";			//"#ffffff"			Ship interior color
-var SHIP_BORDER_COLOR			= "#000000";			//"#000000"			Ship border color
+var SHIP_INTERIOR_COLOR 		= "#e95258";			//"#ffffff"			Ship interior color
+var SHIP_BORDER_COLOR			= "#ffffff";			//"#000000"			Ship border color
+//var SHIP_BORDER_COLOR			= "#000000";			//"#000000"			Ship border color
 var SHIP_BORDER_WIDTH			= 3;					//3					Ship border width
 														//
 var AB_ACCELERATION				= 6 * SHIP_ACCELERATION;//					Afterburner acceleration

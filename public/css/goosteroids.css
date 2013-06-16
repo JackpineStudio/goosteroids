@@ -180,7 +180,7 @@ div.body {
 	padding:0px;
 	border-style:solid;
 	border-color:#ffffff;
-	border-width:2px;
+	border-width:3px;
 	background-color:#e95258; 
 }
 
@@ -214,7 +214,6 @@ table.highScores th {
 	font-weight:bolder;
 	text-align:center;
 	letter-spacing:2px;
-	text-decoration:underline
 }
 
 table.highScores tr td {
