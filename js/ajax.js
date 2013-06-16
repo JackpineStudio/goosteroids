@@ -1,9 +1,3 @@
-var GET = "GET";
-var POST = "POST";
-
-var METHOD = GET;
-var TIMEOUT = 2000;
-
 var UPDATING = false;
 
 function error(data) {
@@ -25,6 +19,9 @@ function handleError(data) {
 }
 
 function handleAjaxFailure(textStatus, errorThrown) {
+	stopUpdateLoop();
+	stopGameLoop();
+	
 	var message = "Ajax failure: " + textStatus + " (" + errorThrown + ")";
 	console.log(message);
 	
@@ -40,8 +37,8 @@ function sendAjaxRequest(url, data, callback) {
 	
 	var request = $.ajax({
 		url: url,
-		type: METHOD,
-		timeout: TIMEOUT,
+		type: "POST",
+		timeout: 2000,
 		dataType: "json",
 		cache: false,
 		data: data

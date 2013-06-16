@@ -4,6 +4,7 @@ body {
 	padding:0%;
 	margin:0%;
 	height:100%;
+	text-align:center;
 }
 
 div {
@@ -31,6 +32,17 @@ h1 {
 	margin:0px;
 }
 
+h2 {
+	width:100%;
+	color:#ffffff;
+	font-family: sans-serif;
+	font-size:2em;
+	font-weight:bolder;
+	text-align:center;
+	letter-spacing:2px;
+	margin:0px;
+}
+
 hr {
 	color:#ffffff;
 	background-color:#ffffff;
@@ -39,11 +51,39 @@ hr {
 	border:0px;
 }
 
+button {
+	cursor:pointer;
+	outline:none;
+	background-color:#e95258;
+	color:#ffffff;
+	font-family:sans-serif;
+	border-style:solid;
+	border-color:#ffffff;
+}
+
+button:hover {
+	background-color:#cbcbcb;
+}
+
+button.big-button {
+	font-size:5em;
+	font-weight:bolder;	
+	border-width:10px;
+	padding:25px;
+}
+
+button.small-button {
+	font-size:1em;
+	font-weight:bolder;	
+	border-width:4px;
+	padding:15px;
+}
+
 div.screen {
 	position:fixed;
 	width:100%; 
 	height:100%;
-	margin: 0px;
+	margin:0px;
 }
 
 div.header {
@@ -107,7 +147,7 @@ div.body {
 	font-weight:lighter;
 }
 
-#instructions .play-button {
+#playButton {
 	margin-top:4%;
 	padding:25px;
 	border-style:solid;
@@ -115,7 +155,7 @@ div.body {
 	border-color:#ffffff;
 }
 
-#instructions .play-button:hover {
+#playButton:hover {
 	cursor: pointer;
 	background-color:#cbcbcb;
 }
@@ -184,17 +224,18 @@ table.highScores tr td {
 	font-weight:lighter;
 	text-align:center;
 	letter-spacing:2px;
-	padding:15px;
+	padding:10px;
 }
 
 div.dialog {
 	display:none;
 	width:400px;
-	height:250px;
+	height:300px;
 	border-style:solid;
 	border-color:#ffffff;
 	border-width:2px;
 	background-color:#e95258;
+	padding:10px 0px;
 }
 
 div.dialog-header {
@@ -202,10 +243,10 @@ div.dialog-header {
 	width:100%;
 }
 
-#dialog-title {
+#dialogTitle {
 	width:100%;
 	color:#ffffff;
-	font-family: sans-serif;
+	font-family:sans-serif;
 	font-size:1em;
 	font-weight:bolder;
 	text-align:center;
@@ -217,7 +258,7 @@ div.dialog-body {
 	text-align:center;
 }
 
-#dialog-message {
+#dialogMessage {
 	display:inline;
 	text-align:center;
 	color:#ffffff;
@@ -226,13 +267,13 @@ div.dialog-body {
 	font-weight:lighter;
 }
 
-#dialog-input {
+#dialogInput {
 	display:none;
 	border:1px solid white;
-	outline: none;
+	outline:none;
 }
 
-#dialog-footer {
+#dialogFooter {
 	display:table;
 	text-align:center;
 	width:100%;
@@ -245,16 +286,8 @@ div.dialog-button {
 }
 
 button.dialog-button {
-	outline:none;
-	background-color:#e95258;
-	cursor:pointer;
-	color:#ffffff;
-	border-style:solid;
-	border-color:#ffffff;
+	font-size:14px;
+	font-weight:bold;	
 	border-width:1px;
 	padding:5px;
-}
-
-button.dialog-button:hover {
-	background-color:#cbcbcb;
 }

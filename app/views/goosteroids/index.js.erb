@@ -104,10 +104,12 @@ var GLOBS_DESTROYED				= 0;					//					Number of globs destroyed this update
 														//
 var MAIN_LOOP_ID				= null;					//null
 var UPDATE_LOOP_ID				= null;					//null
-var UPDATE_LOOP_INTERVAL		= 5 * 1000;				//10 * 1000
+var UPDATE_LOOP_INTERVAL		= 7500;					//10 * 1000
 														//
 var SESSION_ID = "<%= @session_id %>";					//
 var GAME_ID = 0;										//
+														//
+var PLAYER_NAME = "";									//
 
 /*
  * Game setup
@@ -268,21 +270,33 @@ function showInstructions() {
 }
 
 function playGame() {
+	CTX.clearRect(0, 0, CANVAS.width, CANVAS.height);
+	
+	PLAYER_NAME = "";
+	SCORE = 0;
+	STAGE = 1;
+	LIVES = 3;
+	GLOBS_DESTROYED	= 0;
+	
+	GLOBS = [];
+	BULLETS	= [];
+	EXPLOSIONS = [];
+	
+	spawnShip();
+	
 	enableKeyEvents();
 	
 	$("#instructions").stop();
 	
 	$('#stageMessage').html("Stage " + STAGE);
 	
-	$("#instructions").fadeOut(2000);
+	$("#instructions:visible").fadeOut(2000);
 	
 	$('#stage').fadeIn(2000, function () {
 		setTimeout(function () {
 			$('#game').show();
 			
-			$('#stage').fadeOut(2000, function () {			
-				initGame();
-				
+			$('#stage').fadeOut(2000, function () {
 				newGame(function (data) {
 					GAME_ID = data.game_id;
 					loadSettings(function () {
@@ -296,6 +310,7 @@ function playGame() {
 }
 
 function stageOver() {
+	stopUpdateLoop();
 	stopGameLoop();
 	
 	updateGame(function () {
@@ -307,9 +322,11 @@ function stageOver() {
 					$('#stage').fadeOut(2000);
 					$('#game').fadeIn(2000);
 					
-					loadSettings();
-					spawnShip();
-					startGameLoop();
+					loadSettings(function () {
+						spawnShip();
+						startGameLoop();
+						startUpdateLoop();
+					});
 					
 				}, 500);
 			});
@@ -339,9 +356,8 @@ function gameOver() {
 function highScores() {
 	getHighScores(function (data) {
 		var high_scores = data.high_scores;
-			
-		$("#highScores").show();
-		$("#gameOver").fadeOut(2000);
+		
+		$("#score").text(SCORE);
 		
 		$("table.highScores tr:not(.table-header)").remove();
 		
@@ -357,18 +373,30 @@ function highScores() {
 			
 			$("table.highScores").append(rowHTML);
 		}
+		
+		$("#highScores").show();
+		$("#gameOver").fadeOut(2000);
 	});
 }
 
+function openTwitterWindow(text, hashTag) {
+	var href = "https://twitter.com/intent/tweet?hashtags=" + hashTag + "%2C&text=" + encodeURIComponent(text) + "&tw_p=tweetbutton";
+	window.open(href);
+}
+
+function tweetScore() {
+	if (!PLAYER_NAME || PLAYER_NAME.length == 0) {
+		showTwitterPrompt();
+	} else {
+		var text = PLAYER_NAME + " got a score of " + SCORE + " playing";
+		openTwitterWindow(text, "Goosteroids");
+	}
+}
+
 $(document).ready(function () {
+	initGame();
 	setTimeout(showInstructions, 2000);
 });
-var GET = "GET";
-var POST = "POST";
-
-var METHOD = GET;
-var TIMEOUT = 2000;
-
 var UPDATING = false;
 
 function error(data) {
@@ -390,6 +418,9 @@ function handleError(data) {
 }
 
 function handleAjaxFailure(textStatus, errorThrown) {
+	stopUpdateLoop();
+	stopGameLoop();
+	
 	var message = "Ajax failure: " + textStatus + " (" + errorThrown + ")";
 	console.log(message);
 	
@@ -405,8 +436,8 @@ function sendAjaxRequest(url, data, callback) {
 	
 	var request = $.ajax({
 		url: url,
-		type: METHOD,
-		timeout: TIMEOUT,
+		type: "POST",
+		timeout: 2000,
 		dataType: "json",
 		cache: false,
 		data: data
@@ -604,16 +635,17 @@ function drawBullets(ctx, bullets) {
 	}
 }
 function showDialog(title, message, buttons, prompt, onClose) {
-	$("#dialog-title").text(title);
-	$("#dialog-message").html(message);
+	$("#dialogTitle").text(title);
+	$("#dialogMessage").html(message);
 	
 	if (prompt) {
-		$("#dialog-input").show();
+		$("#dialogInput").show();
+		$("#dialogInput").val("");
 	} else {
-		$("#dialog-input").hide();
+		$("#dialogInput").hide();
 	}
 	
-	$("#dialog-footer").html("");
+	$("#dialogFooter").html("");
 	
 	for (var i = 0; i < buttons.length; i++) {
 		var buttonHTML = "";
@@ -628,7 +660,7 @@ function showDialog(title, message, buttons, prompt, onClose) {
 		
 		buttonHTML += "<button class='dialog-button'>" + buttons[i].label + "</button></div>";
 		
-		$("#dialog-footer").append(buttonHTML);
+		$("#dialogFooter").append(buttonHTML);
 		
 		if (buttons[i].click) {
 			$("button.dialog-button").eq(i).click(buttons[i].click);
@@ -657,12 +689,14 @@ function showHighScorePrompt(onClose) {
 	var submitButton = { 
 		label: "Submit",
 		click:  function () {
-			var name = $("#dialog-input").val();
+			var name = $("#dialogInput").val();
 			
 			if (!name || name.trim().length == 0) {
-				$("#dialog-message").html("Bragging requires a name!<br>Please enter your name below:<br><br>");
+				$("#dialogMessage").html("Bragging requires a name!<br>Please enter your name below:<br><br>");
 			} else {
 				$.modal.close();
+				
+				PLAYER_NAME = name;
 				
 				setPlayerName(name, function () {
 					if (onClose) {
@@ -685,6 +719,37 @@ function showHighScorePrompt(onClose) {
 	};
 	
 	showDialog("HIGH SCORE!", message, [ submitButton, cancelButton ], true);
+}
+
+function showTwitterPrompt() {
+	var message = "Please enter your name below to tweet your score:<br><br>"
+	
+	var submitButton = { 
+		label: "Submit",
+		click:  function () {
+			var name = $("#dialogInput").val();
+			
+			if (!name || name.trim().length == 0) {
+				$("#dialogMessage").html("Names contain characters silly!<br>Please enter your name below to tweet your score:<br><br>");
+			} else {
+				var text = name + " got a score of " + SCORE + " playing";
+				openTwitterWindow(text, "Goosteroids");
+				
+				$.modal.close();
+				
+				setPlayerName(name);
+			}
+		}
+	};
+	
+	var cancelButton = { 
+		label: "Cancel", 
+		click:  function () {
+			$.modal.close();
+		} 
+	};
+	
+	showDialog("ENTER PLAYER NAME", message, [ submitButton, cancelButton ], true);
 }
 /*
  * Display

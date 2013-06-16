@@ -37,10 +37,12 @@
 						</p>
 					</div>
 					
-					<img id="playButton" src="images/play-button.png" class="play-button">
+					<img id="playButton" src="images/play-button.png">
 					
 					<script type="text/javascript">
-						$("#playButton").click(playGame);
+						$(function () { 
+							$("#playButton").click(playGame);
+						});
 					</script>
 					
 					<img src="images/instructions-title.png" class="title">
@@ -102,6 +104,20 @@
 				</div>
 				
 				<div class="body">
+					<img src="images/your-score.png" style="margin:10px auto;">
+					<h2 id="score" style="margin:10px auto;"></h2>
+					
+					<img id="tweetButton" src="images/twitter.png" style="margin:10px auto;">
+					
+					<script type="text/javascript">
+						$(function () {
+							$("#tweetButton").click(tweetScore);
+						});
+					</script>
+					
+					
+					<img src="images/tweet-it.png" style="margin:10px auto;">
+				
 					<hr style="width:800px;">
 					<table class="highScores">
 						<tr class="table-header">
@@ -112,19 +128,27 @@
 						</tr>
 					</table>
 					<hr style="width:800px;">
+					
+					<button id="playAgainButton" class="small-button" style="margin:10px auto;">PLAY AGAIN</button>
+										
+					<script type="text/javascript">
+						$(function () { 
+							$("#playAgainButton").click(playGame);
+						});
+					</script>
 				</div>
 				
 				<div class="footer">
-					<a href="http://jackpine.co" target="_blank"><img src="images/jackpine-logo-small.png"></a>
+					<a href="http://jackpine.co" target="_blank" style="outline:none;"><img src="images/jackpine-logo-small.png"></a>
 				</div>
 			</div>
 		</div>
 		
 		<div id="dialog" class="dialog">
-			<div style="display:table; width:100%; height:100%; padding:10px 0px; margin:0px;">
+			<div style="display:table; width:100%; height:100%; margin:0px; padding:0px;">
 				<div style="display:table-row;">
 					<div style="display:table-cell; vertical-align:top;">
-						<div class="dialog-header"><div id="dialog-title"></div></div>
+						<div class="dialog-header"><div id="dialogTitle"></div></div>
 						<hr class="dialog-divider">
 					</div>
 				</div>
@@ -132,8 +156,8 @@
 				<div style="display:table-row;">
 					<div style="display:table-cell; vertical-align:middle;">
 						<div class="dialog-body">
-							<div id="dialog-message"></div>
-							<input id="dialog-input" size="20"> 
+							<div id="dialogMessage"></div>
+							<input id="dialogInput" size="20"> 
 						</div>
 					</div>
 				</div>
@@ -141,7 +165,7 @@
 				<div style="display:table-row;">
 					<div style="display:table-cell; vertical-align:bottom;">
 						<hr class="dialog-divider">
-						<div id="dialog-footer">
+						<div id="dialogFooter">
 						</div>
 					</div>
 				</div>

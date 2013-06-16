@@ -23,6 +23,8 @@ MAX_GLOBS_DESTROYED = 20
 MAX_LIVES = 3
 
 class GoosteroidsController < ApplicationController
+	skip_before_filter :verify_authenticity_token, :if => Proc.new { |c| c.request.format == 'application/json' }
+	
 	before_filter :create_response
 	before_filter :session_filter, only: [:new_game, :update_game, :get_settings, :end_game, :end_stage, :set_player_name, :get_high_scores]
 	

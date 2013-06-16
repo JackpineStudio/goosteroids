@@ -1,13 +1,13 @@
 Goosteroids::Application.routes.draw do
 	match "goosteroids" => "goosteroids#index"
 	
-	get "goosteroids/new_game"
-	get "goosteroids/get_settings"
-	get "goosteroids/update_game"
-	get "goosteroids/end_stage"
-	get "goosteroids/end_game"
-	get "goosteroids/set_player_name"
-	get "goosteroids/get_high_scores"	
+	post "goosteroids/new_game"
+	post "goosteroids/get_settings"
+	post "goosteroids/update_game"
+	post "goosteroids/end_stage"
+	post "goosteroids/end_game"
+	post "goosteroids/set_player_name"
+	post "goosteroids/get_high_scores"	
 	
   # The priority is based upon order of creation:
   # first created -> highest priority.

@@ -104,10 +104,12 @@ var GLOBS_DESTROYED				= 0;					//					Number of globs destroyed this update
 														//
 var MAIN_LOOP_ID				= null;					//null
 var UPDATE_LOOP_ID				= null;					//null
-var UPDATE_LOOP_INTERVAL		= 5 * 1000;				//10 * 1000
+var UPDATE_LOOP_INTERVAL		= 7500;					//10 * 1000
 														//
 var SESSION_ID = "<%= @session_id %>";					//
 var GAME_ID = 0;										//
+														//
+var PLAYER_NAME = "";									//
 
 /*
  * Game setup
@@ -268,21 +270,33 @@ function showInstructions() {
 }
 
 function playGame() {
+	CTX.clearRect(0, 0, CANVAS.width, CANVAS.height);
+	
+	PLAYER_NAME = "";
+	SCORE = 0;
+	STAGE = 1;
+	LIVES = 3;
+	GLOBS_DESTROYED	= 0;
+	
+	GLOBS = [];
+	BULLETS	= [];
+	EXPLOSIONS = [];
+	
+	spawnShip();
+	
 	enableKeyEvents();
 	
 	$("#instructions").stop();
 	
 	$('#stageMessage').html("Stage " + STAGE);
 	
-	$("#instructions").fadeOut(2000);
+	$("#instructions:visible").fadeOut(2000);
 	
 	$('#stage').fadeIn(2000, function () {
 		setTimeout(function () {
 			$('#game').show();
 			
-			$('#stage').fadeOut(2000, function () {			
-				initGame();
-				
+			$('#stage').fadeOut(2000, function () {
 				newGame(function (data) {
 					GAME_ID = data.game_id;
 					loadSettings(function () {
@@ -296,6 +310,7 @@ function playGame() {
 }
 
 function stageOver() {
+	stopUpdateLoop();
 	stopGameLoop();
 	
 	updateGame(function () {
@@ -307,9 +322,11 @@ function stageOver() {
 					$('#stage').fadeOut(2000);
 					$('#game').fadeIn(2000);
 					
-					loadSettings();
-					spawnShip();
-					startGameLoop();
+					loadSettings(function () {
+						spawnShip();
+						startGameLoop();
+						startUpdateLoop();
+					});
 					
 				}, 500);
 			});
@@ -339,9 +356,8 @@ function gameOver() {
 function highScores() {
 	getHighScores(function (data) {
 		var high_scores = data.high_scores;
-			
-		$("#highScores").show();
-		$("#gameOver").fadeOut(2000);
+		
+		$("#score").text(SCORE);
 		
 		$("table.highScores tr:not(.table-header)").remove();
 		
@@ -357,9 +373,27 @@ function highScores() {
 			
 			$("table.highScores").append(rowHTML);
 		}
+		
+		$("#highScores").show();
+		$("#gameOver").fadeOut(2000);
 	});
 }
 
+function openTwitterWindow(text, hashTag) {
+	var href = "https://twitter.com/intent/tweet?hashtags=" + hashTag + "%2C&text=" + encodeURIComponent(text) + "&tw_p=tweetbutton";
+	window.open(href);
+}
+
+function tweetScore() {
+	if (!PLAYER_NAME || PLAYER_NAME.length == 0) {
+		showTwitterPrompt();
+	} else {
+		var text = PLAYER_NAME + " got a score of " + SCORE + " playing";
+		openTwitterWindow(text, "Goosteroids");
+	}
+}
+
 $(document).ready(function () {
+	initGame();
 	setTimeout(showInstructions, 2000);
 });

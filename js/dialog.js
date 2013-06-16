@@ -1,14 +1,15 @@
 function showDialog(title, message, buttons, prompt, onClose) {
-	$("#dialog-title").text(title);
-	$("#dialog-message").html(message);
+	$("#dialogTitle").text(title);
+	$("#dialogMessage").html(message);
 	
 	if (prompt) {
-		$("#dialog-input").show();
+		$("#dialogInput").show();
+		$("#dialogInput").val("");
 	} else {
-		$("#dialog-input").hide();
+		$("#dialogInput").hide();
 	}
 	
-	$("#dialog-footer").html("");
+	$("#dialogFooter").html("");
 	
 	for (var i = 0; i < buttons.length; i++) {
 		var buttonHTML = "";
@@ -23,7 +24,7 @@ function showDialog(title, message, buttons, prompt, onClose) {
 		
 		buttonHTML += "<button class='dialog-button'>" + buttons[i].label + "</button></div>";
 		
-		$("#dialog-footer").append(buttonHTML);
+		$("#dialogFooter").append(buttonHTML);
 		
 		if (buttons[i].click) {
 			$("button.dialog-button").eq(i).click(buttons[i].click);
@@ -52,12 +53,14 @@ function showHighScorePrompt(onClose) {
 	var submitButton = { 
 		label: "Submit",
 		click:  function () {
-			var name = $("#dialog-input").val();
+			var name = $("#dialogInput").val();
 			
 			if (!name || name.trim().length == 0) {
-				$("#dialog-message").html("Bragging requires a name!<br>Please enter your name below:<br><br>");
+				$("#dialogMessage").html("Bragging requires a name!<br>Please enter your name below:<br><br>");
 			} else {
 				$.modal.close();
+				
+				PLAYER_NAME = name;
 				
 				setPlayerName(name, function () {
 					if (onClose) {
@@ -80,4 +83,35 @@ function showHighScorePrompt(onClose) {
 	};
 	
 	showDialog("HIGH SCORE!", message, [ submitButton, cancelButton ], true);
+}
+
+function showTwitterPrompt() {
+	var message = "Please enter your name below to tweet your score:<br><br>"
+	
+	var submitButton = { 
+		label: "Submit",
+		click:  function () {
+			var name = $("#dialogInput").val();
+			
+			if (!name || name.trim().length == 0) {
+				$("#dialogMessage").html("Names contain characters silly!<br>Please enter your name below to tweet your score:<br><br>");
+			} else {
+				var text = name + " got a score of " + SCORE + " playing";
+				openTwitterWindow(text, "Goosteroids");
+				
+				$.modal.close();
+				
+				setPlayerName(name);
+			}
+		}
+	};
+	
+	var cancelButton = { 
+		label: "Cancel", 
+		click:  function () {
+			$.modal.close();
+		} 
+	};
+	
+	showDialog("ENTER PLAYER NAME", message, [ submitButton, cancelButton ], true);
 }
