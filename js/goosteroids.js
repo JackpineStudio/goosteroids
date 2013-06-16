@@ -97,6 +97,8 @@ var KEY_RIGHT_ARROW				= 39;					//					Right arrow key code
 var KEY_SPACE_BAR				= 32;					//					Space bar key code
 var KEY_SHIFT					= 16;					//					Shift key						
 														//
+var PLAYER_NAME 				= "";					//											
+														//
 var STAGE						= 1;					//1					Stage
 var SCORE						= 0;					//0					Score
 var LIVES						= 3;					//3					Lives
@@ -107,9 +109,9 @@ var UPDATE_LOOP_ID				= null;					//null
 var UPDATE_LOOP_INTERVAL		= 7500;					//10 * 1000
 														//
 var SESSION_ID = "<%= @session_id %>";					//
-var GAME_ID = 0;										//
+var GAME_ID 					= 0;					//
 														//
-var PLAYER_NAME = "";									//
+var DEBUG 						= false;				//
 
 /*
  * Game setup
@@ -287,7 +289,7 @@ function playGame() {
 	
 	spawnShip();
 	
-	enableKeyEvents();
+	enableEventHandlers();
 	
 	$("#instructions").stop();
 	
@@ -340,7 +342,7 @@ function stageOver() {
 }
 
 function gameOver() {
-	disableKeyEvents();
+	disableEventHandlers();
 	stopUpdateLoop();
 	stopGameLoop();
 	

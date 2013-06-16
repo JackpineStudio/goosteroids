@@ -97,6 +97,8 @@ var KEY_RIGHT_ARROW				= 39;					//					Right arrow key code
 var KEY_SPACE_BAR				= 32;					//					Space bar key code
 var KEY_SHIFT					= 16;					//					Shift key						
 														//
+var PLAYER_NAME 				= "";					//											
+														//
 var STAGE						= 1;					//1					Stage
 var SCORE						= 0;					//0					Score
 var LIVES						= 3;					//3					Lives
@@ -107,9 +109,9 @@ var UPDATE_LOOP_ID				= null;					//null
 var UPDATE_LOOP_INTERVAL		= 7500;					//10 * 1000
 														//
 var SESSION_ID = "<%= @session_id %>";					//
-var GAME_ID = 0;										//
+var GAME_ID 					= 0;					//
 														//
-var PLAYER_NAME = "";									//
+var DEBUG 						= false;				//
 
 /*
  * Game setup
@@ -287,7 +289,7 @@ function playGame() {
 	
 	spawnShip();
 	
-	enableKeyEvents();
+	enableEventHandlers();
 	
 	$("#instructions").stop();
 	
@@ -340,7 +342,7 @@ function stageOver() {
 }
 
 function gameOver() {
-	disableKeyEvents();
+	disableEventHandlers();
 	stopUpdateLoop();
 	stopGameLoop();
 	
@@ -416,7 +418,10 @@ function handleError(data) {
 		stopGameLoop();
 		
 		var message = data.error_message; 
-		console.log(message);
+		
+		if (DEBUG) {
+			console.log(message);
+		}
 		
 		showErrorDialog(message, function () {
 			window.location="/";	
@@ -429,7 +434,10 @@ function handleAjaxFailure(textStatus, errorThrown) {
 	stopGameLoop();
 	
 	var message = "Ajax failure: " + textStatus + " (" + errorThrown + ")";
-	console.log(message);
+	
+	if (DEBUG) {
+		console.log(message);
+	}
 	
 	showErrorDialog(message, function () {
 		window.location="/";	
@@ -439,7 +447,9 @@ function handleAjaxFailure(textStatus, errorThrown) {
 function sendAjaxRequest(url, data, callback) {
 	data.session_id = SESSION_ID;
 	
-	console.log("ajax request: " + url + ", data: " + strHash(data))
+	if (DEBUG) {
+		console.log("ajax request: " + url + ", data: " + strHash(data));
+	}
 	
 	var request = $.ajax({
 		url: url,
@@ -451,7 +461,9 @@ function sendAjaxRequest(url, data, callback) {
 	});
 
 	request.done(function(data, textStatus, jqXHR) {
-		console.log("ajax response: " + url + ", status: " + textStatus + ", data: " + strHash(data));
+		if (DEBUG) {
+			console.log("ajax response: " + url + ", status: " + textStatus + ", data: " + strHash(data));
+		}
 		
 		if (error(data)) {
 			handleError(data);
@@ -463,7 +475,10 @@ function sendAjaxRequest(url, data, callback) {
 	});
 	
 	request.fail(function(jqXHR, textStatus, errorThrown) {
-		console.log("ajax response: " + url + ", status: " + textStatus + ", error: " + errorThrown);
+		if (DEBUG) {
+			console.log("ajax response: " + url + ", status: " + textStatus + ", error: " + errorThrown);
+		}
+		
 		handleAjaxFailure(textStatus, errorThrown);
 	});
 }
@@ -838,11 +853,11 @@ function displayRespawnMessage(canvas, ctx, secondsRemaining) {
  */
 var KEY_EVENTS_ENABLED = false;
 
-function enableKeyEvents() {
+function enableEventHandlers() {
 	KEY_EVENTS_ENABLED = true;
 }
 
-function disableKeyEvents() {
+function disableEventHandlers() {
 	KEY_EVENTS_ENABLED = false;
 }
 

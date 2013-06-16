@@ -3,11 +3,11 @@
  */
 var KEY_EVENTS_ENABLED = false;
 
-function enableKeyEvents() {
+function enableEventHandlers() {
 	KEY_EVENTS_ENABLED = true;
 }
 
-function disableKeyEvents() {
+function disableEventHandlers() {
 	KEY_EVENTS_ENABLED = false;
 }
 
