@@ -57,7 +57,7 @@ function drawAbDisplay(canvas, ctx, abFuel) {
 	//fuel bar
 	ctx.beginPath();
 	ctx.rect(displayPosition.x + 44, displayPosition.y - 8, (abFuel / AB_MAX_FUEL) * 100, 8);
-	ctx.fillStyle = 'grey';
+	ctx.fillStyle = 'blue';
 	ctx.fill();
 	
 	ctx.restore();

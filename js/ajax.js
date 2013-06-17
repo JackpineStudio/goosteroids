@@ -11,7 +11,7 @@ function handleError(data) {
 		
 		var message = data.error_message; 
 		
-		if (DEBUG) {
+		if (DEBUG_MODE) {
 			console.log(message);
 		}
 		
@@ -27,7 +27,7 @@ function handleAjaxFailure(textStatus, errorThrown) {
 	
 	var message = "Ajax failure: " + textStatus + " (" + errorThrown + ")";
 	
-	if (DEBUG) {
+	if (DEBUG_MODE) {
 		console.log(message);
 	}
 	
@@ -39,7 +39,7 @@ function handleAjaxFailure(textStatus, errorThrown) {
 function sendAjaxRequest(url, data, callback) {
 	data.session_id = SESSION_ID;
 	
-	if (DEBUG) {
+	if (DEBUG_MODE) {
 		console.log("ajax request: " + url + ", data: " + strHash(data));
 	}
 	
@@ -53,7 +53,7 @@ function sendAjaxRequest(url, data, callback) {
 	});
 
 	request.done(function(data, textStatus, jqXHR) {
-		if (DEBUG) {
+		if (DEBUG_MODE) {
 			console.log("ajax response: " + url + ", status: " + textStatus + ", data: " + strHash(data));
 		}
 		
@@ -67,7 +67,7 @@ function sendAjaxRequest(url, data, callback) {
 	});
 	
 	request.fail(function(jqXHR, textStatus, errorThrown) {
-		if (DEBUG) {
+		if (DEBUG_MODE) {
 			console.log("ajax response: " + url + ", status: " + textStatus + ", error: " + errorThrown);
 		}
 		

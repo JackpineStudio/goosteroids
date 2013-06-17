@@ -56,7 +56,6 @@ var SHIP_MODEL_BASE				= 15;					//15				Ship model base length
 var SHIP_MODEL_HEIGHT			= 25;					//25				Ship model height
 var SHIP_INTERIOR_COLOR 		= "#e95258";			//"#ffffff"			Ship interior color
 var SHIP_BORDER_COLOR			= "#ffffff";			//"#000000"			Ship border color
-//var SHIP_BORDER_COLOR			= "#000000";			//"#000000"			Ship border color
 var SHIP_BORDER_WIDTH			= 3;					//3					Ship border width
 														//
 var AB_ACCELERATION				= 6 * SHIP_ACCELERATION;//					Afterburner acceleration
@@ -112,7 +111,11 @@ var UPDATE_LOOP_INTERVAL		= 10000;				//10 * 1000
 var SESSION_ID = "<%= @session_id %>";					//
 var GAME_ID 					= 0;					//
 														//
-var DEBUG 						= false;				//
+var SOUND_ENABLED				= true;					//
+var SOUND_READY					= false;				//
+var SOUND_VOLUME				= 50;					//														
+														//
+var DEBUG_MODE 					= false;				//
 
 /*
  * Game setup
@@ -188,64 +191,12 @@ function mainLoop() {
 	respawn();
 }
 
-/*
- * Start/stop game
- */
 function startGameLoop() {
-	//run main loop
 	MAIN_LOOP_ID = setInterval(mainLoop, 1000 / FPS);
 }
 
 function stopGameLoop() {
 	clearInterval(MAIN_LOOP_ID);
-}
-
-/*
- * Initialize game
- */
-function initGame() {
- 	//setup canvas	 
- 	CANVAS = document.getElementById("canvas");
-	CTX = CANVAS.getContext("2d");
-	
-	//setup temporary canvase
-	TMP_CANVAS = document.createElement("canvas");
-	TMP_CANVAS.width = CANVAS.width;
-	TMP_CANVAS.height = CANVAS.height;
-	TMP_CTX = TMP_CANVAS.getContext("2d");	
-	
-	//setup game
-	SHIP_MODEL = generateShipModel(SHIP_MODEL_BASE, SHIP_MODEL_HEIGHT);
-	
-	//spawn ship	
-	spawnShip();
-	
-	//setup events
-	$("body").focus();
-	
-	$("body").keydown(function (event) {
-		handleKeyDownEvent(event);
-	});
-	
-	$("body").keyup(function (event) {
-		handleKeyUpEvent(event);
-	});
-	
-	//register event handlers
-	addKeyDownHandler(new KeyEventHandler(KEY_UP_ARROW, upArrowDown));
-	addKeyUpHandler(new KeyEventHandler(KEY_UP_ARROW, upArrowUp));
-
-	addKeyDownHandler(new KeyEventHandler(KEY_LEFT_ARROW, leftArrowDown));
-	addKeyUpHandler(new KeyEventHandler(KEY_LEFT_ARROW, leftArrowUp));
-
-	addKeyDownHandler(new KeyEventHandler(KEY_RIGHT_ARROW, rightArrowDown));
-	addKeyUpHandler(new KeyEventHandler(KEY_RIGHT_ARROW, rightArrowUp));
-	
-	addKeyDownHandler(new KeyEventHandler(KEY_SPACE_BAR, spaceBarDown));
-	addKeyUpHandler(new KeyEventHandler(KEY_SPACE_BAR, spaceBarUp));
-		
-	addKeyDownHandler(new KeyEventHandler(KEY_SHIFT, shiftDown));
-	addKeyUpHandler(new KeyEventHandler(KEY_SHIFT, shiftUp));
 }
 
 /*
@@ -308,6 +259,8 @@ function playGame() {
 					loadSettings(function () {
 						startGameLoop();
 						startUpdateLoop();
+						playSound("gameplay-music");
+						//fadeInSound("gameplay-music", 50);
 					});
 				});
 			});
@@ -389,21 +342,66 @@ function highScores() {
 	});
 }
 
-function openTwitterWindow(text, hashTag) {
-	var href = "https://twitter.com/intent/tweet?hashtags=" + hashTag + "%2C&text=" + encodeURIComponent(text) + "&tw_p=tweetbutton";
-	window.open(href);
-}
-
-function tweetScore() {
-	if (!PLAYER_NAME || PLAYER_NAME.length == 0) {
-		showTwitterPrompt();
-	} else {
-		var text = PLAYER_NAME + " got a score of " + SCORE + " playing";
-		openTwitterWindow(text, "Goosteroids");
+/*
+ * Initialize game
+ */
+function initGame(callback) {
+	initSound();
+	
+	if (SOUND_ENABLED && !SOUND_READY) {
+		setTimeout(function () {
+			initGame(callback);
+		}, 1000);	
 	}
+	
+ 	//setup canvas	 
+ 	CANVAS = document.getElementById("canvas");
+	CTX = CANVAS.getContext("2d");
+	
+	//setup temporary canvase
+	TMP_CANVAS = document.createElement("canvas");
+	TMP_CANVAS.width = CANVAS.width;
+	TMP_CANVAS.height = CANVAS.height;
+	TMP_CTX = TMP_CANVAS.getContext("2d");	
+	
+	//setup game
+	SHIP_MODEL = generateShipModel(SHIP_MODEL_BASE, SHIP_MODEL_HEIGHT);
+	
+	//spawn ship	
+	spawnShip();
+	
+	//setup events
+	$("body").focus();
+	
+	$("body").keydown(function (event) {
+		handleKeyDownEvent(event);
+	});
+	
+	$("body").keyup(function (event) {
+		handleKeyUpEvent(event);
+	});
+	
+	//register event handlers
+	addKeyDownHandler(new KeyEventHandler(KEY_UP_ARROW, upArrowDown));
+	addKeyUpHandler(new KeyEventHandler(KEY_UP_ARROW, upArrowUp));
+
+	addKeyDownHandler(new KeyEventHandler(KEY_LEFT_ARROW, leftArrowDown));
+	addKeyUpHandler(new KeyEventHandler(KEY_LEFT_ARROW, leftArrowUp));
+
+	addKeyDownHandler(new KeyEventHandler(KEY_RIGHT_ARROW, rightArrowDown));
+	addKeyUpHandler(new KeyEventHandler(KEY_RIGHT_ARROW, rightArrowUp));
+	
+	addKeyDownHandler(new KeyEventHandler(KEY_SPACE_BAR, spaceBarDown));
+	addKeyUpHandler(new KeyEventHandler(KEY_SPACE_BAR, spaceBarUp));
+		
+	addKeyDownHandler(new KeyEventHandler(KEY_SHIFT, shiftDown));
+	addKeyUpHandler(new KeyEventHandler(KEY_SHIFT, shiftUp));
+	
+	callback.call(this);
 }
 
 $(document).ready(function () {
-	initGame();
-	setTimeout(showInstructions, 2000);
+	initGame(function () {
+		setTimeout(showInstructions, 2000);
+	});
 });

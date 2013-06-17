@@ -82,6 +82,7 @@ function updateShip(ship, shipModel) {
 			
 			//fire bullet
 			BULLETS.push(new Bullet(shipBow, ship.orientation, BULLET_SPEED, BULLET_LIFETIME));
+			playSound("laser");
 			
 			//set cooldown
 			ship.gunCooldown = SHIP_GUN_COOLDOWN;

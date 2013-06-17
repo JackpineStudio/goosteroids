@@ -56,7 +56,6 @@ var SHIP_MODEL_BASE				= 15;					//15				Ship model base length
 var SHIP_MODEL_HEIGHT			= 25;					//25				Ship model height
 var SHIP_INTERIOR_COLOR 		= "#e95258";			//"#ffffff"			Ship interior color
 var SHIP_BORDER_COLOR			= "#ffffff";			//"#000000"			Ship border color
-//var SHIP_BORDER_COLOR			= "#000000";			//"#000000"			Ship border color
 var SHIP_BORDER_WIDTH			= 3;					//3					Ship border width
 														//
 var AB_ACCELERATION				= 6 * SHIP_ACCELERATION;//					Afterburner acceleration
@@ -112,7 +111,11 @@ var UPDATE_LOOP_INTERVAL		= 10000;				//10 * 1000
 var SESSION_ID = "<%= @session_id %>";					//
 var GAME_ID 					= 0;					//
 														//
-var DEBUG 						= false;				//
+var SOUND_ENABLED				= true;					//
+var SOUND_READY					= false;				//
+var SOUND_VOLUME				= 50;					//														
+														//
+var DEBUG_MODE 					= false;				//
 
 /*
  * Game setup
@@ -188,64 +191,12 @@ function mainLoop() {
 	respawn();
 }
 
-/*
- * Start/stop game
- */
 function startGameLoop() {
-	//run main loop
 	MAIN_LOOP_ID = setInterval(mainLoop, 1000 / FPS);
 }
 
 function stopGameLoop() {
 	clearInterval(MAIN_LOOP_ID);
-}
-
-/*
- * Initialize game
- */
-function initGame() {
- 	//setup canvas	 
- 	CANVAS = document.getElementById("canvas");
-	CTX = CANVAS.getContext("2d");
-	
-	//setup temporary canvase
-	TMP_CANVAS = document.createElement("canvas");
-	TMP_CANVAS.width = CANVAS.width;
-	TMP_CANVAS.height = CANVAS.height;
-	TMP_CTX = TMP_CANVAS.getContext("2d");	
-	
-	//setup game
-	SHIP_MODEL = generateShipModel(SHIP_MODEL_BASE, SHIP_MODEL_HEIGHT);
-	
-	//spawn ship	
-	spawnShip();
-	
-	//setup events
-	$("body").focus();
-	
-	$("body").keydown(function (event) {
-		handleKeyDownEvent(event);
-	});
-	
-	$("body").keyup(function (event) {
-		handleKeyUpEvent(event);
-	});
-	
-	//register event handlers
-	addKeyDownHandler(new KeyEventHandler(KEY_UP_ARROW, upArrowDown));
-	addKeyUpHandler(new KeyEventHandler(KEY_UP_ARROW, upArrowUp));
-
-	addKeyDownHandler(new KeyEventHandler(KEY_LEFT_ARROW, leftArrowDown));
-	addKeyUpHandler(new KeyEventHandler(KEY_LEFT_ARROW, leftArrowUp));
-
-	addKeyDownHandler(new KeyEventHandler(KEY_RIGHT_ARROW, rightArrowDown));
-	addKeyUpHandler(new KeyEventHandler(KEY_RIGHT_ARROW, rightArrowUp));
-	
-	addKeyDownHandler(new KeyEventHandler(KEY_SPACE_BAR, spaceBarDown));
-	addKeyUpHandler(new KeyEventHandler(KEY_SPACE_BAR, spaceBarUp));
-		
-	addKeyDownHandler(new KeyEventHandler(KEY_SHIFT, shiftDown));
-	addKeyUpHandler(new KeyEventHandler(KEY_SHIFT, shiftUp));
 }
 
 /*
@@ -308,6 +259,8 @@ function playGame() {
 					loadSettings(function () {
 						startGameLoop();
 						startUpdateLoop();
+						playSound("gameplay-music");
+						//fadeInSound("gameplay-music", 50);
 					});
 				});
 			});
@@ -389,23 +342,68 @@ function highScores() {
 	});
 }
 
-function openTwitterWindow(text, hashTag) {
-	var href = "https://twitter.com/intent/tweet?hashtags=" + hashTag + "%2C&text=" + encodeURIComponent(text) + "&tw_p=tweetbutton";
-	window.open(href);
-}
-
-function tweetScore() {
-	if (!PLAYER_NAME || PLAYER_NAME.length == 0) {
-		showTwitterPrompt();
-	} else {
-		var text = PLAYER_NAME + " got a score of " + SCORE + " playing";
-		openTwitterWindow(text, "Goosteroids");
+/*
+ * Initialize game
+ */
+function initGame(callback) {
+	initSound();
+	
+	if (SOUND_ENABLED && !SOUND_READY) {
+		setTimeout(function () {
+			initGame(callback);
+		}, 1000);	
 	}
+	
+ 	//setup canvas	 
+ 	CANVAS = document.getElementById("canvas");
+	CTX = CANVAS.getContext("2d");
+	
+	//setup temporary canvase
+	TMP_CANVAS = document.createElement("canvas");
+	TMP_CANVAS.width = CANVAS.width;
+	TMP_CANVAS.height = CANVAS.height;
+	TMP_CTX = TMP_CANVAS.getContext("2d");	
+	
+	//setup game
+	SHIP_MODEL = generateShipModel(SHIP_MODEL_BASE, SHIP_MODEL_HEIGHT);
+	
+	//spawn ship	
+	spawnShip();
+	
+	//setup events
+	$("body").focus();
+	
+	$("body").keydown(function (event) {
+		handleKeyDownEvent(event);
+	});
+	
+	$("body").keyup(function (event) {
+		handleKeyUpEvent(event);
+	});
+	
+	//register event handlers
+	addKeyDownHandler(new KeyEventHandler(KEY_UP_ARROW, upArrowDown));
+	addKeyUpHandler(new KeyEventHandler(KEY_UP_ARROW, upArrowUp));
+
+	addKeyDownHandler(new KeyEventHandler(KEY_LEFT_ARROW, leftArrowDown));
+	addKeyUpHandler(new KeyEventHandler(KEY_LEFT_ARROW, leftArrowUp));
+
+	addKeyDownHandler(new KeyEventHandler(KEY_RIGHT_ARROW, rightArrowDown));
+	addKeyUpHandler(new KeyEventHandler(KEY_RIGHT_ARROW, rightArrowUp));
+	
+	addKeyDownHandler(new KeyEventHandler(KEY_SPACE_BAR, spaceBarDown));
+	addKeyUpHandler(new KeyEventHandler(KEY_SPACE_BAR, spaceBarUp));
+		
+	addKeyDownHandler(new KeyEventHandler(KEY_SHIFT, shiftDown));
+	addKeyUpHandler(new KeyEventHandler(KEY_SHIFT, shiftUp));
+	
+	callback.call(this);
 }
 
 $(document).ready(function () {
-	initGame();
-	setTimeout(showInstructions, 2000);
+	initGame(function () {
+		setTimeout(showInstructions, 2000);
+	});
 });
 var UPDATING = false;
 
@@ -420,7 +418,7 @@ function handleError(data) {
 		
 		var message = data.error_message; 
 		
-		if (DEBUG) {
+		if (DEBUG_MODE) {
 			console.log(message);
 		}
 		
@@ -436,7 +434,7 @@ function handleAjaxFailure(textStatus, errorThrown) {
 	
 	var message = "Ajax failure: " + textStatus + " (" + errorThrown + ")";
 	
-	if (DEBUG) {
+	if (DEBUG_MODE) {
 		console.log(message);
 	}
 	
@@ -448,7 +446,7 @@ function handleAjaxFailure(textStatus, errorThrown) {
 function sendAjaxRequest(url, data, callback) {
 	data.session_id = SESSION_ID;
 	
-	if (DEBUG) {
+	if (DEBUG_MODE) {
 		console.log("ajax request: " + url + ", data: " + strHash(data));
 	}
 	
@@ -462,7 +460,7 @@ function sendAjaxRequest(url, data, callback) {
 	});
 
 	request.done(function(data, textStatus, jqXHR) {
-		if (DEBUG) {
+		if (DEBUG_MODE) {
 			console.log("ajax response: " + url + ", status: " + textStatus + ", data: " + strHash(data));
 		}
 		
@@ -476,7 +474,7 @@ function sendAjaxRequest(url, data, callback) {
 	});
 	
 	request.fail(function(jqXHR, textStatus, errorThrown) {
-		if (DEBUG) {
+		if (DEBUG_MODE) {
 			console.log("ajax response: " + url + ", status: " + textStatus + ", error: " + errorThrown);
 		}
 		
@@ -831,7 +829,7 @@ function drawAbDisplay(canvas, ctx, abFuel) {
 	//fuel bar
 	ctx.beginPath();
 	ctx.rect(displayPosition.x + 44, displayPosition.y - 8, (abFuel / AB_MAX_FUEL) * 100, 8);
-	ctx.fillStyle = 'grey';
+	ctx.fillStyle = 'blue';
 	ctx.fill();
 	
 	ctx.restore();
@@ -1274,6 +1272,7 @@ function updateShip(ship, shipModel) {
 			
 			//fire bullet
 			BULLETS.push(new Bullet(shipBow, ship.orientation, BULLET_SPEED, BULLET_LIFETIME));
+			playSound("laser");
 			
 			//set cooldown
 			ship.gunCooldown = SHIP_GUN_COOLDOWN;
@@ -1437,6 +1436,134 @@ function circleIntersectTriangle(center, radius, v1, v2, v3) {
 	return false;
 }
 
+var SOUNDS = [
+	{
+		id: "laser",
+		url: "sounds/effects/laser.mp3",
+		volume: 50
+	},
+	
+	{
+		id: "gameplay-music",
+		url: "sounds/music/gameplay/SycamoreDrive-Moves.mp3",
+		volume: 50
+	}
+]
+
+function loadSound(index, callback) {
+	if (index < SOUNDS.length) {
+		soundManager.createSound({
+			id: SOUNDS[index].id,
+			url: SOUNDS[index].url,
+			volume: SOUNDS[index].url,
+			autoLoad: true,
+			autoPlay: false,
+			onload: function () {			
+				if (callback) {
+					callback.call(this, index + 1, loadSound);	
+				}
+			}
+		});
+	} else {
+		SOUND_READY = true;
+	}
+}
+
+function initSound() {
+	soundManager.setup({
+		url: "js/soundmanager/swf",
+		flashVersion: 9,
+		preferFlash: false,
+		onready: function () {
+			loadSound(0, loadSound);
+		}
+	});
+}
+
+function setSoundVolume(id, volume) {
+	var sound = soundManager.getSoundById(id);
+	
+	if (sound) {
+		sound.volume = volume;	
+	}
+}
+
+function playSound(id, loop) {
+	if (SOUND_ENABLED) {
+		if (loop) {
+			soundManager.play(id, { 
+				onfinish: function () {
+					playSound(id, loop);
+				}
+			});
+		} else {
+			soundManager.play(id);
+		}
+	}
+}
+
+function stopSound(id) {
+	if (SOUND_ENABLED) {
+		soundManager.stop();
+	}
+}
+
+function stopAllSounds(id) {
+	if (SOUND_ENABLED) {
+		soundManager.stopAll();
+	}
+}
+
+function fadeInSound(id, volume, callback) {
+	var sound = soundManager.getSoundById(id);
+	
+	if (sound) {
+		if (sound.volume >= volume) {
+			if (callback) {
+				callback.call(this);
+			}
+		} else {
+			sound.volume = Math.min(volume, sound.volume + 5);
+			
+			setTimeout(function() {
+				fadeInSound(id, volume, callback);
+			}, 20);
+		}
+	}
+}
+
+function fadeOutSound(id, callback) {
+	var sound = soundManager.getSoundById(id);
+	
+	if (sound) {
+		if (sound.volume == 0) {
+			if (callback) {
+				sound.stop();
+				callback.call(this);	
+			}
+		} else {
+			sound.volume = Math.max(0, sound.volume - 5);
+			
+			setTimeout(function() {
+				fadeOutSound(id, callback);
+			}, 20);
+		}
+	}
+}
+
+function openTwitterWindow(text, hashTag) {
+	var href = "https://twitter.com/intent/tweet?hashtags=" + hashTag + "%2C&text=" + encodeURIComponent(text) + "&tw_p=tweetbutton";
+	window.open(href);
+}
+
+function tweetScore() {
+	if (!PLAYER_NAME || PLAYER_NAME.length == 0) {
+		showTwitterPrompt();
+	} else {
+		var text = PLAYER_NAME + " got a score of " + SCORE + " playing";
+		openTwitterWindow(text, "Goosteroids");
+	}
+}
 /*
  * Utility functions
  */
