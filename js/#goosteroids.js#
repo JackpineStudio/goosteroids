@@ -225,12 +225,6 @@ function showInstructions() {
 	$("#instructions").fadeIn(2000);
 }
 
-function playMusic() {
-	playSound("music-1", 0.5, 0, function () {
-		pla
-	});
-}
-
 function playGame() {
 	CTX.clearRect(0, 0, CANVAS.width, CANVAS.height);
 	
