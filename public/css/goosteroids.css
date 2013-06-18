@@ -1,3 +1,12 @@
+div.createdBy {
+	text-align:center;
+	color:#ffffff;
+	font-family:'Courier New', sans-serif;
+	font-size:10px;
+	font-weight:lighter;
+	margin-bottom:5px;
+}
+
 body {
 	background-color:#e95258;
 	overflow:hidden;
@@ -61,10 +70,6 @@ button {
 	border-color:#ffffff;
 }
 
-button:hover {
-	background-color:#cbcbcb;
-}
-
 button.big-button {
 	font-size:5em;
 	font-weight:bolder;	
@@ -117,12 +122,6 @@ div.body {
 	width:100%;
 }
 
-#introduction {
-}
-
-#introduction .logo {
-}
-
 #introduction .subtitle {
 	margin-top:2%;
 }
@@ -131,19 +130,12 @@ div.body {
 	display:none;
 }
 
-#instructions .logo {
-}
-
-#instructions .subtitle {
-}
-
 #instructions p {
 	padding-top:4%;
 	text-align:center;
 	color:#ffffff;
 	font-family:'Courier New', sans-serif;
 	font-size:14px;
-	font-style:oblique;
 	font-weight:lighter;
 }
 
@@ -157,7 +149,6 @@ div.body {
 
 #playButton:hover {
 	cursor: pointer;
-	background-color:#cbcbcb;
 }
 
 #instructions .title {
@@ -180,7 +171,7 @@ div.body {
 	padding:0px;
 	border-style:solid;
 	border-color:#ffffff;
-	border-width:3px;
+	border-width:6px;
 	background-color:#e95258; 
 }
 
@@ -289,4 +280,25 @@ button.dialog-button {
 	font-weight:bold;	
 	border-width:1px;
 	padding:5px;
+}
+
+#progressBar {
+	width:150px;
+	height:20px;
+	border:3px solid #ffffff;
+	background-color:#e95258;
+	border-radius:15px;
+	overflow: hidden;
+}
+
+#progressBar div {
+	width:0px;
+	height:100%;
+	color:#ffffff;
+	background-color:blue;
+	text-align:right;
+	line-height:right;
+	border-radius:15px;
+	font-family: 'Courier New', sans-serif;
+	font-size:10px;
 }

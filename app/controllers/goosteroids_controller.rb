@@ -253,7 +253,9 @@ class GoosteroidsController < ApplicationController
 			
 			time_str += seconds.to_s + "s"
 			
-			scores.push( { player_name: game.player_name, stage: game.stage, score: game.score, time: time_str } )
+			player_name = (!game.player_name || game.player_name.length == 0) ? "Anonymous Coward" : game.player_name
+			
+			scores.push( { player_name: player_name, stage: game.stage, score: game.score, time: time_str } )
 		end
 		
 		send_json_response(merge(@response, { high_scores: scores } ))

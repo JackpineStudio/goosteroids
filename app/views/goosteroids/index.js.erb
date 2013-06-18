@@ -113,7 +113,7 @@ var GAME_ID 					= 0;					//
 														//
 var SOUND_ENABLED				= true;					//
 var SOUND_READY					= false;				//
-var SOUND_MUSIC_VOLUME			= 0.4;					//
+var SOUND_MUSIC_VOLUME			= 1;					//
 var SOUND_EFFECTS_VOLUME		= 1;					//
 														//
 var DEBUG_MODE 					= false;				//
@@ -226,6 +226,8 @@ function showInstructions() {
 }
 
 function playGame() {
+	playMusic();
+	
 	CTX.clearRect(0, 0, CANVAS.width, CANVAS.height);
 	
 	PLAYER_NAME = "";
@@ -242,10 +244,6 @@ function playGame() {
 	
 	spawnShip();
 	
-	enableEventHandlers();
-	
-	playMusic();
-	
 	$("#instructions").stop();
 	
 	$('#stageMessage').html("Stage " + STAGE);
@@ -260,9 +258,9 @@ function playGame() {
 				newGame(function (data) {
 					GAME_ID = data.game_id;
 					loadSettings(function () {
+						enableEventHandlers();
 						startGameLoop();
-						startUpdateLoop();
-						
+						startUpdateLoop();						
 					});
 				});
 			});
@@ -298,6 +296,8 @@ function stageOver() {
 }
 
 function gameOver() {
+	stopSounds();
+	
 	disableEventHandlers();
 	stopUpdateLoop();
 	stopGameLoop();
@@ -351,7 +351,9 @@ function initGame(callback) {
 	if (SOUND_ENABLED && !SOUND_READY) {
 		setTimeout(function () {
 			initGame(callback);
-		}, 1000);	
+		}, 1000);
+		
+		return;
 	}
 	
  	//setup canvas	 
@@ -625,6 +627,8 @@ function updateBullets(bullets) {
 			var glob = GLOBS[j];
 			
 			if (distance(bullet.position, glob.position) < glob.radius + BULLET_RADIUS + GRADIENT_RADIUS / 2) {
+				playSound("pop");
+				
 				GLOBS_DESTROYED++;
 				
 				bullets.splice(i, 1);
@@ -687,6 +691,15 @@ function showDialog(title, message, buttons, prompt, onClose) {
 			$("button.dialog-button").eq(i).click(buttons[i].click);
 		}
 	}
+	
+	$("button.dialog-button").hover(
+		function() {
+			$(this).stop().animate({ backgroundColor: "#0000ff" }, "slow");
+		},
+		function() {
+			$(this).stop().animate({ backgroundColor: "#e95258" }, "slow");
+		}
+	);
 	
 	if (onClose) {
 		$("#dialog").modal( { onClose: onClose } );
@@ -1190,6 +1203,11 @@ function drawParticles(ctx, particles, color) {
 		drawCircle(ctx, particles[i].position, particles[i].radius, color);
 	}
 }
+function progressBar(elementId, percent) {
+	var progressBar = $(elementId);
+	var width = percent * progressBar.width() / 100;
+	progressBar.find("div").animate({ width: width }, 500);
+}
 /*
  * Ship
  */
@@ -1249,6 +1267,7 @@ function updateShip(ship, shipModel) {
 			globPosition = PolarVector(globPosition.angle() - ship.orientation + PI / 2, globPosition.norm());
 			
 			if (circleIntersectTriangle(globPosition, glob.radius + (1/4) * GRADIENT_RADIUS, shipModel[0], shipModel[1], shipModel[2])) {
+				playSound("explosion");
 				ship.alive = false;
 				LIVES--;
 				RESPAWN_FRAMES_REMAINING = RESPAWN_DELAY;
@@ -1438,45 +1457,102 @@ function circleIntersectTriangle(center, radius, v1, v2, v3) {
 	return false;
 }
 
-var SOUNDS = [
+var MUSIC_PLAYING = false;
+
+var SOUNDS_MP3 = [
 	{
 		id: "laser",
-		src: "sounds/laser.mp3",
+		src: "sounds/mp3/laser.mp3",
 	},
 	{
+		id: "pop",
+		src: "sounds/mp3/pop.mp3",
+	},
+	{
+		id: "explosion",
+		src: "sounds/mp3/explosion.mp3",
+	},	
+	{
 		id: "music1",
-		src: "sounds/music1.mp3",
+		src: "sounds/mp3/music1.mp3",
 	},
 	{
 		id: "music2",
-		src: "sounds/music2.mp3",
+		src: "sounds/mp3/music2.mp3",
 	},
 	{
 		id: "music3",
-		src: "sounds/music3.mp3",
+		src: "sounds/mp3/music3.mp3",
 	}
-]
+];
 
-function loadSounds(callback) {
-	 var queue = new createjs.LoadQueue();
-	 
-	 queue.installPlugin(createjs.Sound);
-	 queue.addEventListener("complete", callback);
-	 
-	 for (var i = 0; i < SOUNDS.length; i++) {
-	 	 queue.loadManifest(SOUNDS);
-	 }
+var SOUNDS_OGG = [
+	{
+		id: "laser",
+		src: "sounds/ogg/laser.ogg",
+	},
+	{
+		id: "pop",
+		src: "sounds/ogg/pop.ogg",
+	},
+	{
+		id: "explosion",
+		src: "sounds/ogg/explosion.ogg",
+	},	
+	{
+		id: "music1",
+		src: "sounds/ogg/music1.ogg",
+	},
+	{
+		id: "music2",
+		src: "sounds/ogg/music2.ogg",
+	},
+	{
+		id: "music3",
+		src: "sounds/ogg/music3.ogg",
+	}
+];
+
+function loadSounds(complete) {
+	var queue = new createjs.LoadQueue();
+	
+	queue.installPlugin(createjs.Sound);
+	queue.addEventListener("complete", complete);
+	
+	queue.addEventListener("progress", function (data) {
+		progressBar("#progressBar", data.progress * 100);
+	});
+	
+	var cap = createjs.Sound.getCapabilities();
+	
+	if (cap.mp3) {
+		queue.loadManifest(SOUNDS_MP3);
+	} else if (cap.ogg) {
+		queue.loadManifest(SOUNDS_OGG);	 
+	} else {
+		SOUND_ENABLED = false;	
+	}
 }
 
 function initSound(callback) {
 	if (SOUND_ENABLED) {
-		loadSounds(function () {
-			if (callback) {
-				callback.call(this);	
-			}
-				
-			SOUND_READY = true;
-		});
+		if (!createjs.Sound.isReady()) {
+			createjs.Sound.registerPlugins([ createjs.WebAudioPlugin, createjs.HTMLAudioPlugin ]);
+			
+			setTimeout(function () {
+				initSound(callback);
+			}, 1000);
+			
+			return;
+		} else {
+			loadSounds(function () {
+				SOUND_READY = true;
+			});
+		}
+	}
+	
+	if (callback) {
+		callback.call(this);
 	}
 }
 
@@ -1498,24 +1574,17 @@ function playSound(id, volume, loop, callback) {
 	}
 }
 
-function stopSounds(id) {
+function stopSounds() {
 	if (SOUND_ENABLED) {
-		createjs.Sound.stop();	
+		createjs.Sound.stop();
 	}
 }
 
 function playMusic() {
-	console.log("music1");
-	
-	playSound("music1", SOUND_MUSIC_VOLUME, 0, function () {
-		
-		console.log("music2");		
-		playSound("music2", SOUND_MUSIC_VOLUME, 0, function () {
-		
-			console.log("music3");
-			playSound("music3", SOUND_MUSIC_VOLUME, 0, playMusic);		
-		});
-	});
+	if (SOUND_ENABLED) {
+		var trackNum = randomInteger(1, 3);
+		playSound("music" + trackNum, playMusic);
+	}
 }
 function openTwitterWindow(text, hashTag) {
 	var href = "https://twitter.com/intent/tweet?hashtags=" + hashTag + "%2C&text=" + encodeURIComponent(text) + "&tw_p=tweetbutton";
@@ -1587,6 +1656,9 @@ function toUTC(date) {
 	return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds(), date.getUTCMilliseconds());	
 }
 
+function randomInteger(min, max) {
+	return Math.floor(Math.random() * (max - min + 1)) + min;	
+}
 
 /*
  * Vector class

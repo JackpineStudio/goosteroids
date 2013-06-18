@@ -113,7 +113,7 @@ var GAME_ID 					= 0;					//
 														//
 var SOUND_ENABLED				= true;					//
 var SOUND_READY					= false;				//
-var SOUND_MUSIC_VOLUME			= 0.4;					//
+var SOUND_MUSIC_VOLUME			= 1;					//
 var SOUND_EFFECTS_VOLUME		= 1;					//
 														//
 var DEBUG_MODE 					= false;				//
@@ -226,6 +226,8 @@ function showInstructions() {
 }
 
 function playGame() {
+	playMusic();
+	
 	CTX.clearRect(0, 0, CANVAS.width, CANVAS.height);
 	
 	PLAYER_NAME = "";
@@ -242,10 +244,6 @@ function playGame() {
 	
 	spawnShip();
 	
-	enableEventHandlers();
-	
-	playMusic();
-	
 	$("#instructions").stop();
 	
 	$('#stageMessage').html("Stage " + STAGE);
@@ -260,9 +258,9 @@ function playGame() {
 				newGame(function (data) {
 					GAME_ID = data.game_id;
 					loadSettings(function () {
+						enableEventHandlers();
 						startGameLoop();
-						startUpdateLoop();
-						
+						startUpdateLoop();						
 					});
 				});
 			});
@@ -298,6 +296,8 @@ function stageOver() {
 }
 
 function gameOver() {
+	stopSounds();
+	
 	disableEventHandlers();
 	stopUpdateLoop();
 	stopGameLoop();
@@ -351,7 +351,9 @@ function initGame(callback) {
 	if (SOUND_ENABLED && !SOUND_READY) {
 		setTimeout(function () {
 			initGame(callback);
-		}, 1000);	
+		}, 1000);
+		
+		return;
 	}
 	
  	//setup canvas	 

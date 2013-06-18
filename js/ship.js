@@ -57,6 +57,7 @@ function updateShip(ship, shipModel) {
 			globPosition = PolarVector(globPosition.angle() - ship.orientation + PI / 2, globPosition.norm());
 			
 			if (circleIntersectTriangle(globPosition, glob.radius + (1/4) * GRADIENT_RADIUS, shipModel[0], shipModel[1], shipModel[2])) {
+				playSound("explosion");
 				ship.alive = false;
 				LIVES--;
 				RESPAWN_FRAMES_REMAINING = RESPAWN_DELAY;

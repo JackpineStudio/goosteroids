@@ -46,6 +46,8 @@ function updateBullets(bullets) {
 			var glob = GLOBS[j];
 			
 			if (distance(bullet.position, glob.position) < glob.radius + BULLET_RADIUS + GRADIENT_RADIUS / 2) {
+				playSound("pop");
+				
 				GLOBS_DESTROYED++;
 				
 				bullets.splice(i, 1);

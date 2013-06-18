@@ -55,4 +55,7 @@ function toUTC(date) {
 	return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds(), date.getUTCMilliseconds());	
 }
 
+function randomInteger(min, max) {
+	return Math.floor(Math.random() * (max - min + 1)) + min;	
+}
 

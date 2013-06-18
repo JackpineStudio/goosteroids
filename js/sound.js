@@ -1,42 +1,99 @@
-var SOUNDS = [
+var MUSIC_PLAYING = false;
+
+var SOUNDS_MP3 = [
 	{
 		id: "laser",
-		src: "sounds/laser.mp3",
+		src: "sounds/mp3/laser.mp3",
 	},
 	{
+		id: "pop",
+		src: "sounds/mp3/pop.mp3",
+	},
+	{
+		id: "explosion",
+		src: "sounds/mp3/explosion.mp3",
+	},	
+	{
 		id: "music1",
-		src: "sounds/music1.mp3",
+		src: "sounds/mp3/music1.mp3",
 	},
 	{
 		id: "music2",
-		src: "sounds/music2.mp3",
+		src: "sounds/mp3/music2.mp3",
 	},
 	{
 		id: "music3",
-		src: "sounds/music3.mp3",
+		src: "sounds/mp3/music3.mp3",
 	}
-]
+];
 
-function loadSounds(callback) {
-	 var queue = new createjs.LoadQueue();
-	 
-	 queue.installPlugin(createjs.Sound);
-	 queue.addEventListener("complete", callback);
-	 
-	 for (var i = 0; i < SOUNDS.length; i++) {
-	 	 queue.loadManifest(SOUNDS);
-	 }
+var SOUNDS_OGG = [
+	{
+		id: "laser",
+		src: "sounds/ogg/laser.ogg",
+	},
+	{
+		id: "pop",
+		src: "sounds/ogg/pop.ogg",
+	},
+	{
+		id: "explosion",
+		src: "sounds/ogg/explosion.ogg",
+	},	
+	{
+		id: "music1",
+		src: "sounds/ogg/music1.ogg",
+	},
+	{
+		id: "music2",
+		src: "sounds/ogg/music2.ogg",
+	},
+	{
+		id: "music3",
+		src: "sounds/ogg/music3.ogg",
+	}
+];
+
+function loadSounds(complete) {
+	var queue = new createjs.LoadQueue();
+	
+	queue.installPlugin(createjs.Sound);
+	queue.addEventListener("complete", complete);
+	
+	queue.addEventListener("progress", function (data) {
+		progressBar("#progressBar", data.progress * 100);
+	});
+	
+	var cap = createjs.Sound.getCapabilities();
+	
+	if (cap.mp3) {
+		queue.loadManifest(SOUNDS_MP3);
+	} else if (cap.ogg) {
+		queue.loadManifest(SOUNDS_OGG);	 
+	} else {
+		SOUND_ENABLED = false;	
+	}
 }
 
 function initSound(callback) {
 	if (SOUND_ENABLED) {
-		loadSounds(function () {
-			if (callback) {
-				callback.call(this);	
-			}
-				
-			SOUND_READY = true;
-		});
+		if (!createjs.Sound.isReady()) {
+			createjs.Sound.registerPlugins([ createjs.WebAudioPlugin, createjs.HTMLAudioPlugin ]);
+			
+			setTimeout(function () {
+				initSound(callback);
+			}, 1000);
+			
+			return;
+		} else {
+			loadSounds(function () {
+				SOUND_READY = true;
+			});
+		}
+	}
+	
+	if (callback) {
+		callback.call(this);
 	}
 }
 
@@ -58,22 +115,15 @@ function playSound(id, volume, loop, callback) {
 	}
 }
 
-function stopSounds(id) {
+function stopSounds() {
 	if (SOUND_ENABLED) {
-		createjs.Sound.stop();	
+		createjs.Sound.stop();
 	}
 }
 
 function playMusic() {
-	console.log("music1");
-	
-	playSound("music1", SOUND_MUSIC_VOLUME, 0, function () {
-		
-		console.log("music2");		
-		playSound("music2", SOUND_MUSIC_VOLUME, 0, function () {
-		
-			console.log("music3");
-			playSound("music3", SOUND_MUSIC_VOLUME, 0, playMusic);		
-		});
-	});
+	if (SOUND_ENABLED) {
+		var trackNum = randomInteger(1, 3);
+		playSound("music" + trackNum, playMusic);
+	}
 }

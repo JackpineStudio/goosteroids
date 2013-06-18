@@ -31,6 +31,15 @@ function showDialog(title, message, buttons, prompt, onClose) {
 		}
 	}
 	
+	$("button.dialog-button").hover(
+		function() {
+			$(this).stop().animate({ backgroundColor: "#0000ff" }, "slow");
+		},
+		function() {
+			$(this).stop().animate({ backgroundColor: "#e95258" }, "slow");
+		}
+	);
+	
 	if (onClose) {
 		$("#dialog").modal( { onClose: onClose } );
 	} else {
