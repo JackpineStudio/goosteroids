@@ -9,10 +9,10 @@ class ApplicationController < ActionController::Base
 	
 	#Write a message to the log
 	protected
-	def log(level, function, fields)
+	def log(level, fields)
 		msg = level + " "
 		msg += Time.zone.now.to_s
-		msg += " " + function + " "
+		msg += " " + controller_name + "/" + action_name + " "
 		msg += fields.to_s
 		msg = msg.chomp(",")
 		
@@ -29,6 +29,16 @@ class ApplicationController < ActionController::Base
 		end
 	end
 	
+	def log_info(fields)
+		log(INFO, fields)
+	end
+	
+	def log_error(msg, fields)
+		if fields
+			log(ERROR, merge(fields, { error_message: msg }))
+		end
+	end
+	
 	#Merge response
 	protected
 	def merge(object1, object2)
@@ -38,7 +48,7 @@ class ApplicationController < ActionController::Base
 	#Send JSON response
 	protected
 	def send_json_response(response = nil)
-		log(INFO, "send_json_response", response.merge({ "remote_ip" => request.remote_ip } ))
+		log_info(merge( { "remote_ip" => request.remote_ip }, response))
 		respond_to { |format| format.json { render json: response } }
 	end
 	

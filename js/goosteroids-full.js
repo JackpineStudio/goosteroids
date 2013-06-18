@@ -106,7 +106,7 @@ var GLOBS_DESTROYED				= 0;					//					Number of globs destroyed this update
 														//
 var MAIN_LOOP_ID				= null;					//null
 var UPDATE_LOOP_ID				= null;					//null
-var UPDATE_LOOP_INTERVAL		= 10000;				//10 * 1000
+var UPDATE_LOOP_INTERVAL		= 5000;					//
 														//
 var SESSION_ID = "<%= @session_id %>";					//
 var GAME_ID 					= 0;					//
@@ -116,7 +116,7 @@ var SOUND_READY					= false;				//
 var SOUND_MUSIC_VOLUME			= 1;					//
 var SOUND_EFFECTS_VOLUME		= 1;					//
 														//
-var DEBUG_MODE 					= false;				//
+var DEBUG_MODE 					= true;					//
 
 /*
  * Game setup
@@ -423,7 +423,7 @@ function handleError(data) {
 		var message = data.error_message; 
 		
 		if (DEBUG_MODE) {
-			console.log(message);
+			console.log("Error: " + message);
 		}
 		
 		showErrorDialog(message, function () {
@@ -513,7 +513,7 @@ function updateGame(globsDestroyed, callback) {
 	if (!UPDATING) {
 		UPDATING = true;
 		
-		var data = { game_id: GAME_ID, lives: LIVES, globs_destroyed: globsDestroyed, client_time: toUTC(new Date()) };
+		var data = { game_id: GAME_ID, lives: LIVES, globs_destroyed: globsDestroyed };
 		
 		sendAjaxRequest("goosteroids/update_game.json", data, function (data) {
 			UPDATING = false;
@@ -659,9 +659,9 @@ function drawBullets(ctx, bullets) {
 		drawCircle(ctx, bullets[i].position, BULLET_RADIUS, BULLET_COLOR);	
 	}
 }
-function showDialog(title, message, buttons, prompt, onClose) {
+function showDialog(title, msg, buttons, prompt, onClose) {
 	$("#dialogTitle").text(title);
-	$("#dialogMessage").html(message);
+	$("#dialogMessage").html(msg);
 	
 	if (prompt) {
 		$("#dialogInput").show();
@@ -708,17 +708,17 @@ function showDialog(title, message, buttons, prompt, onClose) {
 	}
 }
 
-function showErrorDialog(message, onClose) {
+function showErrorDialog(msg, onClose) {
 	var closeButton = { 
 		label: "Close", 
 		click:  function () { $.modal.close(); } 
 	};
 	
-	showDialog("ERROR!", message, [ closeButton ], false, onClose);
+	showDialog("ERROR!", msg, [ closeButton ], false, onClose);
 }
 
 function showHighScorePrompt(onClose) {
-	var message = "Congratulations you got a high score!<br>Brag about it by entering your name below:<br><br>"
+	var msg = "Congratulations you got a high score!<br>Brag about it by entering your name below:<br><br>"
 	
 	var submitButton = { 
 		label: "Submit",
@@ -752,11 +752,11 @@ function showHighScorePrompt(onClose) {
 		} 
 	};
 	
-	showDialog("HIGH SCORE!", message, [ submitButton, cancelButton ], true);
+	showDialog("HIGH SCORE!", msg, [ submitButton, cancelButton ], true);
 }
 
 function showTwitterPrompt() {
-	var message = "Please enter your name below to tweet your score:<br><br>"
+	var msg = "Please enter your name below to tweet your score:<br><br>"
 	
 	var submitButton = { 
 		label: "Submit",
@@ -783,7 +783,18 @@ function showTwitterPrompt() {
 		} 
 	};
 	
-	showDialog("ENTER PLAYER NAME", message, [ submitButton, cancelButton ], true);
+	showDialog("ENTER PLAYER NAME", msg, [ submitButton, cancelButton ], true);
+}
+
+function showCreditsDialog(onClose) {
+	var msg = "<b>Programming:</b> James McLean<br><b>Design:</b> Liam Mooney, Tom Jansen, Taulant Sulko<br><b>Music:</b> Placeholder<br><b>Sound effects:</b> Mike Koenig";
+	
+	var closeButton = { 
+		label: "Close", 
+		click:  function () { $.modal.close(); } 
+	};
+	
+	showDialog("CREDITS", msg, [ closeButton ], false, onClose);
 }
 /*
  * Display

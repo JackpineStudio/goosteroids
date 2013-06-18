@@ -106,7 +106,7 @@ var GLOBS_DESTROYED				= 0;					//					Number of globs destroyed this update
 														//
 var MAIN_LOOP_ID				= null;					//null
 var UPDATE_LOOP_ID				= null;					//null
-var UPDATE_LOOP_INTERVAL		= 10000;				//10 * 1000
+var UPDATE_LOOP_INTERVAL		= 5000;					//
 														//
 var SESSION_ID = "<%= @session_id %>";					//
 var GAME_ID 					= 0;					//
@@ -116,7 +116,7 @@ var SOUND_READY					= false;				//
 var SOUND_MUSIC_VOLUME			= 1;					//
 var SOUND_EFFECTS_VOLUME		= 1;					//
 														//
-var DEBUG_MODE 					= false;				//
+var DEBUG_MODE 					= true;					//
 
 /*
  * Game setup

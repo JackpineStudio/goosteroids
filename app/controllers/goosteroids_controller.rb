@@ -14,13 +14,15 @@ ERROR_GAME_CREATE = "Failed to create game"
 ERROR_GAME_CHEAT = "Cheating detected"
 ERROR_GAME_SAVE = "Unable to save game"
 ERROR_GAME_FIND = "Unable to find game"
+ERROR_INVALID_PARAMS = "Invalid parameters"
 
 SESSION_ID_LENGTH = 64
 
-MAX_PING = 10
-MAX_INACTIVE_TIME = 5*60
-MAX_GLOBS_DESTROYED = 20
 MAX_LIVES = 3
+MAX_TIME_BETWEEN_UPDATES = 10
+MAX_INACTIVE_TIME = 5*60
+MAX_GLOBS_DESTROYED = 10
+GLOB_POINT_VALUE = 10
 
 class GoosteroidsController < ApplicationController
 	skip_before_filter :verify_authenticity_token, :if => Proc.new { |c| c.request.format == 'application/json' }
@@ -31,17 +33,18 @@ class GoosteroidsController < ApplicationController
 	#
 	# Creates a new session ID and session object
 	#
-	def index		
+	def index
 		#Create random 64-character/64-bit character session ID
 		symbols = ('a'..'z').to_a.concat(('A'..'Z').to_a.concat((0..9).to_a))
+		
 		@session_id = (0...SESSION_ID_LENGTH).map{ symbols[rand(symbols.length)] }.join
 		
 		#Log info
-		log(INFO, "goosteroids/index", { remote_ip: request.remote_ip, session_id: @session_id } )
+		log_info( { remote_ip: request.remote_ip.to_s, session_id: @session_id } )
 		
 		#Create session
-		if (!Session.create({ remote_ip: request.remote_ip, session_id: @session_id, last_active: Time.now }))
-			log(ERROR, "ERROR goosteroids/index", { remote_ip: request.remote_ip, session_id: @session_id,  error_message: ERROR_CREATE_SESSION } ) 
+		if (!Session.create( { remote_ip: request.remote_ip.to_s, session_id: @session_id } ))
+			log_error(ERROR_CREATE_SESSION, { remote_ip: request.remote_ip.to_s, session_id: @session_id } ) 
 			return
 		end
 		
@@ -54,10 +57,10 @@ class GoosteroidsController < ApplicationController
 	#
 	def new_game	
 		#Log info
-		log(INFO, "goosteroids/new_game", { remote_ip: request.remote_ip, session_id: @session_id } )
+		log_info( { remote_ip: request.remote_ip.to_s, session_id: @session_id } )
 		
 		#Create game		
-		game = game_create(@session, @response)
+		game = game_create(@session)
 		
 		if (!game)
 			return send_json_response(@response)
@@ -70,11 +73,17 @@ class GoosteroidsController < ApplicationController
 	# Get settings for a given stage
 	#
 	def get_settings
+		#Check parameters
+		if (!params[:game_id])
+			log_error(ERROR_INVALID_PARAMS, { remote_ip: request.remote_ip.to_s, session_id: @session_id  } ) 
+			return send_json_response(error_response(ERROR_INVALID_PARAMS))
+		end		
+		
 		#Get parameters
 		game_id = params[:game_id].to_i
 		
 		#Find game
-		game = game_find(game_id, @response)
+		game = game_find(game_id)
 		
 		if (!game)
 			return send_json_response(@response)
@@ -89,25 +98,31 @@ class GoosteroidsController < ApplicationController
 	# Ends a stage
 	#
 	def end_stage
+		#Check parameters
+		if (!params[:game_id])
+			log_error(ERROR_INVALID_PARAMS, { remote_ip: request.remote_ip.to_s, session_id: @session_id  } ) 
+			return send_json_response(error_response(ERROR_INVALID_PARAMS))
+		end
+		
 		#Get parameters
 		game_id = params[:game_id].to_i
 		
 		#Find game
-		game = game_find(game_id, @response)
+		game = game_find(game_id)
 		
 		if (!game)
 			return send_json_response(@response)
 		end
 		
 		if (game.globs_destroyed != GameSettings.num_globs(game.stage))
-			log(ERROR, "goosteroids/end_stage", { remote_ip: request.remote_ip, game_id: game.id,  error_message: ERROR_GAME_CHEAT})
-			return send_json_response(merge(@response, { type: "error", error_message: ERROR_GAME_CHEAT } ))
+			log_error(ERROR_GAME_CHEAT, { remote_ip: request.remote_ip.to_s, game_id: game.id } )
+			return send_json_response(error_response(ERROR_GAME_CHEAT))
 		end
 		
 		game.stage += 1
 		game.globs_destroyed = 0
 				
-		if (!game_update(game, @response))
+		if (!game_update(game))
 			return send_json_response(@response)
 		end
 		
@@ -118,46 +133,52 @@ class GoosteroidsController < ApplicationController
 	# Updates the session and updates a game in progress
 	#
 	def update_game
+		#Check parameters
+		if (!params[:game_id] || !params[:lives] || !params[:globs_destroyed])
+			log_error(ERROR_INVALID_PARAMS, { remote_ip: request.remote_ip.to_s, session_id: @session_id  } ) 
+			return send_json_response(error_response(ERROR_INVALID_PARAMS))
+		end
+		
 		#Get parameters
 		game_id = params[:game_id].to_i
 		lives = params[:lives].to_i
 		globs_destroyed = params[:globs_destroyed].to_i
-		client_time = time_js_to_ruby(params[:client_time].to_i)
 		
 		#Get server time
 		server_time = Time.now.to_i
 		
 		#Log info
-		log(INFO, "goosteroids/update_game", { remote_ip: request.remote_ip, session_id: @session_id,  game_id: game_id, client_time: client_time, server_time: server_time, globs_destroyed: globs_destroyed })
-		
-		#Check the ping time
-		if ((client_time - server_time).abs > MAX_PING)
-			log(ERROR, "goosteroids/update_game", { remote_ip: request.remote_ip, session_id: @session_id,  error_message: ERROR_PING } ) 
-			return send_json_response(merge(@response, { type: "error", error_message: ERROR_PING } ))
-		end
-		
-		#Check number of player lives
-		if (lives > MAX_LIVES)
-			log(ERROR, "goosteroids/update_game", { remote_ip: request.remote_ip, session_id: @session_id,  error_message: ERROR_GAME_CHEAT } ) 
-			return send_json_response(merge(@response, { type: "error", error_message: ERROR_GAME_CHEAT } ))
-		end
+		log_info( { remote_ip: request.remote_ip.to_s, session_id: @session_id,  game_id: game_id, server_time: server_time, globs_destroyed: globs_destroyed } )
 		
 		#Find game
-		game = game_find(game_id, @response)
+		game = game_find(game_id)
 		
 		if (!game)
 			return send_json_response(@response)
 		end
 
+		#Check the ping time
+		if (game.updated_at.to_i - server_time > MAX_TIME_BETWEEN_UPDATES)
+			log_error(ERROR_GAME_CHEAT, { remote_ip: request.remote_ip.to_s, session_id: @session_id  } ) 
+			return send_json_response(error_response(ERROR_GAME_CHEAT))
+		end
+		
+		#Check number of player lives
+		if (lives > MAX_LIVES)
+			log_error(ERROR_GAME_CHEAT, { remote_ip: request.remote_ip.to_s, session_id: @session_id } ) 
+			return send_json_response(error_response(ERROR_GAME_CHEAT))
+		end		
+		
+		#Check if the number of globs destroyed is improbable
 		if (globs_destroyed >  MAX_GLOBS_DESTROYED)
-			log(ERROR, "goosteroids/game_update", { remote_ip: request.remote_ip, game_id: game.id,  error_message: ERROR_GAME_CHEAT})
-			return send_json_response(merge(@response, { type: "error", error_message: ERROR_GAME_CHEAT } ))
+			log_error(ERROR_GAME_CHEAT, { remote_ip: request.remote_ip.to_s, game_id: game.id } )
+			return send_json_response(error_response(ERROR_GAME_CHEAT))
 		end
 			
 		game.globs_destroyed += globs_destroyed
-		game.score += globs_destroyed * 10
+		game.score += globs_destroyed * GLOB_POINT_VALUE
 		
-		if (!game_update(game, @response))
+		if (!game_update(game))
 			return send_json_response(@response)
 		end
 		
@@ -168,44 +189,56 @@ class GoosteroidsController < ApplicationController
 	# Ends the game
 	#
 	def end_game
+		#Check parameters
+		if (!params[:game_id])
+			log_error(ERROR_INVALID_PARAMS, { remote_ip: request.remote_ip.to_s, session_id: @session_id  } ) 
+			return send_json_response(error_response(ERROR_INVALID_PARAMS))
+		end		
+		
 		#Get parameters
 		game_id = params[:game_id].to_i
 		
 		#Log info
-		log(INFO, "goosteroids/end_game", { remote_ip: request.remote_ip, session_id: @session_id,  game_id: game_id })
+		log_info( { remote_ip: request.remote_ip.to_s, session_id: @session_id,  game_id: game_id } )
 				
 		#Find game
-		game = game_find(game_id, @response)
+		game = game_find(game_id)
 		
 		if (!game)
 			return send_json_response(@response)
 		end
 		
 		if (game.globs_destroyed > GameSettings.num_globs(game.stage))
-			log(ERROR, "goosteroids/end_game", { remote_ip: request.remote_ip, game_id: game.id,  error_message: ERROR_GAME_CHEAT})
-			return send_json_response(merge(@response, { type: "error", error_message: ERROR_GAME_CHEAT } ))
+			log_error(ERROR_GAME_CHEAT, { remote_ip: request.remote_ip.to_s, game_id: game.id } )
+			return send_json_response(error_response(ERROR_GAME_CHEAT))
 		end
 		
 		game.over = true
 		game.end_time = Time.now
 	
-		if (!game_update(game, @response))
+		if (!game_update(game))
 			return send_json_response(@response)
 		end
 
-		send_json_response(merge(@response, { high_score: game.high_score? }))
+		send_json_response(merge(@response, { high_score: game.high_score? } ))
 	end
 	
 	#
 	# Sets a player name
 	#
 	def set_player_name
+		#Check parameters
+		if (!params[:game_id] || !params[:name])
+			log_error(ERROR_INVALID_PARAMS, { remote_ip: request.remote_ip.to_s, session_id: @session_id  } ) 
+			return send_json_response(error_response(ERROR_INVALID_PARAMS))
+		end
+		
 		#Get parameters
 		game_id = params[:game_id].to_i
 		name = params[:name]
 		
 		#Find game
-		game = game_find(game_id, @response)
+		game = game_find(game_id)
 		
 		if (!game)
 			return send_json_response(@response)
@@ -215,7 +248,7 @@ class GoosteroidsController < ApplicationController
 			game.player_name = name
 		end
 		
-		if (!game_update(game, @response))
+		if (!game_update(game))
 			return send_json_response(@response)
 		end
 		
@@ -271,30 +304,40 @@ class GoosteroidsController < ApplicationController
 	# Create response filter
 	#
 	def create_response
-		@response = { type: "goosteroids/" + action_name }
+		@response = { type:  controller_name + "/" + action_name }
+	end
+	
+	def error_response(msg)
+		return merge(@response, { type: "error", error_message: msg } );
 	end
 	
 	#
 	# Session filter
 	#
 	def session_filter
+		#Check parameters
+		if (!params[:session_id])
+			log_error(ERROR_INVALID_PARAMS, { remote_ip: request.remote_ip.to_s } ) 
+			return send_json_response(error_response(ERROR_INVALID_PARAMS))
+		end		
+		
 		@session_id = params[:session_id]
 		
 		if (!@session_id || @session_id.length != SESSION_ID_LENGTH)
-			log(ERROR, "goosteroids/session_filter", { remote_ip: request.remote_ip, session_id: @session_id,  error_message: ERROR_SESSION_INVALID})
-			return send_json_response(merge(@response, { type: "error", error_message: ERROR_SESSION_INVALID } ))
+			log_error(ERROR_SESSION_INVALID, { remote_ip: request.remote_ip.to_s, session_id: @session_id } )
+			return send_json_response(error_response(ERROR_SESSION_INVALID))
 		end
 		
 		#Retrieve session
-		@session = session_find(@session_id, @response)
+		@session = session_find(@session_id)
 		
 		#Check if the session was retreived successfully and whether the session is inactive
-		if (!@session || !session_valid(@session, @response))
+		if (!@session || !session_valid(@session))
 			return send_json_response(@response)
 		end
 				
 		#Update session
-		if (!session_update(@session, @response))
+		if (!session_update(@session))
 			return send_json_response(@response)
 		end
 	end
@@ -302,10 +345,10 @@ class GoosteroidsController < ApplicationController
 	#
 	# Find session
 	#
-	def session_find(session_id, response)
+	def session_find(session_id)
 		if (!session_id || session_id.length != SESSION_ID_LENGTH)
-			log(ERROR, "goosteroids/session_find", { remote_ip: request.remote_ip, session_id: session_id,  error_message: ERROR_UNKNOWN})
-			merge(response, { type: "error", error_message: ERROR_UNKNOWN } )
+			log_error(ERROR_UNKNOWN, { remote_ip: request.remote_ip.to_s, session_id: session_id } )
+			error_response(ERROR_UNKNOWN)
 			return nil
 		end
 		
@@ -313,8 +356,8 @@ class GoosteroidsController < ApplicationController
 		
 		#Check if the session was retreived successfully and whether the session is inactive
 		if (!session)
-			log(ERROR, "goosteroids/session_find", { remote_ip: request.remote_ip, session_id: session_id,  error_message: ERROR_SESSION_FIND})
-			merge(response, { type: "error", error_message: ERROR_SESSION_FIND } )
+			log_error(ERROR_SESSION_FIND, { remote_ip: request.remote_ip.to_s, session_id: session_id } )
+			error_response(ERROR_SESSION_FIND)
 			return nil
 		end
 		
@@ -324,16 +367,16 @@ class GoosteroidsController < ApplicationController
 	#
 	# Update session
 	#
-	def session_update(session, response)
+	def session_update(session)
 		if (!session)
-			log(ERROR, "goosteroids/session_update", { remote_ip: request.remote_ip, session_id: session_id,  error_message: ERROR_UNKNOWN})
-			merge(response, { type: "error", error_message: ERROR_UNKNOWN } )
+			log_error(ERROR_UNKNOWN, { remote_ip: request.remote_ip.to_s, session_id: session_id } )
+			error_response(ERROR_UNKNOWN)
 			return false
 		end
 		
 		if (!session.save)
-			log(ERROR, "goosteroids/session_update", { remote_ip: request.remote_ip, session_id: session_id,  error_message: ERROR_SESSION_SAVE})
-			merge(response, { type: "error", error_message: ERROR_SESSION_SAVE } )
+			log_error(ERROR_SESSION_SAVE, { remote_ip: request.remote_ip.to_s, session_id: session_id } )
+			error_response(ERROR_SESSION_SAVE)
 			return false
 		end
 		
@@ -343,16 +386,16 @@ class GoosteroidsController < ApplicationController
 	#
 	# Validate session
 	#
-	def session_valid(session, response)
+	def session_valid(session)
 		if (!session)
-			log(ERROR, "goosteroids/validate_session", { remote_ip: request.remote_ip, error_message: ERROR_UNKNOWN})
-			merge(response, { type: "error", error_message: ERROR_UNKNOWN } )
+			log_error(ERROR_UNKNOWN, { remote_ip: request.remote_ip.to_s } )
+			error_response(ERROR_UNKNOWN)
 			return false
 		end
 		
 		if ((Time.now.to_i - session.updated_at.to_i) > MAX_INACTIVE_TIME)
-			log(ERROR, "goosteroids/validate_session", { remote_ip: request.remote_ip, session_id: session.id,  error_message: ERROR_SESSION_EXPIRED})
-			merge(response, { type: "error", error_message: ERROR_SESSION_EXPIRED } )
+			log_error(ERROR_SESSION_EXPIRED, { remote_ip: request.remote_ip.to_s, session_id: session.id } )
+			error_response(ERROR_SESSION_EXPIRED)
 			return false
 		end
 		
@@ -362,12 +405,12 @@ class GoosteroidsController < ApplicationController
 	#
 	# Create game
 	#
-	def game_create(session, response)
+	def game_create(session)
 		game = session.games.create( { start_time: Time.now } )
 		
 		if (!game)
-			log(ERROR, "goosteroids/new", { remote_ip: request.remote_ip, session_id: session_id,  error_message: ERROR_GAME_CREATE } ) 
-			merge(@response, { type: "error", error_message: ERROR_GAME_CREATE } )
+			log_error(ERROR_GAME_CREATE, { remote_ip: request.remote_ip.to_s, session_id: session_id } ) 
+			error_response(ERROR_GAME_CREATE)
 			return nil			
 		end
 		
@@ -377,10 +420,10 @@ class GoosteroidsController < ApplicationController
 	#
 	# Find game
 	#
-	def game_find(game_id, response)
+	def game_find(game_id)
 		if (game_id <= 0)
-			log(ERROR, "goosteroids/game_find", { remote_ip: request.remote_ip, game_id: game_id,  error_message: ERROR_UNKNOWN})
-			merge(response, { type: "error", error_message: ERROR_UNKNOWN } )
+			log_error(ERROR_UNKNOWN, { remote_ip: request.remote_ip.to_s, game_id: game_id } )
+			error_response(ERROR_UNKNOWN)
 			return nil
 		end
 		
@@ -388,8 +431,8 @@ class GoosteroidsController < ApplicationController
 		
 		#Check if the game was retreived successfully and whether the game is inactive
 		if (!game)
-			log(ERROR, "goosteroids/game_find", { remote_ip: request.remote_ip, game_id: game_id,  error_message: ERROR_GAME_FIND})
-			merge(response, { type: "error", error_message: ERROR_GAME_FIND } )
+			log_error(ERROR_GAME_FIND, { remote_ip: request.remote_ip.to_s, game_id: game_id } )
+			error_response(ERROR_GAME_FIND)
 			return nil
 		end
 		
@@ -399,16 +442,16 @@ class GoosteroidsController < ApplicationController
 	#
 	# Update game
 	#
-	def game_update(game, response)
+	def game_update(game)
 		if (!game)
-			log(ERROR, "goosteroids/game_update", { remote_ip: request.remote_ip,  error_message: ERROR_UNKNOWN})
-			merge(response, { type: "error", error_message: ERROR_UNKNOWN } )
+			log_error(ERROR_UNKNOWN, { remote_ip: request.remote_ip.to_s } )
+			error_response(ERROR_UNKNOWN)
 			return false
 		end
 		
 		if (!game.save)
-			log(ERROR, "goosteroids/game_update", { remote_ip: request.remote_ip, game_id: game.id,  error_message: ERROR_SESSION_SAVE})
-			merge(response, { type: "error", error_message: ERROR_SESSION_SAVE } )
+			log_error(ERROR_SESSION_SAVE, { remote_ip: request.remote_ip.to_s, game_id: game.id } )
+			error_response(ERROR_SESSION_SAVE)
 			return false
 		end
 		

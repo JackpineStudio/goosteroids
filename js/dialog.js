@@ -1,6 +1,6 @@
-function showDialog(title, message, buttons, prompt, onClose) {
+function showDialog(title, msg, buttons, prompt, onClose) {
 	$("#dialogTitle").text(title);
-	$("#dialogMessage").html(message);
+	$("#dialogMessage").html(msg);
 	
 	if (prompt) {
 		$("#dialogInput").show();
@@ -47,17 +47,17 @@ function showDialog(title, message, buttons, prompt, onClose) {
 	}
 }
 
-function showErrorDialog(message, onClose) {
+function showErrorDialog(msg, onClose) {
 	var closeButton = { 
 		label: "Close", 
 		click:  function () { $.modal.close(); } 
 	};
 	
-	showDialog("ERROR!", message, [ closeButton ], false, onClose);
+	showDialog("ERROR!", msg, [ closeButton ], false, onClose);
 }
 
 function showHighScorePrompt(onClose) {
-	var message = "Congratulations you got a high score!<br>Brag about it by entering your name below:<br><br>"
+	var msg = "Congratulations you got a high score!<br>Brag about it by entering your name below:<br><br>"
 	
 	var submitButton = { 
 		label: "Submit",
@@ -91,11 +91,11 @@ function showHighScorePrompt(onClose) {
 		} 
 	};
 	
-	showDialog("HIGH SCORE!", message, [ submitButton, cancelButton ], true);
+	showDialog("HIGH SCORE!", msg, [ submitButton, cancelButton ], true);
 }
 
 function showTwitterPrompt() {
-	var message = "Please enter your name below to tweet your score:<br><br>"
+	var msg = "Please enter your name below to tweet your score:<br><br>"
 	
 	var submitButton = { 
 		label: "Submit",
@@ -122,5 +122,16 @@ function showTwitterPrompt() {
 		} 
 	};
 	
-	showDialog("ENTER PLAYER NAME", message, [ submitButton, cancelButton ], true);
+	showDialog("ENTER PLAYER NAME", msg, [ submitButton, cancelButton ], true);
+}
+
+function showCreditsDialog(onClose) {
+	var msg = "<b>Programming:</b> James McLean<br><b>Design:</b> Liam Mooney, Tom Jansen, Taulant Sulko<br><b>Music:</b> Placeholder<br><b>Sound effects:</b> Mike Koenig";
+	
+	var closeButton = { 
+		label: "Close", 
+		click:  function () { $.modal.close(); } 
+	};
+	
+	showDialog("CREDITS", msg, [ closeButton ], false, onClose);
 }
