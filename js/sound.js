@@ -121,9 +121,20 @@ function stopSounds() {
 	}
 }
 
+function muteSounds() {
+	SOUND_MUTED = true;
+	createjs.Sound.setMute(true);
+}
+
+function unmuteSounds() {
+	SOUND_MUTED = false;
+	createjs.Sound.setMute(false);
+}
+
 function playMusic() {
 	if (SOUND_ENABLED) {
 		var trackNum = randomInteger(1, 3);
-		playSound("music" + trackNum, playMusic);
+		CURRENT_TRACK = playSound("music" + trackNum, playMusic);
 	}
 }
+

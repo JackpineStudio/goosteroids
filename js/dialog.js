@@ -33,10 +33,10 @@ function showDialog(title, msg, buttons, prompt, onClose) {
 	
 	$("button.dialog-button").hover(
 		function() {
-			$(this).stop().animate({ backgroundColor: "#0000ff" }, "slow");
+			$(this).stop().animate( { backgroundColor: "#0000ff" }, "slow");
 		},
 		function() {
-			$(this).stop().animate({ backgroundColor: "#e95258" }, "slow");
+			$(this).stop().animate( { backgroundColor: "#e95258" }, "slow");
 		}
 	);
 	
@@ -47,13 +47,16 @@ function showDialog(title, msg, buttons, prompt, onClose) {
 	}
 }
 
-function showErrorDialog(msg, onClose) {
+function showErrorDialog(msg) {
 	var closeButton = { 
 		label: "Close", 
-		click:  function () { $.modal.close(); } 
+		click:  function () {
+			$.modal.close();
+			window.location="/";
+		} 
 	};
 	
-	showDialog("ERROR!", msg, [ closeButton ], false, onClose);
+	showDialog("ERROR!", msg, [ closeButton ], false);
 }
 
 function showHighScorePrompt(onClose) {

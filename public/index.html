@@ -34,9 +34,16 @@
 				<div class="body">
 					<img src="images/logo.png" class="logo">
 					<img src="images/subtitle.png" class="subtitle">
-					<div id="progressBar" style="margin-left:auto; margin-right:auto; margin-top:3%;">
+					
+					<div id="progressBar" style="display:hidden; margin-left:auto; margin-right:auto; margin-top:3%;">
 						<div></div>
 					</div>
+					
+					<script type="text/javascript">
+						$(function () {
+							$("#progressBar").show();
+						});
+					</script>
 				</div>
 			</div>
 		</div>
@@ -55,8 +62,8 @@
 							has come alive in this remake of the classic Asteroids game! Globs of goo are attracted to one 
 							another and clump together to form blobs. You must destroy these globs and blobs - by shooting 
 							them with your spaceship's laser - before they take over the entire universe! Blobs fly apart when shot,
-							and the force of attraction between the globs results in fast, crazy, and unpredictable motion!<br>
-							Best experienced with <a href="www.google.com/chrome/‎" target="_blank">Google Chrome</a>
+							and the force of attraction between the globs results in fast, crazy, and unpredictable motion!<br><br>
+							Best experienced with <a href="http://www.google.com/chrome/" target="_blank">Google Chrome.</a>
 						</p>
 					</div>
 					
@@ -191,6 +198,24 @@
 					<img class="jackpine-logo-small" src="images/jackpine-logo-small.png">
 				</div>
 			</div>
+		</div>
+		
+		<div id="soundToggle">
+			<img src="images/sound-on.png">
+			
+			<script type="text/javascript">
+				$(function () { 
+					$("#soundToggle").click(function () {
+						if (SOUND_MUTED) {
+							unmuteSounds();
+							$("#soundToggle img").attr("src", "images/sound-on.png");
+						} else {
+							muteSounds();
+							$("#soundToggle img").attr("src", "images/sound-off.png");
+						}
+					});
+				});
+			</script>
 		</div>
 		
 		<div id="dialog" class="dialog">

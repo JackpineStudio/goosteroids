@@ -21,7 +21,7 @@ SESSION_ID_LENGTH = 64
 MAX_LIVES = 3
 MAX_TIME_BETWEEN_UPDATES = 10
 MAX_INACTIVE_TIME = 5*60
-MAX_GLOBS_DESTROYED = 10
+MAX_GLOBS_DESTROYED = 16
 GLOB_POINT_VALUE = 10
 
 class GoosteroidsController < ApplicationController
@@ -157,7 +157,7 @@ class GoosteroidsController < ApplicationController
 			return send_json_response(@response)
 		end
 
-		#Check the ping time
+		#Check time between updates
 		if (game.updated_at.to_i - server_time > MAX_TIME_BETWEEN_UPDATES)
 			log_error(ERROR_GAME_CHEAT, { remote_ip: request.remote_ip.to_s, session_id: @session_id  } ) 
 			return send_json_response(error_response(ERROR_GAME_CHEAT))
@@ -335,7 +335,9 @@ class GoosteroidsController < ApplicationController
 		if (!@session || !session_valid(@session))
 			return send_json_response(@response)
 		end
-				
+		
+		@session.mark_dirty()
+		
 		#Update session
 		if (!session_update(@session))
 			return send_json_response(@response)

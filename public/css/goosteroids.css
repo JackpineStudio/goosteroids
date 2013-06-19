@@ -282,6 +282,13 @@ button.dialog-button {
 	padding:5px;
 }
 
+#soundToggle {
+	position:absolute;
+	top:30px;
+	left:30px;
+	z-index:5;
+}
+
 #progressBar {
 	width:150px;
 	height:20px;

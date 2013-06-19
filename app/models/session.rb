@@ -1,5 +1,9 @@
 class Session < ActiveRecord::Base
-  attr_accessible :last_active, :session_id, :remote_ip, :session_valid
+  attr_accessible :session_id, :remote_ip, :dirty
   
   has_many :games, dependent: :destroy
+  
+  def mark_dirty()
+  	  self.dirty = !self.dirty
+  end
 end

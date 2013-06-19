@@ -1,9 +1,9 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
 
-one:
-  session_id: vfVClAuSvb1SyM7fxHQuiNXacRmnpw8LrMYtLlljFKdP5BCpmM9MVz2LfG8Lawx
-  last_active: 2013-06-13 21:37:31
+#one:
+#  session_id: vfVClAuSvb1SyM7fxHQuiNXacRmnpw8LrMYtLlljFKdP5BCpmM9MVz2LfG8Lawx
+#  last_active: 2013-06-13 21:37:31
 
-two:
-  session_id: vL5OKCqM0lX22CSGwJGp3XGiqWgzlPIKh4bmSPIzCtWJGOqp2KI6yhtMDIaEcMB
-  last_active: 2013-06-13 21:37:31
+#two:
+#  session_id: vL5OKCqM0lX22CSGwJGp3XGiqWgzlPIKh4bmSPIzCtWJGOqp2KI6yhtMDIaEcMB
+#  last_active: 2013-06-13 21:37:31

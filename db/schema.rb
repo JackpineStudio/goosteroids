@@ -27,10 +27,11 @@ ActiveRecord::Schema.define(:version => 20130614130540) do
   end
 
   create_table "sessions", :force => true do |t|
-    t.string   "session_id", :null => false
-    t.string   "remote_ip",  :null => false
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.string   "session_id",                    :null => false
+    t.string   "remote_ip",                     :null => false
+    t.boolean  "dirty",      :default => false
+    t.datetime "created_at",                    :null => false
+    t.datetime "updated_at",                    :null => false
   end
 
 end

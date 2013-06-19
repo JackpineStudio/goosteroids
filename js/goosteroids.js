@@ -115,6 +115,7 @@ var SOUND_ENABLED				= true;					//
 var SOUND_READY					= false;				//
 var SOUND_MUSIC_VOLUME			= 1;					//
 var SOUND_EFFECTS_VOLUME		= 1;					//
+var SOUND_MUTED					= false;				//
 														//
 var DEBUG_MODE 					= true;					//
 

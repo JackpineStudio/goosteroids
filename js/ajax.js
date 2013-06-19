@@ -9,15 +9,13 @@ function handleError(data) {
 		stopUpdateLoop();
 		stopGameLoop();
 		
-		var message = data.error_message; 
+		var msg = data.error_message; 
 		
 		if (DEBUG_MODE) {
-			console.log("Error: " + message);
+			console.log("Error: " + msg);
 		}
 		
-		showErrorDialog(message, function () {
-			window.location="/";	
-		});
+		showErrorDialog();
 	}
 }
 
@@ -25,15 +23,13 @@ function handleAjaxFailure(textStatus, errorThrown) {
 	stopUpdateLoop();
 	stopGameLoop();
 	
-	var message = "Ajax failure: " + textStatus + " (" + errorThrown + ")";
+	var msg = "Ajax failure: " + textStatus + " (" + errorThrown + ")";
 	
 	if (DEBUG_MODE) {
-		console.log(message);
+		console.log(msg);
 	}
 	
-	showErrorDialog(message, function () {
-		window.location="/";	
-	});
+	showErrorDialog(msg);
 }
 
 function sendAjaxRequest(url, data, callback) {

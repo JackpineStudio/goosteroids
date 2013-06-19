@@ -115,6 +115,7 @@ var SOUND_ENABLED				= true;					//
 var SOUND_READY					= false;				//
 var SOUND_MUSIC_VOLUME			= 1;					//
 var SOUND_EFFECTS_VOLUME		= 1;					//
+var SOUND_MUTED					= false;				//
 														//
 var DEBUG_MODE 					= true;					//
 
@@ -420,15 +421,13 @@ function handleError(data) {
 		stopUpdateLoop();
 		stopGameLoop();
 		
-		var message = data.error_message; 
+		var msg = data.error_message; 
 		
 		if (DEBUG_MODE) {
-			console.log("Error: " + message);
+			console.log("Error: " + msg);
 		}
 		
-		showErrorDialog(message, function () {
-			window.location="/";	
-		});
+		showErrorDialog();
 	}
 }
 
@@ -436,15 +435,13 @@ function handleAjaxFailure(textStatus, errorThrown) {
 	stopUpdateLoop();
 	stopGameLoop();
 	
-	var message = "Ajax failure: " + textStatus + " (" + errorThrown + ")";
+	var msg = "Ajax failure: " + textStatus + " (" + errorThrown + ")";
 	
 	if (DEBUG_MODE) {
-		console.log(message);
+		console.log(msg);
 	}
 	
-	showErrorDialog(message, function () {
-		window.location="/";	
-	});
+	showErrorDialog(msg);
 }
 
 function sendAjaxRequest(url, data, callback) {
@@ -694,10 +691,10 @@ function showDialog(title, msg, buttons, prompt, onClose) {
 	
 	$("button.dialog-button").hover(
 		function() {
-			$(this).stop().animate({ backgroundColor: "#0000ff" }, "slow");
+			$(this).stop().animate( { backgroundColor: "#0000ff" }, "slow");
 		},
 		function() {
-			$(this).stop().animate({ backgroundColor: "#e95258" }, "slow");
+			$(this).stop().animate( { backgroundColor: "#e95258" }, "slow");
 		}
 	);
 	
@@ -708,13 +705,16 @@ function showDialog(title, msg, buttons, prompt, onClose) {
 	}
 }
 
-function showErrorDialog(msg, onClose) {
+function showErrorDialog(msg) {
 	var closeButton = { 
 		label: "Close", 
-		click:  function () { $.modal.close(); } 
+		click:  function () {
+			$.modal.close();
+			window.location="/";
+		} 
 	};
 	
-	showDialog("ERROR!", msg, [ closeButton ], false, onClose);
+	showDialog("ERROR!", msg, [ closeButton ], false);
 }
 
 function showHighScorePrompt(onClose) {
@@ -1591,12 +1591,23 @@ function stopSounds() {
 	}
 }
 
+function muteSounds() {
+	SOUND_MUTED = true;
+	createjs.Sound.setMute(true);
+}
+
+function unmuteSounds() {
+	SOUND_MUTED = false;
+	createjs.Sound.setMute(false);
+}
+
 function playMusic() {
 	if (SOUND_ENABLED) {
 		var trackNum = randomInteger(1, 3);
-		playSound("music" + trackNum, playMusic);
+		CURRENT_TRACK = playSound("music" + trackNum, playMusic);
 	}
 }
+
 function openTwitterWindow(text, hashTag) {
 	var href = "https://twitter.com/intent/tweet?hashtags=" + hashTag + "%2C&text=" + encodeURIComponent(text) + "&tw_p=tweetbutton";
 	window.open(href);
