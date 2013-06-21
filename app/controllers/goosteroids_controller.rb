@@ -4,7 +4,6 @@ require 'game_settings'
 include GameSettings
 
 ERROR_UNKNOWN = "Unknown error"
-ERROR_PING = "Ping too high"
 ERROR_SESSION_CREATE = "Unable to create session"
 ERROR_SESSION_SAVE = "Unable to save session"
 ERROR_SESSION_EXPIRED = "Session expired"
@@ -19,7 +18,8 @@ ERROR_INVALID_PARAMS = "Invalid parameters"
 SESSION_ID_LENGTH = 64
 
 MAX_LIVES = 3
-MAX_TIME_BETWEEN_UPDATES = 10
+MAX_TIME_BETWEEN_UPDATES = 12
+MIN_TIME_BETWEEN_UPDATES = 2
 MAX_INACTIVE_TIME = 5*60
 MAX_GLOBS_DESTROYED = 16
 GLOB_POINT_VALUE = 10
@@ -99,13 +99,14 @@ class GoosteroidsController < ApplicationController
 	#
 	def end_stage
 		#Check parameters
-		if (!params[:game_id])
+		if (!params[:game_id] || !params[:globs_destroyed])
 			log_error(ERROR_INVALID_PARAMS, { remote_ip: request.remote_ip.to_s, session_id: @session_id  } ) 
 			return send_json_response(error_response(ERROR_INVALID_PARAMS))
 		end
 		
 		#Get parameters
 		game_id = params[:game_id].to_i
+		globs_destroyed = params[:globs_destroyed].to_i
 		
 		#Find game
 		game = game_find(game_id)
@@ -114,7 +115,7 @@ class GoosteroidsController < ApplicationController
 			return send_json_response(@response)
 		end
 		
-		if (game.globs_destroyed != GameSettings.num_globs(game.stage))
+		if (game.globs_destroyed + globs_destroyed != GameSettings.num_globs(game.stage))
 			log_error(ERROR_GAME_CHEAT, { remote_ip: request.remote_ip.to_s, game_id: game.id } )
 			return send_json_response(error_response(ERROR_GAME_CHEAT))
 		end
@@ -158,7 +159,12 @@ class GoosteroidsController < ApplicationController
 		end
 
 		#Check time between updates
-		if (game.updated_at.to_i - server_time > MAX_TIME_BETWEEN_UPDATES)
+		if (server_time - game.updated_at.to_i > MAX_TIME_BETWEEN_UPDATES)
+			log_error(ERROR_GAME_CHEAT, { remote_ip: request.remote_ip.to_s, session_id: @session_id  } ) 
+			return send_json_response(error_response(ERROR_GAME_CHEAT))
+		end
+		
+		if (server_time - game.updated_at.to_i < MIN_TIME_BETWEEN_UPDATES)
 			log_error(ERROR_GAME_CHEAT, { remote_ip: request.remote_ip.to_s, session_id: @session_id  } ) 
 			return send_json_response(error_response(ERROR_GAME_CHEAT))
 		end
@@ -190,13 +196,14 @@ class GoosteroidsController < ApplicationController
 	#
 	def end_game
 		#Check parameters
-		if (!params[:game_id])
+		if (!params[:game_id] || !params[:globs_destroyed])
 			log_error(ERROR_INVALID_PARAMS, { remote_ip: request.remote_ip.to_s, session_id: @session_id  } ) 
 			return send_json_response(error_response(ERROR_INVALID_PARAMS))
 		end		
 		
 		#Get parameters
 		game_id = params[:game_id].to_i
+		globs_destroyed = params[:globs_destroyed].to_i
 		
 		#Log info
 		log_info( { remote_ip: request.remote_ip.to_s, session_id: @session_id,  game_id: game_id } )
@@ -208,7 +215,7 @@ class GoosteroidsController < ApplicationController
 			return send_json_response(@response)
 		end
 		
-		if (game.globs_destroyed > GameSettings.num_globs(game.stage))
+		if (game.globs_destroyed + globs_destroyed > GameSettings.num_globs(game.stage))
 			log_error(ERROR_GAME_CHEAT, { remote_ip: request.remote_ip.to_s, game_id: game.id } )
 			return send_json_response(error_response(ERROR_GAME_CHEAT))
 		end

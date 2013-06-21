@@ -47,8 +47,6 @@ function drawPolyLine(ctx, vertices, interiorColor, borderColor, borderWidth, is
 			ctx.stroke();
 		}
 	}
-	
-	
 }
 
 function chomp(str, search, replace) {

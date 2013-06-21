@@ -273,26 +273,24 @@ function stageOver() {
 	stopUpdateLoop();
 	stopGameLoop();
 	
-	updateGame(GLOBS_DESTROYED, function () {
-		endStage(function () {
-			$('#stageMessage').html("Stage " + STAGE);
-			
-			$('#stage').fadeIn(2000, function () {
-				setTimeout(function () {
-					$('#stage').fadeOut(2000);
-					$('#game').fadeIn(2000);
-					
-					loadSettings(function () {
-						spawnShip();
-						startGameLoop();
-						startUpdateLoop();
-					});
-					
-				}, 500);
-			});
+	endStage(GLOBS_DESTROYED, function () {
+		$('#stageMessage').html("Stage " + STAGE);
+		
+		$('#stage').fadeIn(2000, function () {
+			setTimeout(function () {
+				$('#stage').fadeOut(2000);
+				$('#game').fadeIn(2000);
+				
+				loadSettings(function () {
+					spawnShip();
+					startGameLoop();
+					startUpdateLoop();
+				});
+				
+			}, 500);
 		});
 	});
-	
+
 	GLOBS_DESTROYED	= 0;
 }
 
@@ -303,16 +301,14 @@ function gameOver() {
 	stopUpdateLoop();
 	stopGameLoop();
 	
-	updateGame(GLOBS_DESTROYED, function () {
-		endGame(function (data) {
-			$("#gameOver").show();
-			$('#game').fadeOut(2000, function () {
-				if (data.high_score) {
-					showHighScorePrompt(highScores);
-				} else {
-					highScores();	
-				}
-			});
+	endGame(GLOBS_DESTROYED, function (data) {
+		$("#gameOver").show();
+		$('#game').fadeOut(2000, function () {
+			if (data.high_score) {
+				showHighScorePrompt(highScores);
+			} else {
+				highScores();	
+			}
 		});
 	});
 	

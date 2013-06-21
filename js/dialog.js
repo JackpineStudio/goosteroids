@@ -108,12 +108,11 @@ function showTwitterPrompt() {
 			if (!name || name.trim().length == 0) {
 				$("#dialogMessage").html("Names contain characters silly!<br>Please enter your name below to tweet your score:<br><br>");
 			} else {
-				var text = name + " got a score of " + SCORE + " playing";
-				openTwitterWindow(text, "Goosteroids");
-				
 				$.modal.close();
 				
 				setPlayerName(name);
+				
+				sendTweet(name, SCORE);
 			}
 		}
 	};

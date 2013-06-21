@@ -114,11 +114,11 @@ function updateGame(globsDestroyed, callback) {
 	}
 }
 
-function endStage(callback) {	
-	var data = { game_id: GAME_ID };
+function endStage(globsDestroyed, callback) {	
+	var data = { game_id: GAME_ID, globs_destroyed: globsDestroyed };
+	
 	sendAjaxRequest("goosteroids/end_stage.json", data, function (data) {
 		STAGE++;
-		GLOBS_DESTROYED = 0;
 		
 		if (callback) {
 			callback.call(this, data);
@@ -126,8 +126,9 @@ function endStage(callback) {
 	});
 }
 
-function endGame(callback) {	
-	var data = { game_id: GAME_ID };
+function endGame(globsDestroyed, callback) {	
+	var data = { game_id: GAME_ID, globs_destroyed: globsDestroyed };
+	
 	sendAjaxRequest("goosteroids/end_game.json", data, callback);
 }
 

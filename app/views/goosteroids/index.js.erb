@@ -273,26 +273,24 @@ function stageOver() {
 	stopUpdateLoop();
 	stopGameLoop();
 	
-	updateGame(GLOBS_DESTROYED, function () {
-		endStage(function () {
-			$('#stageMessage').html("Stage " + STAGE);
-			
-			$('#stage').fadeIn(2000, function () {
-				setTimeout(function () {
-					$('#stage').fadeOut(2000);
-					$('#game').fadeIn(2000);
-					
-					loadSettings(function () {
-						spawnShip();
-						startGameLoop();
-						startUpdateLoop();
-					});
-					
-				}, 500);
-			});
+	endStage(GLOBS_DESTROYED, function () {
+		$('#stageMessage').html("Stage " + STAGE);
+		
+		$('#stage').fadeIn(2000, function () {
+			setTimeout(function () {
+				$('#stage').fadeOut(2000);
+				$('#game').fadeIn(2000);
+				
+				loadSettings(function () {
+					spawnShip();
+					startGameLoop();
+					startUpdateLoop();
+				});
+				
+			}, 500);
 		});
 	});
-	
+
 	GLOBS_DESTROYED	= 0;
 }
 
@@ -303,16 +301,14 @@ function gameOver() {
 	stopUpdateLoop();
 	stopGameLoop();
 	
-	updateGame(GLOBS_DESTROYED, function () {
-		endGame(function (data) {
-			$("#gameOver").show();
-			$('#game').fadeOut(2000, function () {
-				if (data.high_score) {
-					showHighScorePrompt(highScores);
-				} else {
-					highScores();	
-				}
-			});
+	endGame(GLOBS_DESTROYED, function (data) {
+		$("#gameOver").show();
+		$('#game').fadeOut(2000, function () {
+			if (data.high_score) {
+				showHighScorePrompt(highScores);
+			} else {
+				highScores();	
+			}
 		});
 	});
 	
@@ -526,11 +522,11 @@ function updateGame(globsDestroyed, callback) {
 	}
 }
 
-function endStage(callback) {	
-	var data = { game_id: GAME_ID };
+function endStage(globsDestroyed, callback) {	
+	var data = { game_id: GAME_ID, globs_destroyed: globsDestroyed };
+	
 	sendAjaxRequest("goosteroids/end_stage.json", data, function (data) {
 		STAGE++;
-		GLOBS_DESTROYED = 0;
 		
 		if (callback) {
 			callback.call(this, data);
@@ -538,8 +534,9 @@ function endStage(callback) {
 	});
 }
 
-function endGame(callback) {	
-	var data = { game_id: GAME_ID };
+function endGame(globsDestroyed, callback) {	
+	var data = { game_id: GAME_ID, globs_destroyed: globsDestroyed };
+	
 	sendAjaxRequest("goosteroids/end_game.json", data, callback);
 }
 
@@ -766,12 +763,11 @@ function showTwitterPrompt() {
 			if (!name || name.trim().length == 0) {
 				$("#dialogMessage").html("Names contain characters silly!<br>Please enter your name below to tweet your score:<br><br>");
 			} else {
-				var text = name + " got a score of " + SCORE + " playing";
-				openTwitterWindow(text, "Goosteroids");
-				
 				$.modal.close();
 				
 				setPlayerName(name);
+				
+				sendTweet(name, SCORE);
 			}
 		}
 	};
@@ -1619,18 +1615,20 @@ function playMusic() {
 	}
 }
 
-function openTwitterWindow(text, hashTag) {
-	var href = "https://twitter.com/intent/tweet?hashtags=" + hashTag + "%2C&text=" + encodeURIComponent(text) + "&tw_p=tweetbutton";
+function openTwitterWindow(text, url, hashTags) {
+	var	href = "https://twitter.com/intent/tweet?hashtags=" + encodeURIComponent(hashTags + ",") + "&url=" + encodeURIComponent(url) + "&text=" + encodeURIComponent(text) + "&tw_p=tweetbutton";
 	window.open(href);
 }
 
 function tweetScore() {
 	if (!PLAYER_NAME || PLAYER_NAME.length == 0) {
 		showTwitterPrompt();
-	} else {
-		var text = PLAYER_NAME + " got a score of " + SCORE + " playing";
-		openTwitterWindow(text, "Goosteroids");
 	}
+}
+
+function sendTweet(name, score) {
+	var text = name + " got a score of " + score + " playing Goosteroids! Play now at";
+	openTwitterWindow(text, "http://goosteroids.com", "Goosteroids");
 }
 /*
  * Utility functions
@@ -1681,8 +1679,6 @@ function drawPolyLine(ctx, vertices, interiorColor, borderColor, borderWidth, is
 			ctx.stroke();
 		}
 	}
-	
-	
 }
 
 function chomp(str, search, replace) {
