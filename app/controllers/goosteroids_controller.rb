@@ -122,6 +122,7 @@ class GoosteroidsController < ApplicationController
 		
 		game.stage += 1
 		game.globs_destroyed = 0
+		game.score += globs_destroyed * GLOB_POINT_VALUE
 				
 		if (!game_update(game))
 			return send_json_response(@response)
@@ -223,6 +224,7 @@ class GoosteroidsController < ApplicationController
 		
 		game.over = true
 		game.end_time = Time.now
+		game.score += globs_destroyed * GLOB_POINT_VALUE
 	
 		if (!game_update(game))
 			return send_json_response(@response)

@@ -6,6 +6,8 @@ function openTwitterWindow(text, url, hashTags) {
 function tweetScore() {
 	if (!PLAYER_NAME || PLAYER_NAME.length == 0) {
 		showTwitterPrompt();
+	} else {
+		sendTweet(PLAYER_NAME, SCORE);	
 	}
 }
 
