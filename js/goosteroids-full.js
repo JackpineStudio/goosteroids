@@ -798,7 +798,7 @@ function showAboutDialog(onClose) {
 }
 
 function showCreditsDialog(onClose) {
-	var msg = "<b>Programming:</b> James McLean<br><b>Design:</b> Liam Mooney, Tom Jansen, Taulant Sulko<br><b>Music:</b> Placeholder<br><b>Sound effects:</b> Mike Koenig";
+	var msg = "<b>Programming:</b> James McLean<br><b>Design:</b> Liam Mooney, Tom Jansen, Taulant Sulko<br><b>Music:</b> Sycamore Drive, RushJet1, Rocco Wouters<br><b>Sound effects:</b> Mike Koenig";
 	
 	var closeButton = { 
 		label: "Close", 
@@ -1367,7 +1367,7 @@ function drawShip(ctx, ship, model, interiorColor, borderColor, borderWidth) {
 		ctx.translate(ship.position.x, ship.position.y);
 		ctx.rotate(ship.orientation - PI / 2);
 		
-		drawPolyLine(ctx, model, interiorColor, borderColor, borderWidth);
+		drawPolyLine(ctx, model, interiorColor, borderColor, borderWidth, true);
 		
 		ctx.restore();
 	}
@@ -1402,7 +1402,7 @@ function generateShipModel(base, height) {
 	v2 = v2.sub(center);
 	v3 = v3.sub(center);
 	
-	return [ v1, v2, v3, v1 ];
+	return [ v1, v2, v3 ];
 }
 
 /*
@@ -1417,7 +1417,7 @@ function generateEngineFlames(shipBase, shipModel, flameStep, flameMagnitude) {
 		flames.push(new Vector(start.x + dist, start.y - random(0, flameMagnitude) - 2));
 	}
 	
-	flames.push(shipModel[shipModel.length - 2]);
+	flames.push(shipModel[shipModel.length - 1]);
 	
 	return flames;
 }
@@ -1656,7 +1656,7 @@ function drawCircle(ctx, position, radius, color) {
 	ctx.fill();
 }
 
-function drawPolyLine(ctx, vertices, interiorColor, borderColor, borderWidth) {
+function drawPolyLine(ctx, vertices, interiorColor, borderColor, borderWidth, isClosed) {
 	ctx.beginPath();
 	
 	ctx.moveTo(vertices[0].x, vertices[0].y);
@@ -1673,8 +1673,16 @@ function drawPolyLine(ctx, vertices, interiorColor, borderColor, borderWidth) {
 	if (borderColor) {
 		ctx.lineWidth = borderWidth;
 		ctx.strokeStyle = borderColor;
-		ctx.stroke();
+		
+		if (isClosed) {
+			ctx.closePath();
+			ctx.stroke();
+		} else {
+			ctx.stroke();
+		}
 	}
+	
+	
 }
 
 function chomp(str, search, replace) {

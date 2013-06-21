@@ -22,7 +22,7 @@ function drawCircle(ctx, position, radius, color) {
 	ctx.fill();
 }
 
-function drawPolyLine(ctx, vertices, interiorColor, borderColor, borderWidth) {
+function drawPolyLine(ctx, vertices, interiorColor, borderColor, borderWidth, isClosed) {
 	ctx.beginPath();
 	
 	ctx.moveTo(vertices[0].x, vertices[0].y);
@@ -39,8 +39,16 @@ function drawPolyLine(ctx, vertices, interiorColor, borderColor, borderWidth) {
 	if (borderColor) {
 		ctx.lineWidth = borderWidth;
 		ctx.strokeStyle = borderColor;
-		ctx.stroke();
+		
+		if (isClosed) {
+			ctx.closePath();
+			ctx.stroke();
+		} else {
+			ctx.stroke();
+		}
 	}
+	
+	
 }
 
 function chomp(str, search, replace) {

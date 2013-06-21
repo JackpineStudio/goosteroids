@@ -135,7 +135,7 @@ function drawShip(ctx, ship, model, interiorColor, borderColor, borderWidth) {
 		ctx.translate(ship.position.x, ship.position.y);
 		ctx.rotate(ship.orientation - PI / 2);
 		
-		drawPolyLine(ctx, model, interiorColor, borderColor, borderWidth);
+		drawPolyLine(ctx, model, interiorColor, borderColor, borderWidth, true);
 		
 		ctx.restore();
 	}
@@ -170,7 +170,7 @@ function generateShipModel(base, height) {
 	v2 = v2.sub(center);
 	v3 = v3.sub(center);
 	
-	return [ v1, v2, v3, v1 ];
+	return [ v1, v2, v3 ];
 }
 
 /*
@@ -185,7 +185,7 @@ function generateEngineFlames(shipBase, shipModel, flameStep, flameMagnitude) {
 		flames.push(new Vector(start.x + dist, start.y - random(0, flameMagnitude) - 2));
 	}
 	
-	flames.push(shipModel[shipModel.length - 2]);
+	flames.push(shipModel[shipModel.length - 1]);
 	
 	return flames;
 }

@@ -140,7 +140,7 @@ function showAboutDialog(onClose) {
 }
 
 function showCreditsDialog(onClose) {
-	var msg = "<b>Programming:</b> James McLean<br><b>Design:</b> Liam Mooney, Tom Jansen, Taulant Sulko<br><b>Music:</b> Placeholder<br><b>Sound effects:</b> Mike Koenig";
+	var msg = "<b>Programming:</b> James McLean<br><b>Design:</b> Liam Mooney, Tom Jansen, Taulant Sulko<br><b>Music:</b> Sycamore Drive, RushJet1, Rocco Wouters<br><b>Sound effects:</b> Mike Koenig";
 	
 	var closeButton = { 
 		label: "Close", 
