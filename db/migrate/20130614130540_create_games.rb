@@ -9,6 +9,7 @@ class CreateGames < ActiveRecord::Migration
 			t.timestamp :start_time, :null => false
 			t.timestamp :end_time
 			t.boolean :over, :default => false
+			t.boolean :dirty, :default => false
 			
 			t.timestamps
 		end

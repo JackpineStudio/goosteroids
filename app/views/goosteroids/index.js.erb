@@ -106,7 +106,7 @@ var GLOBS_DESTROYED				= 0;					//					Number of globs destroyed this update
 														//
 var MAIN_LOOP_ID				= null;					//null
 var UPDATE_LOOP_ID				= null;					//null
-var UPDATE_LOOP_INTERVAL		= 5000;					//
+var UPDATE_LOOP_INTERVAL		= 7500;					//
 														//
 var SESSION_ID = "<%= @session_id %>";					//
 var GAME_ID 					= 0;					//

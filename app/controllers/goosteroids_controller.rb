@@ -18,7 +18,7 @@ ERROR_INVALID_PARAMS = "Invalid parameters"
 SESSION_ID_LENGTH = 64
 
 MAX_LIVES = 3
-MAX_TIME_BETWEEN_UPDATES = 12
+MAX_TIME_BETWEEN_UPDATES = 15
 MIN_TIME_BETWEEN_UPDATES = 2
 MAX_INACTIVE_TIME = 5*60
 MAX_GLOBS_DESTROYED = 16
@@ -183,6 +183,7 @@ class GoosteroidsController < ApplicationController
 			
 		game.globs_destroyed += globs_destroyed
 		game.score += globs_destroyed * GLOB_POINT_VALUE
+		game.dirty = !game.dirty
 		
 		if (!game_update(game))
 			return send_json_response(@response)

@@ -22,6 +22,7 @@ ActiveRecord::Schema.define(:version => 20130614130540) do
     t.datetime "start_time",                         :null => false
     t.datetime "end_time"
     t.boolean  "over",            :default => false
+    t.boolean  "dirty",           :default => false
     t.datetime "created_at",                         :null => false
     t.datetime "updated_at",                         :null => false
   end
