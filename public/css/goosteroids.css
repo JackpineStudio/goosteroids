@@ -130,17 +130,16 @@ div.body {
 	display:none;
 }
 
-#instructions p {
-	padding-top:4%;
+#chrome {
 	text-align:center;
 	color:#ffffff;
 	font-family:'Courier New', sans-serif;
 	font-size:14px;
-	font-weight:lighter;
+	font-weight:bold;
 }
 
 #playButton {
-	margin-top:4%;
+	margin-top:50px;
 	padding:25px;
 	border-style:solid;
 	border-width:10px;
@@ -152,11 +151,11 @@ div.body {
 }
 
 #instructions .title {
-	margin-top:4%;
+	margin-top:50px;
 }
 
 #instructions .instructions {
-	margin-top:2%;
+	margin-top:25px;
 }
 
 #game {
@@ -255,6 +254,7 @@ div.dialog-body {
 	font-family:'Courier New', sans-serif;
 	font-size:14px;
 	font-weight:lighter;
+	overflow:scroll;
 }
 
 #dialogInput {

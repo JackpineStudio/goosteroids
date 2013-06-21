@@ -128,6 +128,17 @@ function showTwitterPrompt() {
 	showDialog("ENTER PLAYER NAME", msg, [ submitButton, cancelButton ], true);
 }
 
+function showAboutDialog(onClose) {
+	var msg = "The <a href='http://jackpine.co/work.php#greygoo' target='_blank'>\"grey goo\"</a> of the Internet has come alive in this remake of the classic <a href='http://en.wikipedia.org/wiki/Asteroids_(video_game)' target='_blank'>Asteroids game</a>! Globs of goo are attracted to one another and clump together to form blobs. You must destroy these globs and blobs - by shooting them with your spaceship's laser - before they take over the entire universe! Blobs fly apart when shot, and the force of attraction between the globs results in fast, crazy, and unpredictable motion!";
+	
+	var closeButton = { 
+		label: "Close", 
+		click:  function () { $.modal.close(); } 
+	};
+	
+	showDialog("ABOUT", msg, [ closeButton ], false, onClose);
+}
+
 function showCreditsDialog(onClose) {
 	var msg = "<b>Programming:</b> James McLean<br><b>Design:</b> Liam Mooney, Tom Jansen, Taulant Sulko<br><b>Music:</b> Placeholder<br><b>Sound effects:</b> Mike Koenig";
 	

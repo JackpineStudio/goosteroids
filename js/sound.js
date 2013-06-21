@@ -3,54 +3,54 @@ var MUSIC_PLAYING = false;
 var SOUNDS_MP3 = [
 	{
 		id: "laser",
-		src: "sounds/mp3/laser.mp3",
+		src: "sounds/mp3/laser.mp3"
 	},
 	{
 		id: "pop",
-		src: "sounds/mp3/pop.mp3",
+		src: "sounds/mp3/pop.mp3"
 	},
 	{
 		id: "explosion",
-		src: "sounds/mp3/explosion.mp3",
+		src: "sounds/mp3/explosion.mp3"
 	},	
 	{
 		id: "music1",
-		src: "sounds/mp3/music1.mp3",
+		src: "sounds/mp3/music1.mp3"
 	},
 	{
 		id: "music2",
-		src: "sounds/mp3/music2.mp3",
+		src: "sounds/mp3/music2.mp3"
 	},
 	{
 		id: "music3",
-		src: "sounds/mp3/music3.mp3",
+		src: "sounds/mp3/music3.mp3"
 	}
 ];
 
 var SOUNDS_OGG = [
 	{
 		id: "laser",
-		src: "sounds/ogg/laser.ogg",
+		src: "sounds/ogg/laser.ogg"
 	},
 	{
 		id: "pop",
-		src: "sounds/ogg/pop.ogg",
+		src: "sounds/ogg/pop.ogg"
 	},
 	{
 		id: "explosion",
-		src: "sounds/ogg/explosion.ogg",
+		src: "sounds/ogg/explosion.ogg"
 	},	
 	{
 		id: "music1",
-		src: "sounds/ogg/music1.ogg",
+		src: "sounds/ogg/music1.ogg"
 	},
 	{
 		id: "music2",
-		src: "sounds/ogg/music2.ogg",
+		src: "sounds/ogg/music2.ogg"
 	},
 	{
 		id: "music3",
-		src: "sounds/ogg/music3.ogg",
+		src: "sounds/ogg/music3.ogg"
 	}
 ];
 

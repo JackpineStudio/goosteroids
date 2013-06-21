@@ -15,7 +15,7 @@ function handleError(data) {
 			console.log("Error: " + msg);
 		}
 		
-		showErrorDialog();
+		showErrorDialog(msg);
 	}
 }
 

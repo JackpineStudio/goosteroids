@@ -56,15 +56,8 @@
 				</div>
 				
 				<div class="body">
-					<div style="width:600px; position:relative; display:block; margin-left:auto; margin-right:auto;">
-						<p>
-							The <a href="http://jackpine.co/work.php#greygoo" target="_blank">"grey goo"</a> of the Internet 
-							has come alive in this remake of the classic Asteroids game! Globs of goo are attracted to one 
-							another and clump together to form blobs. You must destroy these globs and blobs - by shooting 
-							them with your spaceship's laser - before they take over the entire universe! Blobs fly apart when shot,
-							and the force of attraction between the globs results in fast, crazy, and unpredictable motion!<br><br>
-							Best experienced with <a href="http://www.google.com/chrome/" target="_blank">Google Chrome.</a>
-						</p>
+					<div id="chrome" style="width:600px; position:relative; display:block; margin-left:auto; margin-right:auto;">
+						Best experienced with <a href="http://www.google.com/chrome/" target="_blank">Google Chrome</a>!
 					</div>
 					
 					<img id="playButton" src="images/play-button.png">					
@@ -162,6 +155,7 @@
 					<img src="images/tweet-it.png" style="margin:10px auto;">
 				
 					<hr style="width:800px;">
+					
 					<table class="highScores">
 						<tr class="table-header">
 							<th>Name</th>
@@ -170,7 +164,18 @@
 							<th>Time</th>
 						</tr>
 					</table>
+					
 					<hr style="width:800px;">
+					
+					<button id="aboutButton" class="small-button" style="width:150px; margin:10px;">ABOUT</button>
+										
+					<script type="text/javascript">
+						$(function () { 
+							$("#aboutButton").click(showAboutDialog).click(function () {
+								this.blur();
+							});
+						});
+					</script>
 					
 					<button id="playAgainButton" class="small-button" style="width:150px; margin:10px;">PLAY AGAIN</button>
 										
