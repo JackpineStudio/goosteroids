@@ -1,5 +1,3 @@
-var MUSIC_PLAYING = false;
-
 var SOUNDS_MP3 = [
 	{
 		id: "laser",
@@ -134,7 +132,7 @@ function unmuteSounds() {
 function playMusic() {
 	if (SOUND_ENABLED) {
 		var trackNum = randomInteger(1, 3);
-		CURRENT_TRACK = playSound("music" + trackNum, playMusic);
+		playSound("music" + trackNum, SOUND_MUSIC_VOLUME, false, playMusic);
 	}
 }
 
