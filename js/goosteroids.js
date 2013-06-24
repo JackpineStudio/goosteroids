@@ -119,6 +119,8 @@ var SOUND_MUTED					= false;				//
 														//
 var DEBUG_MODE 					= false;				//
 var GAME_RUNNING				= false;
+var GOD_MODE_FRAMES_REMAINING   = 0;
+var BLINK 						= false;
 
 /*
  * Game setup
@@ -127,6 +129,7 @@ function spawnShip() {
 	var canvasCenter = new Vector(CANVAS.width / 2, CANVAS.height / 2);
 	SHIP = new Ship(canvasCenter, SHIP_MAX_SPEED, SHIP_DAMPING, SHIP_ACCELERATION, SHIP_TURN_RATE);
 	SHIP.orientation = -PI / 2;
+	GOD_MODE_FRAMES_REMAINING = 40;
 }
 
 function respawn() {
@@ -140,6 +143,7 @@ function respawn() {
 		}
 	} else if (!SHIP.alive && RESPAWN_FRAMES_REMAINING == 0) {
 		spawnShip();
+		GOD_MODE_FRAMES_REMAINING = 40;
 	}
 }
 
@@ -164,7 +168,16 @@ function mainLoop() {
 	updateExplosions(EXPLOSIONS);
 	
 	drawGreyGoo(CTX, TMP_CTX, GLOBS);
-	drawShip(CTX, SHIP, SHIP_MODEL, SHIP_INTERIOR_COLOR, SHIP_BORDER_COLOR, SHIP_BORDER_WIDTH);
+	
+	if (!BLINK) {
+		drawShip(CTX, SHIP, SHIP_MODEL, SHIP_INTERIOR_COLOR, SHIP_BORDER_COLOR, SHIP_BORDER_WIDTH);
+	}
+	
+	if (GOD_MODE_FRAMES_REMAINING > 0) {
+		BLINK = !BLINK;
+	} else {
+		BLINK = false;
+	}
 	
 	if (SHIP.accelerating && !SHIP.abActivated) {
 		var flames = generateEngineFlames(SHIP_MODEL_BASE, SHIP_MODEL, FLAMES_STEP, FLAMES_MAGNITUDE);

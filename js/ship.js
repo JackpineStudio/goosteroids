@@ -21,6 +21,10 @@ function Ship(position, maxSpeed, damping, acceleration, turnRate) {
 
 function updateShip(ship, shipModel) {
 	if (ship.alive) {
+		if (GOD_MODE_FRAMES_REMAINING > 0) {
+			GOD_MODE_FRAMES_REMAINING--;
+		}
+		
 		var width = CANVAS.width - 1;
 		var height = CANVAS.height - 1;
 		
@@ -56,7 +60,7 @@ function updateShip(ship, shipModel) {
 			var globPosition = glob.position.sub(ship.position);
 			globPosition = PolarVector(globPosition.angle() - ship.orientation + PI / 2, globPosition.norm());
 			
-			if (circleIntersectTriangle(globPosition, glob.radius + (1/4) * GRADIENT_RADIUS, shipModel[0], shipModel[1], shipModel[2])) {
+			if (circleIntersectTriangle(globPosition, glob.radius + (1/4) * GRADIENT_RADIUS, shipModel[0], shipModel[1], shipModel[2]) && GOD_MODE_FRAMES_REMAINING == 0) {
 				playSound("explosion");
 				ship.alive = false;
 				LIVES--;

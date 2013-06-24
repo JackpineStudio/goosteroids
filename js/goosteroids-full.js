@@ -119,6 +119,8 @@ var SOUND_MUTED					= false;				//
 														//
 var DEBUG_MODE 					= false;				//
 var GAME_RUNNING				= false;
+var GOD_MODE_FRAMES_REMAINING   = 0;
+var BLINK 						= false;
 
 /*
  * Game setup
@@ -127,6 +129,7 @@ function spawnShip() {
 	var canvasCenter = new Vector(CANVAS.width / 2, CANVAS.height / 2);
 	SHIP = new Ship(canvasCenter, SHIP_MAX_SPEED, SHIP_DAMPING, SHIP_ACCELERATION, SHIP_TURN_RATE);
 	SHIP.orientation = -PI / 2;
+	GOD_MODE_FRAMES_REMAINING = 40;
 }
 
 function respawn() {
@@ -140,6 +143,7 @@ function respawn() {
 		}
 	} else if (!SHIP.alive && RESPAWN_FRAMES_REMAINING == 0) {
 		spawnShip();
+		GOD_MODE_FRAMES_REMAINING = 40;
 	}
 }
 
@@ -164,7 +168,16 @@ function mainLoop() {
 	updateExplosions(EXPLOSIONS);
 	
 	drawGreyGoo(CTX, TMP_CTX, GLOBS);
-	drawShip(CTX, SHIP, SHIP_MODEL, SHIP_INTERIOR_COLOR, SHIP_BORDER_COLOR, SHIP_BORDER_WIDTH);
+	
+	if (!BLINK) {
+		drawShip(CTX, SHIP, SHIP_MODEL, SHIP_INTERIOR_COLOR, SHIP_BORDER_COLOR, SHIP_BORDER_WIDTH);
+	}
+	
+	if (GOD_MODE_FRAMES_REMAINING > 0) {
+		BLINK = !BLINK;
+	} else {
+		BLINK = false;
+	}
 	
 	if (SHIP.accelerating && !SHIP.abActivated) {
 		var flames = generateEngineFlames(SHIP_MODEL_BASE, SHIP_MODEL, FLAMES_STEP, FLAMES_MAGNITUDE);
@@ -1278,6 +1291,10 @@ function Ship(position, maxSpeed, damping, acceleration, turnRate) {
 
 function updateShip(ship, shipModel) {
 	if (ship.alive) {
+		if (GOD_MODE_FRAMES_REMAINING > 0) {
+			GOD_MODE_FRAMES_REMAINING--;
+		}
+		
 		var width = CANVAS.width - 1;
 		var height = CANVAS.height - 1;
 		
@@ -1313,7 +1330,7 @@ function updateShip(ship, shipModel) {
 			var globPosition = glob.position.sub(ship.position);
 			globPosition = PolarVector(globPosition.angle() - ship.orientation + PI / 2, globPosition.norm());
 			
-			if (circleIntersectTriangle(globPosition, glob.radius + (1/4) * GRADIENT_RADIUS, shipModel[0], shipModel[1], shipModel[2])) {
+			if (circleIntersectTriangle(globPosition, glob.radius + (1/4) * GRADIENT_RADIUS, shipModel[0], shipModel[1], shipModel[2]) && GOD_MODE_FRAMES_REMAINING == 0) {
 				playSound("explosion");
 				ship.alive = false;
 				LIVES--;
