@@ -118,6 +118,7 @@ var SOUND_EFFECTS_VOLUME		= 1;					//
 var SOUND_MUTED					= false;				//
 														//
 var DEBUG_MODE 					= true;					//
+var GAME_RUNNING				= false;
 
 /*
  * Game setup
@@ -145,6 +146,7 @@ function respawn() {
 /*
  * Main loop
  */
+ 
 function mainLoop() {
 	CTX.clearRect(0, 0, CANVAS.width, CANVAS.height);
 	
@@ -195,10 +197,12 @@ function mainLoop() {
 
 function startGameLoop() {
 	MAIN_LOOP_ID = setInterval(mainLoop, 1000 / FPS);
+	GAME_RUNNING = true;
 }
 
 function stopGameLoop() {
 	clearInterval(MAIN_LOOP_ID);
+	GAME_RUNNING = false;
 }
 
 /*
@@ -405,4 +409,24 @@ $(document).ready(function () {
 			setTimeout(showInstructions, 2000);
 		});
 	});
+	
+	window.onresize = function(event) {
+		if (GAME_RUNNING) {
+			var i = 1;
+			
+			while(94 + $("canvas").height() + 90 > $(window).height() && $("#canvas").height() > 584) {
+				$("#canvas").attr("width", $("#canvas").width() - 4*i);
+				$("#canvas").attr("height", $("#canvas").height() - 3*i);	
+				i++;
+			}
+			
+			i = 1;
+			
+			while(94 + $("canvas").height() + 90 < $(window).height()) {
+				$("#canvas").attr("width", $("#canvas").width() + 4*i);
+				$("#canvas").attr("height", $("#canvas").height() + 3*i);	
+				i++;
+			}
+		}
+	};
 });
