@@ -407,18 +407,20 @@ function initGame(callback) {
 function resizeCanvas() {
 	var i = 1;
 	
-	while(94 + $("canvas").height() + 90 + 15 > $(window).height() && $("#canvas").height() > 584) {
+	while($("canvas").height() + 94 + 90 + 15 > $(window).height() && $("#canvas").height() > 584) {
 		$("#canvas").attr("width", $("#canvas").width() - 4*i);
 		$("#canvas").attr("height", $("#canvas").height() - 3*i);	
 		i++;
+		console.log("decreasing");
 	}
 	
 	i = 1;
 	
-	while(94 + $("canvas").height() + 90 < $(window).height()) {
+	while($("canvas").height() + 94 + 90 + 15 < $(window).height()) {
 		$("#canvas").attr("width", $("#canvas").width() + 4*i);
 		$("#canvas").attr("height", $("#canvas").height() + 3*i);	
 		i++;
+		console.log("increasing");
 	}
 }
 
