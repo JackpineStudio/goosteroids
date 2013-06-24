@@ -429,7 +429,7 @@ function resizeCanvas() {
 	
 	i = 1;
 	
-	while($("canvas").height() + 94 + 90 + 15 < $(window).height()) {
+	while($("canvas").height() + 94 + 90 + 15 < $(window).height() && $("canvas").height() < 768) {
 		$("#canvas").attr("width", $("#canvas").width() + 4*i);
 		$("#canvas").attr("height", $("#canvas").height() + 3*i);	
 		i++;
