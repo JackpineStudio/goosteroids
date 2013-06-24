@@ -1051,7 +1051,7 @@ function drawGreyGoo(ctx, tmpCtx, particles) {
 	
 	//draw gradients
 	for (var i = 0; i < particles.length; i++) {
-		particle = particles[i];
+		var particle = particles[i];
 		
 		tmpCtx.beginPath();
 		var gradient = tmpCtx.createRadialGradient(particle.position.x, particle.position.y, particle.radius, particle.position.x, particle.position.y, GRADIENT_RADIUS);

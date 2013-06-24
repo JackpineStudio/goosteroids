@@ -4,12 +4,8 @@ require HTTP::Request;
 require HTTP::Response;
 require LWP::UserAgent;
 
-use HTTP::Request::Common;
-
-package global;
-
-
 package ResponseParser;
+
 use base qw(HTML::Parser);
 use Data::Dumper;
 
@@ -18,7 +14,7 @@ $ResponseParser::attr = '';
 $ResponseParser::output = '';
 
 # This parser only looks at opening tags
-sub start { 
+sub start {
 	my ($self, $tagname, $attr, $attrseq, $origtext) = @_;
 	$ResponseParser::tagname = $tagname;
 	$ResponseParser::attr = $attr;
@@ -31,14 +27,17 @@ sub text {
 		$text =~ s/^\s+//;
 		$text =~ s/\s+$//;
 		$text =~ s/&quot;/"/g;
-		#$text =~ s/&#39;/"/g;
-		#$text =~ s/&lt;/\</g;
-		#$text =~ s/&gt;/\>/g;
+		$text =~ s/&#39;/'/g;
+		$text =~ s/&lt;/\</g;
+		$text =~ s/&gt;/\>/g;
+		$text =~ s/&amp;&amp;/&&/g;
 		print $text;
 	}
 }
 
-package main;
+package Main;
+
+use HTTP::Request::Common;
 
 sub print_usage {
 	print "Usage: compile.pl [file]\n";
@@ -106,5 +105,4 @@ $javascript = replace_globals($javascript);
 $javascript = obfuscate($javascript);
 
 print $javascript;
-
 
