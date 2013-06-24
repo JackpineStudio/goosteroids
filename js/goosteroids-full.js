@@ -1703,7 +1703,7 @@ function tweetScore() {
 }
 
 function sendTweet(name, score) {
-	var text = name + " got a score of " + score + " playing Goosteroids! Play now at";
+	var text = name + " got a score of " + score + " playing Goosteroids! A game by @JackpineCo. Play now at";
 	openTwitterWindow(text, "http://goosteroids.com", "Goosteroids");
 }
 /*
