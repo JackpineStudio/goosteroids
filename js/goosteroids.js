@@ -117,7 +117,7 @@ var SOUND_MUSIC_VOLUME			= 1;					//
 var SOUND_EFFECTS_VOLUME		= 1;					//
 var SOUND_MUTED					= false;				//
 														//
-var DEBUG_MODE 					= true;					//
+var DEBUG_MODE 					= false;				//
 var GAME_RUNNING				= false;
 
 /*
@@ -411,7 +411,6 @@ function resizeCanvas() {
 		$("#canvas").attr("width", $("#canvas").width() - 4*i);
 		$("#canvas").attr("height", $("#canvas").height() - 3*i);	
 		i++;
-		console.log("decreasing");
 	}
 	
 	i = 1;
@@ -420,7 +419,6 @@ function resizeCanvas() {
 		$("#canvas").attr("width", $("#canvas").width() + 4*i);
 		$("#canvas").attr("height", $("#canvas").height() + 3*i);	
 		i++;
-		console.log("increasing");
 	}
 }
 
