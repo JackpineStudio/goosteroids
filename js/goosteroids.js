@@ -264,6 +264,7 @@ function playGame() {
 					GAME_ID = data.game_id;
 					loadSettings(function () {
 						enableEventHandlers();
+						resizeCanvas();
 						startGameLoop();
 						startUpdateLoop();						
 					});
@@ -403,6 +404,24 @@ function initGame(callback) {
 	callback.call(this);
 }
 
+function resizeCanvas() {
+	var i = 1;
+	
+	while(94 + $("canvas").height() + 90 + 15 > $(window).height() && $("#canvas").height() > 584) {
+		$("#canvas").attr("width", $("#canvas").width() - 4*i);
+		$("#canvas").attr("height", $("#canvas").height() - 3*i);	
+		i++;
+	}
+	
+	i = 1;
+	
+	while(94 + $("canvas").height() + 90 < $(window).height()) {
+		$("#canvas").attr("width", $("#canvas").width() + 4*i);
+		$("#canvas").attr("height", $("#canvas").height() + 3*i);	
+		i++;
+	}
+}
+
 $(document).ready(function () {
 	initSound(function () {
 		initGame(function () {
@@ -412,21 +431,7 @@ $(document).ready(function () {
 	
 	window.onresize = function(event) {
 		if (GAME_RUNNING) {
-			var i = 1;
-			
-			while(94 + $("canvas").height() + 90 > $(window).height() && $("#canvas").height() > 584) {
-				$("#canvas").attr("width", $("#canvas").width() - 4*i);
-				$("#canvas").attr("height", $("#canvas").height() - 3*i);	
-				i++;
-			}
-			
-			i = 1;
-			
-			while(94 + $("canvas").height() + 90 < $(window).height()) {
-				$("#canvas").attr("width", $("#canvas").width() + 4*i);
-				$("#canvas").attr("height", $("#canvas").height() + 3*i);	
-				i++;
-			}
+			resizeCanvas();
 		}
 	};
 });
