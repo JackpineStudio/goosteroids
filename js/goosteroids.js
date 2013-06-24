@@ -438,16 +438,16 @@ function resizeCanvas() {
 
 $(document).ready(function () {
 	jQuery.browser = {};
-	jQuery.browser.mozilla = /mozilla/.test(navigator.userAgent.toLowerCase()) && !/webkit/.test(navigator.userAgent.toLowerCase());
-	jQuery.browser.webkit = /webkit/.test(navigator.userAgent.toLowerCase());
-	jQuery.browser.opera = /opera/.test(navigator.userAgent.toLowerCase());
-	jQuery.browser.msie = /msie/.test(navigator.userAgent.toLowerCase());
-	jQuery.browser.chrome = /chrome/.test(navigator.userAgent.toLowerCase());
+	jQuery.browser.mozilla = /mozilla/i.test(navigator.userAgent.toLowerCase()) && !/webkit/.test(navigator.userAgent.toLowerCase());
+	jQuery.browser.webkit = /webkit/i.test(navigator.userAgent.toLowerCase());
+	jQuery.browser.opera = /opera/i.test(navigator.userAgent.toLowerCase());
+	jQuery.browser.msie = /msie/i.test(navigator.userAgent.toLowerCase());
+	jQuery.browser.chrome = /chrome/i.test(navigator.userAgent.toLowerCase());
 		
 	if(/Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)) {
 		alert("Sorry, mobile devices not supported.");
 		$("#progressBar").hide();
-	} else if (!$.browser.chrome) {
+	} else if (!$.browser.chrome || $.browser.msie) {
 		showChromeDialog(function () {
 			$("#progressBar").hide();
 		});
