@@ -511,7 +511,7 @@ function sendAjaxRequest(url, data, callback) {
 	var request = $.ajax({
 		url: url,
 		type: "POST",
-		timeout: 2000,
+		timeout: 3000,
 		dataType: "json",
 		cache: false,
 		data: data
