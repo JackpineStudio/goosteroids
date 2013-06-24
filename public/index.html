@@ -48,17 +48,6 @@
 					<div id="progressBar" style="display:hidden; margin-left:auto; margin-right:auto; margin-top:3%;">
 						<div></div>
 					</div>
-					
-					<script type="text/javascript">
-						$(function () {
-							if( /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent) ) {
-								alert("Sorry, mobile devices not supported.");
-								$("#progressBar").hide();
-							} else {
-								$("#progressBar").show();
-							}
-						});
-					</script>
 				</div>
 			</div>
 		</div>
@@ -71,11 +60,14 @@
 				</div>
 				
 				<div class="body">
-					<div id="chrome" style="width:600px; position:relative; display:block; margin-left:auto; margin-right:auto;">
-						Best experienced with <a href="http://www.google.com/chrome/" target="_blank">Google Chrome</a>!
+					<div id="missionBriefing" style="margin-left:auto; margin-right:auto; margin-bottom:25px;">
+						<b>Mission Briefing:</b><br><br>
+						What is grey goo you ask, and why are we destroying it? The answer is simple:<br> 
+						Every second of everyday millions of people with smartphones and thousands of companies produce media that are super pixelated and provide no value to the human race. Stock photos, CMS templates and pictures of last night's dinner are a few examples. We call this stuff grey goo.<br>
+						We must free humanity of the boring, mundane and useless. Climb aboard your laser-firing rocket ship and destroy grey goo forever!
 					</div>
-					
-					<img id="playButton" src="images/play-button.png">					
+				
+					<img id="playButton" src="images/play-button.png" width="250">					
 					
 					<script type="text/javascript">
 						$(function () { 

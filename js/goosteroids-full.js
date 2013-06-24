@@ -272,12 +272,13 @@ function playGame() {
 		setTimeout(function () {
 			$('#game').show();
 			
+			resizeCanvas();
+			
 			$('#stage').fadeOut(2000, function () {
 				newGame(function (data) {
 					GAME_ID = data.game_id;
 					loadSettings(function () {
 						enableEventHandlers();
-						resizeCanvas();
 						startGameLoop();
 						startUpdateLoop();						
 					});
@@ -436,17 +437,35 @@ function resizeCanvas() {
 }
 
 $(document).ready(function () {
-	initSound(function () {
-		initGame(function () {
-			setTimeout(showInstructions, 2000);
+	jQuery.browser = {};
+	jQuery.browser.mozilla = /mozilla/.test(navigator.userAgent.toLowerCase()) && !/webkit/.test(navigator.userAgent.toLowerCase());
+	jQuery.browser.webkit = /webkit/.test(navigator.userAgent.toLowerCase());
+	jQuery.browser.opera = /opera/.test(navigator.userAgent.toLowerCase());
+	jQuery.browser.msie = /msie/.test(navigator.userAgent.toLowerCase());
+	jQuery.browser.chrome = /chrome/.test(navigator.userAgent.toLowerCase());
+		
+	if(/Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)) {
+		alert("Sorry, mobile devices not supported.");
+		$("#progressBar").hide();
+	} else if (!$.browser.chrome) {
+		showChromeDialog(function () {
+			$("#progressBar").hide();
 		});
-	});
+	} else {
+		$("#progressBar").show();
+		
+		initSound(function () {
+			initGame(function () {
+				setTimeout(showInstructions, 2000);
+			});
+		});
 	
-	window.onresize = function(event) {
-		if (GAME_RUNNING) {
-			resizeCanvas();
-		}
-	};
+		window.onresize = function(event) {
+			if (GAME_RUNNING) {
+				resizeCanvas();
+			}
+		};
+	}
 });
 var UPDATING = false;
 
@@ -844,6 +863,17 @@ function showCreditsDialog(onClose) {
 	};
 	
 	showDialog("CREDITS", msg, [ closeButton ], false, onClose);
+}
+
+function showChromeDialog(onClose) {
+	var msg = "Please download <a href='http://www.google.com/chrome' target='_blank'>Google Chrome</a>.";
+	
+	var closeButton = { 
+		label: "Close", 
+		click:  function () { $.modal.close(); } 
+	};
+	
+	showDialog("ERROR: BROWSER NOT SUPPORTED", msg, [ closeButton ], false, onClose);
 }
 /*
  * Display

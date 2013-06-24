@@ -148,3 +148,14 @@ function showCreditsDialog(onClose) {
 	
 	showDialog("CREDITS", msg, [ closeButton ], false, onClose);
 }
+
+function showChromeDialog(onClose) {
+	var msg = "Please download <a href='http://www.google.com/chrome' target='_blank'>Google Chrome</a>.";
+	
+	var closeButton = { 
+		label: "Close", 
+		click:  function () { $.modal.close(); } 
+	};
+	
+	showDialog("ERROR: BROWSER NOT SUPPORTED", msg, [ closeButton ], false, onClose);
+}
