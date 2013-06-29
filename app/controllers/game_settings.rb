@@ -13,7 +13,7 @@ module GameSettings
 		},
 		
 		{
-			gravity: 30, gravity_dropoff: 0.01, 
+			gravity: 60, gravity_dropoff: 0.005, 
 			glob_max_speed: 500, glob_blast_radius: 30, glob_blast_magnitude: 300, glob_cr: 0.80,
 			blobs: [ { size: 20, speed: 200 }, { size: 10, speed: 300 }, { size: 10, speed: 500 } ]
 		}
