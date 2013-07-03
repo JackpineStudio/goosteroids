@@ -3,6 +3,6 @@
 Goosteroids is a remake of the classic game Asteroids. 
 Instead of asteroids it features grey goo.
 The game is written entirely in Javascript and HTML with a Rails back-end.
-All Ruby and Javascript code are licensed under the GPL
+All Ruby and Javascript code are licensed under the GPL v3.
 Any other assets of the property of Jackpine or their respective copyright holders.
 
