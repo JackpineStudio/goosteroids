@@ -1,3 +1,54 @@
+/*
+	Goosteroids: A fight for the future of the internet!
+
+    Copyright (C) 2013 James McLean
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/*
+	      ::::::::   ::::::::   ::::::::   :::::::: ::::::::::: :::::::::: :::::::::   :::::::: ::::::::::: :::::::::   :::::::: 
+		:+:    :+: :+:    :+: :+:    :+: :+:    :+:    :+:     :+:        :+:    :+: :+:    :+:    :+:     :+:    :+: :+:    :+: 
+	+:+        +:+    +:+ +:+    +:+ +:+           +:+     +:+        +:+    +:+ +:+    +:+    +:+     +:+    +:+ +:+         
+	:#:        +#+    +:+ +#+    +:+ +#++:++#++    +#+     +#++:++#   +#++:++#:  +#+    +:+    +#+     +#+    +:+ +#++:++#++   
+	+#+   +#+# +#+    +#+ +#+    +#+        +#+    +#+     +#+        +#+    +#+ +#+    +#+    +#+     +#+    +#+        +#+    
+	#+#    #+# #+#    #+# #+#    #+# #+#    #+#    #+#     #+#        #+#    #+# #+#    #+#    #+#     #+#    #+# #+#    #+#     
+	########   ########   ########   ########     ###     ########## ###    ###  ######## ########### #########   ########    
+*/
+
+/*
+	$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+	$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+	$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+	$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+	$$$$$$$$                                                                                 $$$$$$$$
+	$$$$$$$$     $$$$$\  $$$$$$\   $$$$$$\  $$\   $$\ $$$$$$$\ $$$$$$\ $$\   $$\ $$$$$$$$\   $$$$$$$$
+	$$$$$$$$     \__$$ |$$  __$$\ $$  __$$\ $$ | $$  |$$  __$$\\_$$  _|$$$\  $$ |$$  _____|  $$$$$$$$
+	$$$$$$$$        $$ |$$ /  $$ |$$ /  \__|$$ |$$  / $$ |  $$ | $$ |  $$$$\ $$ |$$ |        $$$$$$$$
+	$$$$$$$$        $$ |$$$$$$$$ |$$ |      $$$$$  /  $$$$$$$  | $$ |  $$ $$\$$ |$$$$$\      $$$$$$$$
+	$$$$$$$$  $$\   $$ |$$  __$$ |$$ |      $$  $$<   $$  ____/  $$ |  $$ \$$$$ |$$  __|     $$$$$$$$
+	$$$$$$$$  $$ |  $$ |$$ |  $$ |$$ |  $$\ $$ |\$$\  $$ |       $$ |  $$ |\$$$ |$$ |        $$$$$$$$
+	$$$$$$$$  \$$$$$$  |$$ |  $$ |\$$$$$$  |$$ | \$$\ $$ |     $$$$$$\ $$ | \$$ |$$$$$$$$\   $$$$$$$$
+	$$$$$$$$   \______/ \__|  \__| \______/ \__|  \__|\__|     \______|\__|  \__|\________|  $$$$$$$$
+	$$$$$$$$                                                                                 $$$$$$$$
+	$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+	$$$$$$$$$$$$$$$$$$$$$$$$$$$$$                                   $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+	$$$$$$$$$$$$$$$$$$$$$$$$$$$$$    THIS IS NO PART-TIME HUSTLE    $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+	$$$$$$$$$$$$$$$$$$$$$$$$$$$$$                                   $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+	$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+*/
+
 /* 
  * Constants
  */
@@ -467,6 +518,25 @@ $(document).ready(function () {
 		};
 	}
 });
+/*
+	Goosteroids: A fight for the future of the internet!
+
+    Copyright (C) 2013 James McLean
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 var UPDATING = false;
 
 function error(data) {
@@ -610,6 +680,25 @@ function getHighScores(callback) {
 	sendAjaxRequest("goosteroids/get_high_scores.json", {}, callback);
 }
 /*
+	Goosteroids: A fight for the future of the internet!
+
+    Copyright (C) 2013 James McLean
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/*
  * Blobs
  */
 function createBlob(numGlobs, position, orientation, speed) {
@@ -633,6 +722,25 @@ function addBlobs(blobs) {
 	 	}
 	}
 }
+
+/*
+	Goosteroids: A fight for the future of the internet!
+
+    Copyright (C) 2013 James McLean
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 /*
  * Bullets
@@ -714,6 +822,25 @@ function drawBullets(ctx, bullets) {
 		drawCircle(ctx, bullets[i].position, BULLET_RADIUS, BULLET_COLOR);	
 	}
 }
+/*
+	Goosteroids: A fight for the future of the internet!
+
+    Copyright (C) 2013 James McLean
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 function showDialog(title, msg, buttons, prompt, onClose) {
 	$("#dialogTitle").text(title);
 	$("#dialogMessage").html(msg);
@@ -876,6 +1003,25 @@ function showChromeDialog(onClose) {
 	showDialog("ERROR: BROWSER NOT SUPPORTED", msg, [ closeButton ], false, onClose);
 }
 /*
+	Goosteroids: A fight for the future of the internet!
+
+    Copyright (C) 2013 James McLean
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/*
  * Display
  */
 function drawScoreDisplay(canvas, ctx, score) {
@@ -952,6 +1098,25 @@ function displayRespawnMessage(canvas, ctx, secondsRemaining) {
 	
 	ctx.restore();	
 }
+/*
+	Goosteroids: A fight for the future of the internet!
+
+    Copyright (C) 2013 James McLean
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 /*
  * Events
  */
@@ -1048,6 +1213,25 @@ function shiftUp() {
 	SHIP.abCooldown = AB_COOLDOWN;
 }
 /*
+	Goosteroids: A fight for the future of the internet!
+
+    Copyright (C) 2013 James McLean
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/*
  * Explosions
  */
 function explosion(position, magnitude, particleMass, particleRadius, numParticles, collisions) {
@@ -1092,6 +1276,25 @@ function drawExplosions(ctx, explosions) {
 	}
 }
 /*
+	Goosteroids: A fight for the future of the internet!
+
+    Copyright (C) 2013 James McLean
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/*
  * Gravity
  */
 function gravForce(particle1, particle2, gravity, dropoff) {
@@ -1115,6 +1318,25 @@ function addGravity(particles) {
 		}
 	}
 }
+/*
+	Goosteroids: A fight for the future of the internet!
+
+    Copyright (C) 2013 James McLean
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 /*
  * Greygoo
  */
@@ -1154,6 +1376,24 @@ function drawGreyGoo(ctx, tmpCtx, particles) {
 }
 
 
+/*
+	Goosteroids: A fight for the future of the internet!
+
+    Copyright (C) 2013 James McLean
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 /*
  * Particles
@@ -1293,11 +1533,49 @@ function drawParticles(ctx, particles, color) {
 		drawCircle(ctx, particles[i].position, particles[i].radius, color);
 	}
 }
+/*
+	Goosteroids: A fight for the future of the internet!
+
+    Copyright (C) 2013 James McLean
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 function progressBar(elementId, percent) {
 	var progressBar = $(elementId);
 	var width = percent * progressBar.width() / 100;
 	progressBar.find("div").animate({ width: width }, 500);
 }
+/*
+	Goosteroids: A fight for the future of the internet!
+
+    Copyright (C) 2013 James McLean
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 /*
  * Ship
  */
@@ -1551,6 +1829,25 @@ function circleIntersectTriangle(center, radius, v1, v2, v3) {
 	return false;
 }
 
+/*
+	Goosteroids: A fight for the future of the internet!
+
+    Copyright (C) 2013 James McLean
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 var SOUNDS_MP3 = [
 	{
 		id: "laser",
@@ -1689,6 +1986,25 @@ function playMusic() {
 	}
 }
 
+/*
+	Goosteroids: A fight for the future of the internet!
+
+    Copyright (C) 2013 James McLean
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 function openTwitterWindow(text, url, hashTags) {
 	var	href = "https://twitter.com/intent/tweet?hashtags=" + encodeURIComponent(hashTags + ",") + "&url=" + encodeURIComponent(url) + "&text=" + encodeURIComponent(text) + "&tw_p=tweetbutton";
 	window.open(href);
@@ -1706,6 +2022,25 @@ function sendTweet(name, score) {
 	var text = name + " got a score of " + score + " playing Goosteroids! A game by @JackpineCo. Play now at";
 	openTwitterWindow(text, "http://goosteroids.com", "Goosteroids");
 }
+/*
+	Goosteroids: A fight for the future of the internet!
+
+    Copyright (C) 2013 James McLean
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 /*
  * Utility functions
  */
@@ -1772,6 +2107,25 @@ function toUTC(date) {
 function randomInteger(min, max) {
 	return Math.floor(Math.random() * (max - min + 1)) + min;	
 }
+
+/*
+	Goosteroids: A fight for the future of the internet!
+
+    Copyright (C) 2013 James McLean
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 /*
  * Vector class
