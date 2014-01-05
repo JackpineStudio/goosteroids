@@ -498,8 +498,8 @@ $(document).ready(function () {
 	if(/Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)) {
 		alert("Sorry, mobile devices not supported.");
 		$("#progressBar").hide();
-	} else if (!$.browser.chrome || $.browser.msie) {
-		showChromeDialog(function () {
+	} else if ($.browser.msie) {
+		showBrowserNotSupportedDialog(function () {
 			$("#progressBar").hide();
 		});
 	} else {

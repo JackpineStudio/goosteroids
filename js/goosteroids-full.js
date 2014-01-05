@@ -498,8 +498,8 @@ $(document).ready(function () {
 	if(/Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)) {
 		alert("Sorry, mobile devices not supported.");
 		$("#progressBar").hide();
-	} else if (!$.browser.chrome || $.browser.msie) {
-		showChromeDialog(function () {
+	} else if ($.browser.msie) {
+		showBrowserNotSupportedDialog(function () {
 			$("#progressBar").hide();
 		});
 	} else {
@@ -992,8 +992,8 @@ function showCreditsDialog(onClose) {
 	showDialog("CREDITS", msg, [ closeButton ], false, onClose);
 }
 
-function showChromeDialog(onClose) {
-	var msg = "Please download <a href='http://www.google.com/chrome' target='_blank'>Google Chrome</a>.";
+function showBrowserNotSupportedDialog(onClose) {
+	var msg = "Please download <a href='http://www.google.com/chrome' target='_blank'>Google Chrome</a> or <a href='https://www.mozilla.org/firefox' target='_blank'>Firefox</a> to play.";
 	
 	var closeButton = { 
 		label: "Close", 
